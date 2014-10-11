@@ -6,18 +6,18 @@ import java.util.Map;
 
 import fr.upmc.alasca.requestgen.objects.Request;
 
-/* Classe représentant le composant interne du dispatcher
- * délèguant une application au répartiteur correspondant 
+/* Classe reprÃ©sentant le composant interne du dispatcher
+ * dÃ©lÃ¨guant une application au rÃ©partiteur correspondant 
  *
  */
 
 public class Dispatcher {
 	
-	/*vontroleur d'admission dont dépend le Dispatcher.*/
+	/*controleur d'admission dont dÃ©pend le Dispatcher.*/
 	
 	private ControleurAdmission control;
 	
-	//Liste des VM provenant du controleur d'admissions **VM bouvhon utilisé**
+	//Liste des VM provenant du controleur d'admissions **VM bouvhon utilisÃ©**
 	
 	private ArrayList<VM> VMList;
 	
