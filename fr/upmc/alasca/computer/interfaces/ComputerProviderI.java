@@ -7,21 +7,45 @@ import fr.upmc.alasca.computer.objects.VirtualMachine;
 
 public interface ComputerProviderI {
 	
-	// Fonctions offertes
+	/**
+	 * Alloue une machine virtuelle
+	 * 
+	 * @param nbCores
+	 * @param app
+	 * @return boolean
+	 */
+	public boolean deployVM(int nbCores, int app);
 	
-	// Envoie la liste des machines virtuelles allou�es
-	public List<VirtualMachine> getListMV();
+	/**
+	 * Detruit une machine virtuelle
+	 *  
+	 * @param vm
+	 * @return boolean
+	 */
+	public boolean destroyVM(VirtualMachine vm);
 	
-	// Allouer une machine virtuelle
-	public boolean deployMV(int nbCores, String app);
+	/**
+	 * Envoie la liste des machines virtuelles allouees
+	 * 
+	 * @return boolean
+	 */
+	public List<VirtualMachine> getListVM();
 	
-	// D�truire une machine virtuelle
-	public boolean destroyMV(VirtualMachine mv);
-	
-	// R�initialiser une machine virtuelle
-	public boolean reInit(VirtualMachine mv);
-	
-	// Recuperer une requete envoyee par le repartiteur de requetes
+	/**
+	 *  Recupere une requete envoyee par le repartiteur de requetes
+	 *  
+	 * @param mv
+	 * @param req
+	 * @return boolean
+	 */
 	public boolean getRequest(VirtualMachine mv, Request req);
+	
+	/**
+	 * Reinitialise une machine virtuelle
+	 * 
+	 * @param vm
+	 * @return boolean
+	 */
+	public boolean reInit(VirtualMachine vm);
 
 }
