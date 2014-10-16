@@ -3,9 +3,25 @@ package fr.upmc.alasca.computer.interfaces;
 import java.util.List;
 
 import fr.upmc.alasca.requestgen.objects.Request;
-import fr.upmc.alasca.computer.objects.VirtualMachine;
+import fr.upmc.components.interfaces.OfferedI;
 
-public interface ComputerProviderI {
+/**
+ * L'interface <code>ComputerProviderI</code>
+ *
+ * <p><strong>Description</strong></p>
+ * 
+ * <p><strong>Invariant</strong></p>
+ * 
+ * <pre>
+ * invariant	true
+ * </pre>
+ * 
+ * <p>Created on : 10 oct. 2014</p>
+ * 
+ * @author	<a href="mailto:henri.ng@etu.upmc.fr">Henri NG</a>
+ * @version	$Name$ -- $Revision$ -- $Date$
+ */
+public interface ComputerProviderI extends OfferedI {
 	
 	/**
 	 * Alloue une machine virtuelle
@@ -17,19 +33,19 @@ public interface ComputerProviderI {
 	public boolean deployVM(int nbCores, int app);
 	
 	/**
-	 * Detruit une machine virtuelle
+	 * Detruit une machine virtuelle via son URI
 	 *  
-	 * @param vm
+	 * @param mv
 	 * @return boolean
 	 */
-	public boolean destroyVM(VirtualMachine vm);
+	public boolean destroyVM(String mv);
 	
 	/**
-	 * Envoie la liste des machines virtuelles allouees
+	 * Envoie la liste des URI des machines virtuelles allouees
 	 * 
 	 * @return boolean
 	 */
-	public List<VirtualMachine> getListVM();
+	public List<String> getListVM();
 	
 	/**
 	 *  Recupere une requete envoyee par le repartiteur de requetes
@@ -38,14 +54,14 @@ public interface ComputerProviderI {
 	 * @param req
 	 * @return boolean
 	 */
-	public boolean getRequest(VirtualMachine mv, Request req);
+	public boolean getRequest(String mv, Request req);
 	
 	/**
-	 * Reinitialise une machine virtuelle
+	 * Reinitialise une machine virtuelle via son URI
 	 * 
 	 * @param vm
 	 * @return boolean
 	 */
-	public boolean reInit(VirtualMachine vm);
+	public boolean reInit(String vm);
 
 }
