@@ -59,7 +59,7 @@ extends		AbstractCVM
 		PortI rgport = this.cg.findPortFromURI(
 										REQUEST_GENERATOR_OUTBOUNDPORT_URI) ;
 		rgport.doConnection(REQUEST_ARRIVAL_INBOUNDPORT_URI,
-							"projet.main.ClientArrivalConnector") ;
+							"fr.upmc.alasca.requestgen.main.ClientArrivalConnector") ;
 
 		super.deploy() ;
 	}
