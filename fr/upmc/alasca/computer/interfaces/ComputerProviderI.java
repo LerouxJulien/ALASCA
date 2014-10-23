@@ -28,9 +28,10 @@ public interface ComputerProviderI extends OfferedI {
 	 * 
 	 * @param nbCores
 	 * @param app
+	 * @param RepartiteurURI necessaire pour connecter le repartiteur et la vm
 	 * @return boolean
 	 */
-	public boolean deployVM(int nbCores, int app);
+	public boolean deployVM(int nbCores, int app, String RepartiteurURI) throws Exception;
 	
 	/**
 	 * Detruit une machine virtuelle via son URI
@@ -38,14 +39,14 @@ public interface ComputerProviderI extends OfferedI {
 	 * @param mv
 	 * @return boolean
 	 */
-	public boolean destroyVM(String mv);
+	public boolean destroyVM(String mv) throws Exception;
 	
 	/**
 	 * Envoie la liste des URI des machines virtuelles allouees
 	 * 
 	 * @return boolean
 	 */
-	public List<String> getListVM();
+	public List<String> getListVM() throws Exception;
 	
 	/**
 	 *  Recupere une requete envoyee par le repartiteur de requetes
@@ -54,7 +55,7 @@ public interface ComputerProviderI extends OfferedI {
 	 * @param req
 	 * @return boolean
 	 */
-	public boolean getRequest(String mv, Request req);
+	public boolean getRequest(String mv, Request req) throws Exception;
 	
 	/**
 	 * Reinitialise une machine virtuelle via son URI
@@ -62,6 +63,6 @@ public interface ComputerProviderI extends OfferedI {
 	 * @param vm
 	 * @return boolean
 	 */
-	public boolean reInit(String vm);
+	public boolean reInit(String vm) throws Exception;
 
 }

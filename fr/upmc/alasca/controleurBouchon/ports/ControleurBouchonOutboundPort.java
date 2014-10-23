@@ -1,11 +1,13 @@
 package fr.upmc.alasca.controleurBouchon.ports;
 
 import fr.upmc.alasca.computer.interfaces.ManagementVMI;
+import fr.upmc.alasca.computer.interfaces.VMProviderI;
+import fr.upmc.alasca.requestgen.objects.Request;
 import fr.upmc.components.ComponentI;
 import fr.upmc.components.ports.AbstractOutboundPort;
 
 public class  ControleurBouchonOutboundPort extends		AbstractOutboundPort
-implements	ManagementVMI{
+implements	ManagementVMI {
 
 	public ControleurBouchonOutboundPort(String uri,
 		ComponentI owner) throws Exception {
@@ -15,8 +17,8 @@ implements	ManagementVMI{
 	}
 
 	@Override
-	public boolean deployVM(int nbCores, int app) throws Exception {
-		return ((ManagementVMI)this.connector).deployVM(nbCores, app) ;
+	public boolean deployVM(int nbCores, int app, String RepartiteurURI) throws Exception {
+		return ((ManagementVMI)this.connector).deployVM(nbCores, app, RepartiteurURI) ;
 	}
 
 	@Override
@@ -24,5 +26,10 @@ implements	ManagementVMI{
 		// TODO Auto-generated method stub
 		return false;
 	}
+
+	/*@Override
+	public void processRequest(Request r) throws Exception {
+		((VMProviderI)this.connector).processRequest(r);
+	}*/
 
 }

@@ -12,7 +12,7 @@ public interface ManagementVMI extends		OfferedI, RequiredI
 	 * @param app
 	 * @return boolean
 	 */
-	public boolean deployVM(int nbCores, int app) throws Exception;
+	public boolean deployVM(int nbCores, int app, String RepartiteurURI) throws Exception;
 	
 	/**
 	 * Detruit une machine virtuelle via son URI

@@ -1,18 +1,18 @@
 package fr.upmc.alasca.computer.components;
 
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Future;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
-import fr.upmc.alasca.requestgen.components.ServiceProvider;
+import fr.upmc.alasca.computer.interfaces.VMProviderI;
+import fr.upmc.alasca.computer.ports.VMInboudPort;
 import fr.upmc.alasca.requestgen.objects.Request;
 import fr.upmc.alasca.requestgen.utils.TimeProcessing;
 import fr.upmc.components.AbstractComponent;
-import fr.upmc.components.ComponentI.ComponentTask;
+import fr.upmc.components.ports.PortI;
 
 /**
  * La classe <code>VirtualMachine</code> definit la machine virtuelle qui
@@ -86,9 +86,10 @@ public class VirtualMachine extends AbstractComponent{
 	 * @param appID
 	 * @param nbCores
 	 * @param frequence
+	 * @throws Exception 
 	 */
-	public VirtualMachine(int mvID, int appID, int nbCores, int queueMax,
-			List<Double> frequencies) {
+	public VirtualMachine(String port, Integer mvID, Integer appID, Integer nbCores, Integer queueMax,
+			ArrayList<Double> frequencies) throws Exception {
 		super();
 		this.mvID      = mvID;
 		this.appID     = appID;
@@ -101,9 +102,14 @@ public class VirtualMachine extends AbstractComponent{
 		threads = new ArrayList<VMThread>();
 		// Initialise les VMThread de la VM
 		for (int i = 0; i < nbCores; i++) {
-			int VMThreadID = mvID * 10 + i;
-			threads.add(new VMThread(VMThreadID, frequencies.get(i), this));
+			//int VMThreadID = mvID * 10 + i;
+			threads.add(new VMThread(i, frequencies.get(i), this));
 		}
+		
+		this.addOfferedInterface(VMProviderI.class) ;
+		PortI p = new VMInboudPort(port, this) ;
+		this.addPort(p);
+		p.localPublishPort() ;
 	}
 
 	/**
@@ -212,6 +218,18 @@ public class VirtualMachine extends AbstractComponent{
 			isIdle |= threads.get(i).isWaiting();
 		return isIdle;
 	}
+	
+	/**
+	 * Alias de isIdle
+	 * 
+	 * @return isIdle
+	 */
+	public boolean hasAvailableCore() {
+		boolean isIdle = false;
+		for (int i = 0; i < nbCores; i++)
+			isIdle |= threads.get(i).isWaiting();
+		return isIdle;
+	}
 
 	/**
 	 * Traite la premiere requete de la file et retourne le temps d'execution
@@ -273,25 +291,30 @@ public class VirtualMachine extends AbstractComponent{
 	 * @throws Exception
 	 */
 	public void requestArrivalEvent(Request r) throws Exception {
-		assert r != null && isIdle();
-
+		assert r != null;
 		long t = System.currentTimeMillis();
-		System.out.println("Accepting request       " + r + " at "
-				+ TimeProcessing.toString(t));
-		r.setArrivalTime(t);
-		this.queue.add(r);
-		if (!this.isIdle()) {
+		if(!this.queueIsFull()){
+			this.queue.add(r);
+			System.out.println("Accepting request       " + r + " at "
+					+ TimeProcessing.toString(t));
+			r.setArrivalTime(t);
+		
+		if (!this.hasAvailableCore()) {
 			System.out.println("Queueing request " + r);
 		} else {
-			for (compteurCyclique = (compteurCyclique + 1) % (getNbCores() - 1);
+			for (compteurCyclique = (compteurCyclique + 1) % getNbCores();
 					compteurCyclique < nbCores;
 					compteurCyclique = (compteurCyclique + 1)
-					% (getNbCores() - 1)) {
-				if (threads.get(compteurCyclique).isWaiting) {
+					% getNbCores()) {
+				if (threads.get(compteurCyclique).isWaiting()) {
 					threads.get(compteurCyclique).process();
 					break;
 				}
 			}
+		}
+		}
+		else {
+			System.out.println("Demande rejetée par la VM " + this.mvID +" : queue pleine");
 		}
 	}
 
@@ -370,11 +393,12 @@ public class VirtualMachine extends AbstractComponent{
 		 * @param isWaiting
 		 */
 		public VMThread(int VMThreadID, double frequence, VirtualMachine owner) {
-			super();
+			super(true, true);
 			this.VMThreadID = VMThreadID;
 			this.frequence = frequence;
 			this.isWaiting = true;
 			this.owner = owner;
+			this.nextEndServicingTaskFuture = null ;
 		}
 
 		/**
@@ -414,11 +438,13 @@ public class VirtualMachine extends AbstractComponent{
 			this.servicing = owner.queue.remove();
 			System.out.println("Begin servicing request " + this.servicing
 					+ " at "
-					+ TimeProcessing.toString(System.currentTimeMillis()));
+					+ TimeProcessing.toString(System.currentTimeMillis())
+					+ " by " + this.VMThreadID
+					+ " with " + this.servicing.getInstructions() + " instructions");
 			this.isWaiting = false;
 			final VMThread vmt = (VMThread) this;
-			final long processingTime = this.servicing.getInstructions()
-					/ ((long) frequence * 1000000);
+			final long processingTime = (long) ((double)this.servicing.getInstructions()
+					/ ((double) frequence * 1000000));
 			this.nextEndServicingTaskFuture = this.scheduleTask(
 					new ComponentTask() {
 						@Override
@@ -429,7 +455,7 @@ public class VirtualMachine extends AbstractComponent{
 								e.printStackTrace();
 							}
 						}
-					}, processingTime, TimeUnit.MILLISECONDS);
+					}, processingTime, TimeUnit.SECONDS);
 			return processingTime;
 		}
 
@@ -438,7 +464,9 @@ public class VirtualMachine extends AbstractComponent{
 			long st = t - this.servicing.getArrivalTime();
 			System.out.println("End servicing request   " + this.servicing
 					+ " at " + TimeProcessing.toString(t)
-					+ " with service time " + st);
+					+ " with service time " + st
+					+ " by " + this.VMThreadID
+					+ " --- Size queue : " + this.owner.queue.size());
 			if (owner.queue.isEmpty()) {
 				this.servicing = null;
 				this.isWaiting = true;

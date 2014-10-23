@@ -8,8 +8,8 @@ extends		AbstractConnector
 implements	ManagementVMI{
 
 	@Override
-	public boolean deployVM(int nbCores, int app) throws Exception {
-		return ((ManagementVMI)this.offering).deployVM(nbCores, app);
+	public boolean deployVM(int nbCores, int app, String RepartiteurURI) throws Exception {
+		return ((ManagementVMI)this.offering).deployVM(nbCores, app, RepartiteurURI);
 	}
 	
 	@Override

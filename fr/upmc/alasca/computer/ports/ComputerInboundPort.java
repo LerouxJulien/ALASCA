@@ -18,9 +18,9 @@ public class ComputerInboundPort extends AbstractInboundPort implements Manageme
 	}
 
 	@Override
-	public boolean deployVM(int nbCores, int app) throws Exception {
+	public boolean deployVM(int nbCores, int app, String RepartiteurURI) throws Exception {
 		final Computer comp = (Computer) this.owner ;
-		return comp.deployVM(nbCores, app);
+		return comp.deployVM(nbCores, app, RepartiteurURI);
 		/*sp.handleRequestAsync(
 				new ComponentService<Void>() {
 					@Override

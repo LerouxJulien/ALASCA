@@ -1,5 +1,6 @@
 package fr.upmc.alasca.controleurBouchon.ports;
 
+import fr.upmc.alasca.controleurBouchon.components.Controleur;
 import fr.upmc.alasca.requestgen.interfaces.RequestArrivalI;
 import fr.upmc.alasca.requestgen.objects.Request;
 import fr.upmc.components.ComponentI;
@@ -26,6 +27,7 @@ implements	RequestArrivalI{
 	@Override
 	public void acceptRequest(Request r) throws Exception {
 		// TODO Auto-generated method stub
-		System.out.println("requete acceptee");
+		Controleur c = (Controleur) this.owner;
+		c.acceptRequest(r);
 	}
 }
