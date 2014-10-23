@@ -16,7 +16,7 @@ import fr.upmc.components.ComponentI.ComponentTask;
 
 /**
  * La classe <code>VirtualMachine</code> definit la machine virtuelle qui
- * recupere les requetes transmises par la machine hôte et qui les traitent.
+ * recupere les requetes transmises par la machine hï¿½te et qui les traitent.
  *
  * <p>
  * <strong>Description</strong>
@@ -48,11 +48,21 @@ public class VirtualMachine extends AbstractComponent{
 	// Nombre de coeurs attribues a la VM par la machine (de 1 a 16)
 	private final int nbCores;
 
+	// Frequence des coeurs de la VM
+	private final List<Double> frequencies;
+	
+	// Statut de la VM
+	// NEW  : VM venant d'etre deployee (Aucune requete traitee)
+	// FREE : Libre (Au moins un fil d'execution libre)
+	// BUSY : Occupe (Tous les fils occupes)
+	private enum Status { NEW, FREE, BUSY}
+	private Status status;
+
 	// Taille maximale de la file d'attente
 	private final int queueMax;
 
-	// Frequence des coeurs de la VM
-	private final List<Double> frequencies;
+	// Nombre de requete traites par la VM
+	private int nbRequest;
 
 	// File d'attente de requetes
 	protected BlockingQueue<Request> queue;
@@ -70,7 +80,7 @@ public class VirtualMachine extends AbstractComponent{
 	 * 
 	 * On suppose que l'allocation de la machine se fait forcement avec la
 	 * requete et son application associee. Le nombre de coeur est donnee par la
-	 * machine hôte.
+	 * machine hï¿½te.
 	 * 
 	 * @param mvID
 	 * @param appID
@@ -80,12 +90,14 @@ public class VirtualMachine extends AbstractComponent{
 	public VirtualMachine(int mvID, int appID, int nbCores, int queueMax,
 			List<Double> frequencies) {
 		super();
-		this.mvID = mvID;
-		this.appID = appID;
-		this.nbCores = nbCores;
-		this.queueMax = queueMax;
+		this.mvID      = mvID;
+		this.appID     = appID;
+		this.nbCores   = nbCores;
+		this.queueMax  = queueMax;
 		this.frequencies = new ArrayList<Double>(frequencies);
-		queue = new LinkedBlockingQueue<Request>();
+		this.status    = Status.NEW;
+		this.nbRequest = 0;
+		queue   = new LinkedBlockingQueue<Request>();
 		threads = new ArrayList<VMThread>();
 		// Initialise les VMThread de la VM
 		for (int i = 0; i < nbCores; i++) {
@@ -106,21 +118,30 @@ public class VirtualMachine extends AbstractComponent{
 	}
 
 	/**
-	 * Retourne l'ID de la VM
-	 * 
-	 * @return mvID
-	 */
-	public int getMvID() {
-		return mvID;
-	}
-
-	/**
 	 * Retourne l'ID de l'application
 	 * 
 	 * @return appID
 	 */
 	public int getAppID() {
 		return appID;
+	}
+
+	/**
+	 * Retourne la frequence de chaque coeur attribue de la VM
+	 * 
+	 * @return frequencies
+	 */
+	public List<Double> getFrequencies() {
+		return frequencies;
+	}
+
+	/**
+	 * Retourne l'ID de la VM
+	 * 
+	 * @return mvID
+	 */
+	public int getMvID() {
+		return mvID;
 	}
 
 	/**
@@ -133,21 +154,12 @@ public class VirtualMachine extends AbstractComponent{
 	}
 
 	/**
-	 * Retourne la taille maximale de la file d'attente
+	 * Retourne le nombre de requetes traites par la VM
 	 * 
-	 * @return queueMax
+	 * @return nbRequest
 	 */
-	public int getQueueMax() {
-		return queueMax;
-	}
-
-	/**
-	 * Retourne la frequence totale de la VM
-	 * 
-	 * @return frequencies
-	 */
-	public List<Double> getFrequencies() {
-		return frequencies;
+	public int getNbRequest() {
+		return nbRequest;
 	}
 
 	/**
@@ -160,6 +172,15 @@ public class VirtualMachine extends AbstractComponent{
 	}
 
 	/**
+	 * Retourne la taille maximale de la file d'attente
+	 * 
+	 * @return queueMax
+	 */
+	public int getQueueMax() {
+		return queueMax;
+	}
+
+	/**
 	 * Retourne le nombre de requetes dans la file d'attente
 	 * 
 	 * @return size
@@ -167,16 +188,27 @@ public class VirtualMachine extends AbstractComponent{
 	public int getQueueSize() {
 		return queue.size();
 	}
+	
+	/**
+	 * Retourne le statut de la VM
+	 * NEW  : VM venant d'etre deployee (Aucune requete traitee)
+	 * FREE : Libre (Au moins un fil d'execution libre)
+	 * BUSY : Occupe (Tous les fils occupes)
+	 * 
+	 * @return status
+	 */
+	public Status getStatus() {
+		return status;
+	}
 
 	/**
-	 * Retourne l'etat de la VM True : Libre (Pas de requetes en cours) False :
-	 * Occupe (Traitement de requetes en cours)
+	 * Teste si une des files d'execution est libre
 	 * 
 	 * @return isIdle
 	 */
 	public boolean isIdle() {
-		boolean isIdle = true;
-		for (int i = 0; isIdle && i < nbCores; i++)
+		boolean isIdle = false;
+		for (int i = 0; i < nbCores; i++)
 			isIdle |= threads.get(i).isWaiting();
 		return isIdle;
 	}
@@ -188,22 +220,40 @@ public class VirtualMachine extends AbstractComponent{
 	 */
 	public double process() {
 		double time = 0;
-		if (!isIdle())
-			System.out.println("VM " + mvID + " is idle !");
-		else if (getQueueSize() == 0)
+		if (!isIdle()) {
+			status = Status.BUSY;
+			System.out.println("VM " + mvID + " is not idle !");
+		}
+		else if (getQueueSize() == 0) {
+			status = Status.FREE;
 			System.out.println("No request in queue in VM " + mvID + " !");
+		}
 		else {
 			// Parcours la liste de fils d'execution et recupere le thread libre
 			// pour traiter la requete.
 			for (int i = 0; i < nbCores; i++) {
+				status = Status.FREE;
+				if (i == nbCores - 1)
+					status = Status.BUSY;
 				if (threads.get(i).isWaiting) {
-					threads.get(i).process();
 					// Traite qu'une seule requete lorsqu'un fil est libre
+					time = threads.get(i).process();
+					status = Status.FREE;
 					break;
 				}
 			}
+			nbRequest++;
 		}
 		return time;
+	}
+
+	/**
+	 * Retire la premiere requete de la file d'attente
+	 * 
+	 * @return request
+	 */
+	public Request removeRequest() {
+		return queue.remove();
 	}
 
 	/**
@@ -233,7 +283,9 @@ public class VirtualMachine extends AbstractComponent{
 		if (!this.isIdle()) {
 			System.out.println("Queueing request " + r);
 		} else {
-			for (compteurCyclique = (compteurCyclique + 1) % (getNbCores() - 1); compteurCyclique < nbCores; compteurCyclique = (compteurCyclique + 1)
+			for (compteurCyclique = (compteurCyclique + 1) % (getNbCores() - 1);
+					compteurCyclique < nbCores;
+					compteurCyclique = (compteurCyclique + 1)
 					% (getNbCores() - 1)) {
 				if (threads.get(compteurCyclique).isWaiting) {
 					threads.get(compteurCyclique).process();
@@ -253,14 +305,6 @@ public class VirtualMachine extends AbstractComponent{
 	}
 
 	/**
-	 * Retire la premiere requete de la file d'attente
-	 * 
-	 * @return request
-	 */
-	public Request removeRequest() {
-		return queue.remove();
-	}
-	/**
 	 * Retourne la description de la VM en l'etat
 	 * 
 	 * @return string
@@ -269,7 +313,7 @@ public class VirtualMachine extends AbstractComponent{
 	public String toString() {
 		return "VirtualMachine [mvID=" + mvID + ", appID=" + appID
 				+ ", nbCores=" + nbCores + ", frequence=" + frequencies
-				+ ", isIdle=" + isIdle() + ", queue=" + queue + "]";
+				+ ", status=" + status + ", queue=" + queue + "]";
 	}
 
 	/**
@@ -366,7 +410,7 @@ public class VirtualMachine extends AbstractComponent{
 		 * 
 		 * @return time
 		 */
-		public void process() {
+		public long process() {
 			this.servicing = owner.queue.remove();
 			System.out.println("Begin servicing request " + this.servicing
 					+ " at "
@@ -386,6 +430,7 @@ public class VirtualMachine extends AbstractComponent{
 							}
 						}
 					}, processingTime, TimeUnit.MILLISECONDS);
+			return processingTime;
 		}
 
 		public void endServicingEvent() throws Exception {
