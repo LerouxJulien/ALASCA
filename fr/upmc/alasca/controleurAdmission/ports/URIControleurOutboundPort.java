@@ -1,10 +1,13 @@
 package fr.upmc.alasca.controleurAdmission.ports;
 
-import fr.upmc.alasca.controleurAdmission.interfaces.URIEntreeControleurI;
+import java.util.List;
+
+import fr.upmc.alasca.controleurAdmission.interfaces.ControleurConsumerComputerI;
+import fr.upmc.alasca.requestgen.objects.Request;
 import fr.upmc.components.ComponentI;
 import fr.upmc.components.ports.AbstractOutboundPort;
 
-public class URIControleurOutboundPort extends AbstractOutboundPort implements URIEntreeControleurI {
+public class URIControleurOutboundPort extends AbstractOutboundPort implements ControleurConsumerComputerI {
 	/**
 	 * create the port with the given URI and the given owner.
 	 * 
@@ -18,30 +21,43 @@ public class URIControleurOutboundPort extends AbstractOutboundPort implements U
 	 * @param uri	URI of the port.
 	 * @param owner	owner of the port.
 	 */
-	public				URIControleurOutboundPort(
-		String uri,
-		ComponentI owner
-		) throws Exception
-	{
-		super(uri, URIEntreeControleurI.class, owner) ;
+	public URIControleurOutboundPort(String uri, ComponentI owner) throws Exception{
+		super(uri, ControleurConsumerComputerI.class, owner) ;
 	}
 
-	/**
-	 * get an URI by calling the server component through the connector that
-	 * implements the required interface.
-	 * 
-	 * <p><strong>Contract</strong></p>
-	 * 
-	 * <pre>
-	 * pre	true				// no more preconditions.
-	 * post	true				// no more postconditions.
-	 * </pre>
-	 * 
-	 * @see fr.upmc.components.examples.basic_cs.interfaces.URIConsumerI#getURI()
-	 */
 	@Override
-	public String		getURI() throws Exception
-	{
-		return ((URIEntreeControleurI)this.connector).getURI() ;
+	public boolean deployVM(int nbCores, int app, String RepartiteurURI) throws Exception {
+		return ((ControleurConsumerComputerI) this.connector).deployVM(nbCores, app, RepartiteurURI);
 	}
+
+	@Override
+	public boolean destroyVM(String mv) throws Exception {
+		return ((ControleurConsumerComputerI) this.connector).destroyVM(mv);
+	}
+
+	@Override
+	public List<String> getListVM() throws Exception {
+		return ((ControleurConsumerComputerI) this.connector).getListVM();
+	}
+
+	@Override
+	public boolean getRequest(String mv, Request req) throws Exception {
+		return ((ControleurConsumerComputerI) this.connector).getRequest(mv, req);
+	}
+
+	@Override
+	public boolean reInit(String vm) throws Exception {
+		return ((ControleurConsumerComputerI) this.connector).reInit(vm);
+	}
+
+	@Override
+	public int nbVMDispo() {
+		return ((ControleurConsumerComputerI) this.connector).nbVMDispo();
+	}
+
+	@Override
+	public String getURINewVM() {
+		return ((ControleurConsumerComputerI) this.connector).getURINewVM();
+	}
+
 }

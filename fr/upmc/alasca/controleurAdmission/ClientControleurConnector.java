@@ -1,6 +1,6 @@
 package fr.upmc.alasca.controleurAdmission;
 
-import fr.upmc.alasca.controleurAdmission.interfaces.ControleurConsumerClientI;
+import fr.upmc.alasca.controleurAdmission.interfaces.ControleurProviderClientI;
 import fr.upmc.alasca.requestgen.interfaces.RequestArrivalI;
 import fr.upmc.alasca.requestgen.objects.Request;
 import fr.upmc.components.connectors.AbstractConnector;
@@ -22,10 +22,10 @@ import fr.upmc.components.connectors.AbstractConnector;
  * @version	$Name$ -- $Revision$ -- $Date$
  */
 
-public class ControleurClientConnector extends AbstractConnector implements ControleurConsumerClientI{
+public class ClientControleurConnector extends AbstractConnector implements RequestArrivalI{
 
-	public Request getRequest() throws Exception {
-		return ((RequestArrivalI) this.offering).sendRequest();
+	public void acceptRequest(Request r) throws Exception {
+		((ControleurProviderClientI) this.offering).acceptRequest(r);
 	}
 	
 }

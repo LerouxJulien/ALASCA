@@ -2,12 +2,9 @@ package fr.upmc.alasca.controleurAdmission.components;
 
 import java.util.ArrayList;
 
-import fr.upmc.alasca.computer.objects.Computer;
-import fr.upmc.alasca.controleurAdmission.interfaces.ControleurConsumerClientI;
+import fr.upmc.alasca.controleurAdmission.exceptions.NotEnoughRessourceException;
 import fr.upmc.alasca.controleurAdmission.interfaces.ControleurConsumerComputerI;
-import fr.upmc.alasca.controleurAdmission.interfaces.URISortieControleurI;
-import fr.upmc.alasca.controleurAdmission.ports.URIControleurInboundPort;
-import fr.upmc.alasca.controleurAdmission.ports.URIControleurOutboundPort;
+import fr.upmc.alasca.controleurAdmission.interfaces.ControleurProviderClientI;
 import fr.upmc.alasca.dispatcher.Dispatcher;
 import fr.upmc.alasca.requestgen.objects.Request;
 import fr.upmc.components.AbstractComponent;
@@ -34,47 +31,83 @@ import fr.upmc.components.ports.PortI;
  */
 
 public class Controleur extends AbstractComponent implements DynamicallyConnectableI{
-	Dispatcher dispatcher;
-	ArrayList<String> listePortComputer = new ArrayList<String>();
-	String uriPrefix;
+	protected Dispatcher dispatcher;
+	protected ArrayList<String> listeURIComputer = new ArrayList<String>();
+	protected ArrayList<String> listeURIVM = new ArrayList<String>();
+	protected String uriPrefix;
 	protected DynamicallyConnectableComponentInboundPort dccInboundPortClient;
-	protected DynamicallyConnectableComponentInboundPort dccInboundPortComputer;
+	protected ArrayList<DynamicallyConnectableComponentInboundPort> listeDccInboundPortComputer = new ArrayList<DynamicallyConnectableComponentInboundPort>();
 	
-	public Controleur(String uriPrefix) throws Exception{
+	public Controleur(String uriPrefix, ArrayList<String> listeURIComputer) throws Exception{
 		super(true, false);
 		this.uriPrefix = uriPrefix;
-		this.addOfferedInterface(DynamicallyConnectableComponentI.class);
-		this.addRequiredInterface(ControleurConsumerClientI.class);
-		this.addRequiredInterface(ControleurConsumerComputerI.class);
-		this.dccInboundPortClient = new DynamicallyConnectableComponentInboundPort(uriPrefix + "client-dcc", this);
-		this.dccInboundPortComputer = new DynamicallyConnectableComponentInboundPort(uriPrefix + "computer-dcc", this);
-		this.addPort(this.dccInboundPortClient);
-		this.addPort(this.dccInboundPortComputer);
-		this.dccInboundPortClient.publishPort();
-		this.dccInboundPortComputer.publishPort();
-	}
-	
-	public void transfertRequeteDispatcher(Request r){
-		dispatcher.sendApplication(r, new ArrayList<String>());
-	}
-	
-	public ArrayList<String> demandeRessource(int nbRessource){
-		int nbTrouvee = 0;
-		ArrayList<String> listePortVM = new ArrayList<String>();
+		this.listeURIComputer = listeURIComputer;
+		this.dispatcher = new Dispatcher(this);
 		
-		for(int i = 0; i < this.listePortComputer.size(); i++){
-			Computer c = new Computer(i, i, null, i);
-			/* connexion au composant ordinateur, ca reste flou sur le fonctionnement */
-			this.getRequiredInterfaces();
+		this.addOfferedInterface(DynamicallyConnectableComponentI.class);
+		this.addOfferedInterface(ControleurProviderClientI.class);
+		this.addRequiredInterface(ControleurConsumerComputerI.class);
+		
+		this.dccInboundPortClient = new DynamicallyConnectableComponentInboundPort(uriPrefix + "client-dcc", this);
+		for(int i = 0; i < listeURIComputer.size(); i++){
+			listeDccInboundPortComputer.add(new DynamicallyConnectableComponentInboundPort(uriPrefix + "computer" + i + "-dcc", this));
+		}
+		
+		this.addPort(this.dccInboundPortClient);
+		for(int i = 0; i < listeDccInboundPortComputer.size(); i++){
+			this.addPort(listeDccInboundPortComputer.get(i));
+		}
+		
+		this.dccInboundPortClient.publishPort();
+		for(int i = 0; i < listeDccInboundPortComputer.size(); i++){
+			listeDccInboundPortComputer.get(i).publishPort();;
 		}
 	}
 	
-	public void allouerComputer(){
-		
+	public void transfertRequeteDispatcher(Request r){
+		this.listeURIVM.clear();
+		for(int i = 0; i < this.listeDccInboundPortComputer.size(); i++){
+			try {
+				this.listeURIVM.addAll(((ControleurConsumerComputerI) listeDccInboundPortComputer.get(i)).getListVM());
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+		dispatcher.sendApplication(r, listeURIVM);
 	}
 	
-	public String provideURIService() {
-		return uriPrefix;
+	public void transfertNouvelleApplication(int id) {
+		dispatcher.createApplication(id);
+	}
+	
+	public void demandeRessource(int nbRessource, Request r) throws NotEnoughRessourceException{
+		int nbTrouvee = 0;
+		
+		for(int i = 0; i < this.listeDccInboundPortComputer.size(); i++){
+			nbTrouvee += ((ControleurConsumerComputerI) this.listeDccInboundPortComputer.get(i)).nbVMDispo();
+			if(nbTrouvee >= nbRessource){
+				break;
+			}
+		}
+		if(nbTrouvee < nbRessource){
+			throw new NotEnoughRessourceException("Plus assez de VM disponible pour traiter la requête !");
+		}
+		nbTrouvee = 0;
+		for(int i = 0; i < this.listeDccInboundPortComputer.size(); i++){
+			int nbVMAPrendre;
+			if(((ControleurConsumerComputerI) this.listeDccInboundPortComputer.get(i)).nbVMDispo() > nbRessource - nbTrouvee){
+				nbVMAPrendre = nbRessource - nbTrouvee;
+			} else {
+					nbVMAPrendre = ((ControleurConsumerComputerI) this.listeDccInboundPortComputer.get(i)).nbVMDispo();
+				}
+				for(int j = 0; j < nbVMAPrendre; j++){
+					nbTrouvee++;
+				}
+			if(nbTrouvee == nbRessource){
+				break;
+			}
+		}
+		transfertRequeteDispatcher(r);
 	}
 
 	@Override

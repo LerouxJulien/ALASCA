@@ -1,13 +1,13 @@
 package fr.upmc.alasca.controleurAdmission.ports;
 
 import fr.upmc.alasca.controleurAdmission.components.Controleur;
-import fr.upmc.alasca.controleurAdmission.interfaces.URISortieControleurI;
+import fr.upmc.alasca.controleurAdmission.interfaces.ControleurProviderClientI;
+import fr.upmc.alasca.requestgen.objects.Request;
 import fr.upmc.components.ComponentI;
-import fr.upmc.components.ComponentI.ComponentService;
 import fr.upmc.components.examples.basic_cs.components.URIProvider;
 import fr.upmc.components.ports.AbstractInboundPort;
 
-public class URIControleurInboundPort extends AbstractInboundPort implements URISortieControleurI {
+public class URIControleurInboundPort extends AbstractInboundPort implements ControleurProviderClientI {
 	/** required by UnicastRemonteObject.									*/
 	private static final long serialVersionUID = 1L;
 
@@ -30,44 +30,22 @@ public class URIControleurInboundPort extends AbstractInboundPort implements URI
 	 * @param owner	component owning the port.
 	 * @throws Exception
 	 */
-	public				URIControleurInboundPort(
-		String uri,
-		ComponentI owner
-		) throws Exception
+	public URIControleurInboundPort(String uri, ComponentI owner) throws Exception
 	{
 		// the implemented interface is statically known
-		super(uri, URISortieControleurI.class, owner) ;
+		super(uri, ControleurProviderClientI.class, owner);
 
-		assert	uri != null && owner instanceof URIProvider ;
+		assert	uri != null && owner instanceof URIProvider;
 	}
 
-	/**
-	 * calls the service method of the owner object by executing a task
-	 * using one of the component's threads.
-	 * 
-	 * <p><strong>Contract</strong></p>
-	 * 
-	 * <pre>
-	 * pre	true				// no more preconditions.
-	 * post	true				// no more postconditions.
-	 * </pre>
-	 * 
-	 * @see fr.upmc.components.examples.basic_cs.interfaces.URIProviderI#provideURI()
-	 */
 	@Override
-	public String		provideURI() throws Exception
-	{
-		// a final variable is useful to reference the owner in the method
-		// call.
-		final Controleur c = (Controleur) this.owner ;
-		// the handleRequestSync wait for the result before retunring to the
-		// caller; hence it is a synchronous remote method invocation.
-		return c.handleRequestSync(
-				new ComponentService<String>() {
-					@Override
-					public String call() throws Exception {
-						return c.provideURIService() ;
-					}
-				}) ;
+	public void acceptRequest(Request r) throws Exception {
+		((Controleur) this.owner).transfertRequeteDispatcher(r);
 	}
+
+	@Override
+	public void acceptApplication(int id) throws Exception {
+		((Controleur) this.owner).transfertNouvelleApplication(id);
+	}
+
 }
