@@ -10,8 +10,19 @@ import fr.upmc.alasca.controleurAdmission.components.Controleur;
 import fr.upmc.alasca.requestgen.objects.Request;
 import fr.upmc.components.ports.PortI;
 
-/* Classe représentant le composant interne du dispatcher
+/** 
+ * Classe <code>Dispatcher</code> représentant le composant interne du dispatcher
  * délèguant une application au répartiteur correspondant 
+ *
+ * <p><strong>Description</strong></p>
+ * 
+ * <p><strong>Invariant</strong></p>
+ * 
+ * <pre>
+ * invariant	true
+ * </pre>
+ *
+ *@author Julien Leroux
  *
  */
 
@@ -29,15 +40,40 @@ public class Dispatcher {
 	
 	private Map<Integer ,Repartitor > repartitorList;
 	
-	
-	public Dispatcher(Controleur c){
+	/**
+	 * 
+	 * Cr�ation du dispatcher
+	 * 
+	 * @param controleur
+	 */
+	public Dispatcher(Controleur controleur){
 		
-		control = c;
+		control = controleur;
 		this.repartitorList = new HashMap<Integer,Repartitor>();
 		
 	}
 	
-	public void sendApplication(Request req,ArrayList<String> listVM){
+	/**
+	 * Envoi d'une application au dispatcher
+	 * 
+	 * @param id
+	 */
+	public void deployApp(int id){
+		
+		repartitorList.put(id, new Repartitor(control));
+		
+		
+	}
+	
+	
+	/**
+	 * 
+	 * Envoi d'une requette au dispatcher
+	 * 
+	 * @param req
+	 * @param listVM
+	 */
+	public void processRequest(Request req,ArrayList<String> listVM){
 		
 		VMList = listVM;
 		ArrayList<String> sendingList = new ArrayList<String>();
@@ -60,18 +96,19 @@ public class Dispatcher {
 		
 		if(repartitorList.containsKey(req.getAppId())){
 			repart= repartitorList.get(req.getAppId());
+			int VMtoLaunch =repart.dispatch(req,sendingList);
+			if(VMtoLaunch!=0){
+				
+				ArrayList<String> newListVM = control.requestDeploy(VMtoLaunch);
+				this.processRequest(req, newListVM);
+			}
+		
 		}else{
 			
-			repartitorList.put(req.getAppId(), new Repartitor(control));
-			repart= repartitorList.get(req.getAppId());
+			System.out.println("Rejet de la requette, application correspondante non trouv�e.");
 		}
 		 
-		int VMtoLaunch =repart.dispatch(req,sendingList);
-		if(VMtoLaunch!=0){
-			
-			ArrayList<String> newListVM = control.requestDeploy(VMtoLaunch);
-			this.sendApplication(req, newListVM);
-		}
+		
 	}
 
 }
