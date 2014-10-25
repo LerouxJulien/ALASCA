@@ -58,7 +58,7 @@ public class Dispatcher {
 	 * 
 	 * @param id
 	 */
-	public void deployApp(int id){
+	public void createApplication(int id){
 		
 		repartitorList.put(id, new Repartitor(control));
 		
@@ -99,8 +99,8 @@ public class Dispatcher {
 			int VMtoLaunch =repart.dispatch(req,sendingList);
 			if(VMtoLaunch!=0){
 				
-				ArrayList<String> newListVM = control.requestDeploy(VMtoLaunch);
-				this.processRequest(req, newListVM);
+				control.demandeRessource(VMtoLaunch,req);
+				
 			}
 		
 		}else{
