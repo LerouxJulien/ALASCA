@@ -35,4 +35,11 @@ extends		OfferedI, RequiredI
 	 * @throws Exception	
 	 */
 	public void			acceptRequest(Request r) throws Exception ;
+	
+	/**
+	 * accept a new application for servicing.
+	 * @param id	application to be serviced.
+	 * @throws Exception	
+	 */
+	public void			acceptApplication(int id) throws Exception ;
 }

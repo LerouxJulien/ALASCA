@@ -6,7 +6,8 @@ import fr.upmc.alasca.requestgen.objects.Request;
 import fr.upmc.components.interfaces.RequiredI;
 
 /**
- * L'interface <code>ControleurConsumerComputerI</code>
+ * L'interface <code>ControleurConsumerComputerI</code> définit les fonctions du composant <code>Computer</code>
+ *  requises par le <code>Controleur</code>
  *
  * <p><strong>Description</strong></p>
  * 
@@ -65,7 +66,7 @@ public interface ControleurConsumerComputerI extends RequiredI {
 	public boolean reInit(String vm) throws Exception;
 	
 	/**
-	 * Renvoi le nombre de nouvelle VM pouvant �tre cr��e sur le Computer
+	 * Renvoi le nombre de nouvelle VM pouvant être créée sur le Computer
 	 * 
 	 * @return int
 	 */

@@ -9,17 +9,22 @@ import fr.upmc.components.ports.AbstractOutboundPort;
 
 public class URIControleurOutboundPort extends AbstractOutboundPort implements ControleurConsumerComputerI {
 	/**
-	 * create the port with the given URI and the given owner.
+	 * La classe <code>URIControleurInboundPort</code> créer un port avec un URI et
+	 * un composant <code>Controleur</code> et fournit les fonctions définit dans 
+	 * l'interface requise <code>ControleurConsumerComputerI</code>
+	 *
+	 * <p><strong>Description</strong></p>
 	 * 
-	 * <p><strong>Contract</strong></p>
+	 * <p><strong>Invariant</strong></p>
 	 * 
 	 * <pre>
-	 * pre	true			// no precondition.
-	 * post	true			// no postcondition.
+	 * invariant	true
 	 * </pre>
-	 *
-	 * @param uri	URI of the port.
-	 * @param owner	owner of the port.
+	 * 
+	 * <p>Created on : 10 oct. 2014</p>
+	 * 
+	 * @author	<a href="mailto:william.chasson@etu.upmc.fr">William CHASSON</a>
+	 * @version	$Name$ -- $Revision$ -- $Date$
 	 */
 	public URIControleurOutboundPort(String uri, ComponentI owner) throws Exception{
 		super(uri, ControleurConsumerComputerI.class, owner) ;

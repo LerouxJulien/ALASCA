@@ -56,10 +56,11 @@ public class Dispatcher {
 	 * Envoi d'une application au dispatcher
 	 * 
 	 * @param id
+	 * @throws Exception 
 	 */
-	public void createApplication(int id){
+	public void createApplication(int id) throws Exception{
 		
-		repartitorList.put(id, new Repartitor(control));
+		repartitorList.put(id, new Repartitor("repartitor"+id, control));
 		
 		
 	}
@@ -73,33 +74,21 @@ public class Dispatcher {
 	 * @param listVM
 	 * @throws Exception 
 	 */
-	public void processRequest(Request req,ArrayList<String> listVM) throws Exception{
+	public void processRequest(Request req) throws Exception{
 		
-		VMList = listVM;
-		ArrayList<String> sendingList = new ArrayList<String>();
 		
-		for(int i =0; i<VMList.size();i++){
-			PortI port = control.findPortFromURI(this.VMList.get(i));
-			VirtualMachine VM = (VirtualMachine) port.getOwner();
-			
-			
-			if (VM.getAppID()==req.getAppId() || VM.getAppID()==0){
-				
-				sendingList.add(this.VMList.get(i));
-				
-			}
-			
-		}
 		
 		
 		Repartitor repart;
 		
 		if(repartitorList.containsKey(req.getAppId())){
 			repart= repartitorList.get(req.getAppId());
-			int VMtoLaunch =repart.dispatch(req,sendingList);
+			int VMtoLaunch =repart.dispatch(req);
 			if(VMtoLaunch!=0){
 				
-				control.demandeVM(VMtoLaunch,req.getAppId(),req);
+				String randomString = req.getAppId() + java.util.UUID.randomUUID().toString();
+				repart.addNewPort(randomString);
+				control.demandeVM(VMtoLaunch,req.getAppId(),req,randomString);
 				
 			}
 		

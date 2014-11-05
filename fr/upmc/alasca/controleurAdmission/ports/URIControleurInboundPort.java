@@ -12,26 +12,24 @@ public class URIControleurInboundPort extends AbstractInboundPort implements Con
 	private static final long serialVersionUID = 1L;
 
 	/**
-	 * create the port under some given URI and for a given owner.
+	 * La classe <code>URIControleurInboundPort</code> créer un port avec un URI et
+	 * un composant <code>Controleur</code> et fournit les fonctions définit dans 
+	 * l'interface offerte <code>ControleurProviderClientI</code>
+	 *
+	 * <p><strong>Description</strong></p>
 	 * 
-	 * The constructor for <code>AbstractInboundPort</code> requires the
-	 * interface that the port is implementing as an instance of
-	 * <code>java.lang.CLass</code>, but this is statically known so
-	 * the constructor does not need to receive the information as parameter.
-	 * 
-	 * <p><strong>Contract</strong></p>
+	 * <p><strong>Invariant</strong></p>
 	 * 
 	 * <pre>
-	 * pre	uri != null && owner instanceof URIProvider
-	 * post	true			// no postcondition.
+	 * invariant	true
 	 * </pre>
-	 *
-	 * @param uri	uri under which the port will be published.
-	 * @param owner	component owning the port.
-	 * @throws Exception
+	 * 
+	 * <p>Created on : 10 oct. 2014</p>
+	 * 
+	 * @author	<a href="mailto:william.chasson@etu.upmc.fr">William CHASSON</a>
+	 * @version	$Name$ -- $Revision$ -- $Date$
 	 */
-	public URIControleurInboundPort(String uri, ComponentI owner) throws Exception
-	{
+	public URIControleurInboundPort(String uri, ComponentI owner) throws Exception {
 		// the implemented interface is statically known
 		super(uri, ControleurProviderClientI.class, owner);
 
