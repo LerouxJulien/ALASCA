@@ -2,7 +2,7 @@ package fr.upmc.alasca.controleurAdmission.components;
 
 import java.util.ArrayList;
 
-import fr.upmc.alasca.controleurAdmission.exceptions.NotEnoughRessourceException;
+import fr.upmc.alasca.controleurAdmission.exceptions.NotEnoughCoreException;
 import fr.upmc.alasca.controleurAdmission.interfaces.ControleurConsumerComputerI;
 import fr.upmc.alasca.controleurAdmission.interfaces.ControleurProviderClientI;
 import fr.upmc.alasca.dispatcher.Dispatcher;
@@ -14,7 +14,10 @@ import fr.upmc.components.cvm.pre.dcc.DynamicallyConnectableI;
 import fr.upmc.components.ports.PortI;
 
 /**
- * La classe <code>Controleur</code>
+ * La classe <code>Controleur</code> reçoit les demandes de creation d'application et de requêtes des
+ * <code>Client</code> et les transmet au <code>Dispatcher</code> qui les traitera.
+ * Il se connecte a chaque <code>Computer</code> afin de maintenir sa liste de <code>VirtualMachine</code>
+ * a jour.
  *
  * <p><strong>Description</strong></p>
  * 
@@ -31,13 +34,31 @@ import fr.upmc.components.ports.PortI;
  */
 
 public class Controleur extends AbstractComponent implements DynamicallyConnectableI{
+	//Le Dispatcher qui traitera les applications et requêtes
 	protected Dispatcher dispatcher;
+	
+	//La liste des URI des Computer
 	protected ArrayList<String> listeURIComputer = new ArrayList<String>();
+	
+	//La liste des URI des VM libres
 	protected ArrayList<String> listeURIVM = new ArrayList<String>();
+	
+	//URI du composant Controleur
 	protected String uriPrefix;
+	
+	//Port de liaison avec le Client (unique pour l'instant)
 	protected DynamicallyConnectableComponentInboundPort dccInboundPortClient;
+	
+	//Ports de liaison avec les différents Computer
 	protected ArrayList<DynamicallyConnectableComponentInboundPort> listeDccInboundPortComputer = new ArrayList<DynamicallyConnectableComponentInboundPort>();
 	
+	
+	/**
+	 * Création du controleur d'admission
+	 * @param uriPrefix l'URI du controleur
+	 * @param listeURIComputer la liste des URI des différents Computer
+	 * @throws Exception
+	 */
 	public Controleur(String uriPrefix, ArrayList<String> listeURIComputer) throws Exception{
 		super(true, false);
 		this.uriPrefix = uriPrefix;
@@ -64,6 +85,11 @@ public class Controleur extends AbstractComponent implements DynamicallyConnecta
 		}
 	}
 	
+	/**
+	 * fonction de récupération et d'envoi d'une requête Client vers le Dispatcher
+	 * @param r la requête a transférer au Dispatcher
+	 * @throws Exception
+	 */
 	public void transfertRequeteDispatcher(Request r) throws Exception{
 		this.listeURIVM.clear();
 		for(int i = 0; i < this.listeDccInboundPortComputer.size(); i++){
@@ -76,11 +102,22 @@ public class Controleur extends AbstractComponent implements DynamicallyConnecta
 		dispatcher.processRequest(r, listeURIVM);
 	}
 	
+	/**
+	 * fonction de récupération et d'envoi d'une application Client vers le Dispatcher
+	 * @param id l'application a transférer au Dispatcher
+	 */
 	public void transfertNouvelleApplication(int id) {
 		dispatcher.createApplication(id);
 	}
 	
-	public void demandeVM(int nbCoeur, int appId, Request r) throws Exception{
+	/**
+	 * fonction parcourant la liste des Computer pour demander le deploiement de nouvelles VM
+	 * @param nbCoeur le nombre de coeur requis pour le traitement de la requête
+	 * @param appId l'application de la requête a traiter
+	 * @param r la requête a traiter
+	 * @throws Exception
+	 */
+	public void demandeVM(int nbCoeur, int appId, Request r) throws Exception {
 		int nbTrouvee = 0;
 		
 		/* TODO demande de coeur au lieu des VM */
@@ -91,7 +128,7 @@ public class Controleur extends AbstractComponent implements DynamicallyConnecta
 			}
 		}
 		if(nbTrouvee < nbCoeur){
-			throw new NotEnoughRessourceException("Plus assez de VM disponible pour traiter la requ�te !");
+			throw new NotEnoughCoreException("Plus assez de coeurs disponible pour traiter la requête !");
 		}
 		nbTrouvee = 0;
 		for(int i = 0; i < this.listeDccInboundPortComputer.size(); i++){
