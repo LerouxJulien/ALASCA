@@ -47,8 +47,6 @@ public class Computer extends AbstractComponent implements ComputerProviderI {
 	// ID de la machine
 	private final int machineID;
 
-	private ArrayList<DynamicComponentCreationOutboundPort> VMS = new ArrayList<DynamicComponentCreationOutboundPort>();
-
 	// Nombre de coeurs de la machine
 	// private final int nbCores;
 
@@ -133,9 +131,18 @@ public class Computer extends AbstractComponent implements ComputerProviderI {
 	public int getNbCores() {
 		return getFrequencies().size();
 	}
+	
+	/**
+	 * Retourne le nombre de coeurs disponibles
+	 * 
+	 * @return nbCoresFree
+	 */
+	public int nbCoreDispo() {
+		return getNbCores() - getNbCoresUsed();
+	}
 
 	/**
-	 * Retourne le nombre de coeurs utilisé par les machines virtuelles
+	 * Retourne le nombre de coeurs utilisï¿½ par les machines virtuelles
 	 * 
 	 * @return nbCoresUsed
 	 */

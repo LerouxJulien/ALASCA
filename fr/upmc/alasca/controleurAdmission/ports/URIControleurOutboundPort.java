@@ -51,8 +51,8 @@ public class URIControleurOutboundPort extends AbstractOutboundPort implements C
 	}
 
 	@Override
-	public int nbVMDispo() {
-		return ((ControleurConsumerComputerI) this.connector).nbVMDispo();
+	public int nbCoreDispo() {
+		return ((ControleurConsumerComputerI) this.connector).nbCoreDispo();
 	}
 
 	@Override

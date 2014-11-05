@@ -65,11 +65,11 @@ public interface ControleurConsumerComputerI extends RequiredI {
 	public boolean reInit(String vm) throws Exception;
 	
 	/**
-	 * Renvoi le nombre de nouvelle VM pouvant être créée sur le Computer
+	 * Renvoi le nombre de nouvelle VM pouvant ï¿½tre crï¿½ï¿½e sur le Computer
 	 * 
 	 * @return int
 	 */
-	public int nbVMDispo();
+	public int nbCoreDispo();
 
 	public String getURINewVM();
 

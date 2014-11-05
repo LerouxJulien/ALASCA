@@ -55,7 +55,8 @@ public class VirtualMachine extends AbstractComponent{
 	// NEW  : VM venant d'etre deployee (Aucune requete traitee)
 	// FREE : Libre (Au moins un fil d'execution libre)
 	// BUSY : Occupe (Tous les fils occupes)
-	private enum Status { NEW, FREE, BUSY}
+	// STOP : En attente d'eutanasie (S'il ne fout toujours rien)
+	private enum Status {NEW, FREE, BUSY, }
 	private Status status;
 
 	// Taille maximale de la file d'attente
@@ -314,7 +315,7 @@ public class VirtualMachine extends AbstractComponent{
 		}
 		}
 		else {
-			System.out.println("Demande rejetée par la VM " + this.mvID +" : queue pleine");
+			System.out.println("Demande rejetï¿½e par la VM " + this.mvID +" : queue pleine");
 		}
 	}
 

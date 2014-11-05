@@ -17,6 +17,11 @@ public class RepartiteurOutboundPort extends		AbstractOutboundPort implements VM
 	public void processRequest(Request r) throws Exception {
 		((VMProviderI)this.connector).processRequest(r);
 	}
+
+	public boolean queueIsFull() {
+		// TODO Auto-generated method stub
+		return false;
+	}
 	
 
 }

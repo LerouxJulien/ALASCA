@@ -49,6 +49,13 @@ public interface ComputerProviderI extends OfferedI {
 	public List<String> getListVM() throws Exception;
 	
 	/**
+	 * Retourne le nombre de coeurs disponibles
+	 * 
+	 * @return nbCoresFree
+	 */
+	public int nbCoreDispo();
+	
+	/**
 	 *  Recupere une requete envoyee par le repartiteur de requetes
 	 *  
 	 * @param mv

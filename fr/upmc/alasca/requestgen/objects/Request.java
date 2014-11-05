@@ -132,4 +132,9 @@ implements 	Serializable
 	public String		toString() {
 		return "" + this.uri ;
 	}
+
+	public int getAppId() {
+		
+		return this.application;
+	}
 }

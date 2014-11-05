@@ -64,7 +64,7 @@ public class Controleur extends AbstractComponent implements DynamicallyConnecta
 		}
 	}
 	
-	public void transfertRequeteDispatcher(Request r){
+	public void transfertRequeteDispatcher(Request r) throws Exception{
 		this.listeURIVM.clear();
 		for(int i = 0; i < this.listeDccInboundPortComputer.size(); i++){
 			try {
@@ -73,37 +73,38 @@ public class Controleur extends AbstractComponent implements DynamicallyConnecta
 				e.printStackTrace();
 			}
 		}
-		dispatcher.sendApplication(r, listeURIVM);
+		dispatcher.processRequest(r, listeURIVM);
 	}
 	
 	public void transfertNouvelleApplication(int id) {
 		dispatcher.createApplication(id);
 	}
 	
-	public void demandeRessource(int nbRessource, Request r) throws NotEnoughRessourceException{
+	public void demandeVM(int nbCoeur, int appId, Request r) throws Exception{
 		int nbTrouvee = 0;
 		
+		/* TODO demande de coeur au lieu des VM */
 		for(int i = 0; i < this.listeDccInboundPortComputer.size(); i++){
-			nbTrouvee += ((ControleurConsumerComputerI) this.listeDccInboundPortComputer.get(i)).nbVMDispo();
-			if(nbTrouvee >= nbRessource){
+			nbTrouvee += ((ControleurConsumerComputerI) this.listeDccInboundPortComputer.get(i)).nbCoreDispo();
+			if(nbTrouvee >= nbCoeur){
 				break;
 			}
 		}
-		if(nbTrouvee < nbRessource){
-			throw new NotEnoughRessourceException("Plus assez de VM disponible pour traiter la requête !");
+		if(nbTrouvee < nbCoeur){
+			throw new NotEnoughRessourceException("Plus assez de VM disponible pour traiter la requï¿½te !");
 		}
 		nbTrouvee = 0;
 		for(int i = 0; i < this.listeDccInboundPortComputer.size(); i++){
 			int nbVMAPrendre;
-			if(((ControleurConsumerComputerI) this.listeDccInboundPortComputer.get(i)).nbVMDispo() > nbRessource - nbTrouvee){
-				nbVMAPrendre = nbRessource - nbTrouvee;
+			if(((ControleurConsumerComputerI) this.listeDccInboundPortComputer.get(i)).nbCoreDispo() > nbCoeur - nbTrouvee){
+				nbVMAPrendre = nbCoeur - nbTrouvee;
 			} else {
-					nbVMAPrendre = ((ControleurConsumerComputerI) this.listeDccInboundPortComputer.get(i)).nbVMDispo();
+					nbVMAPrendre = ((ControleurConsumerComputerI) this.listeDccInboundPortComputer.get(i)).nbCoreDispo();
 				}
 				for(int j = 0; j < nbVMAPrendre; j++){
 					nbTrouvee++;
 				}
-			if(nbTrouvee == nbRessource){
+			if(nbTrouvee == nbCoeur){
 				break;
 			}
 		}

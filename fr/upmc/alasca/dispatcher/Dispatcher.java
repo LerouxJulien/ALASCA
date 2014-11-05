@@ -1,6 +1,5 @@
 package fr.upmc.alasca.dispatcher;
 
-import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -42,7 +41,7 @@ public class Dispatcher {
 	
 	/**
 	 * 
-	 * Création du dispatcher
+	 * Crï¿½ation du dispatcher
 	 * 
 	 * @param controleur
 	 */
@@ -72,8 +71,9 @@ public class Dispatcher {
 	 * 
 	 * @param req
 	 * @param listVM
+	 * @throws Exception 
 	 */
-	public void processRequest(Request req,ArrayList<String> listVM){
+	public void processRequest(Request req,ArrayList<String> listVM) throws Exception{
 		
 		VMList = listVM;
 		ArrayList<String> sendingList = new ArrayList<String>();
@@ -99,13 +99,13 @@ public class Dispatcher {
 			int VMtoLaunch =repart.dispatch(req,sendingList);
 			if(VMtoLaunch!=0){
 				
-				control.demandeRessource(VMtoLaunch,req);
+				control.demandeVM(VMtoLaunch,req.getAppId(),req);
 				
 			}
 		
 		}else{
 			
-			System.out.println("Rejet de la requette, application correspondante non trouvée.");
+			System.out.println("Rejet de la requette, application correspondante non trouvï¿½e.");
 		}
 		 
 		
