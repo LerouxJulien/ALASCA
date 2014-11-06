@@ -28,13 +28,13 @@ public class Repartitor extends AbstractComponent implements	DynamicallyConnecta
 
 	//private static long VMMAXINST = 20000000;
 	Controleur control;
-	protected RepartiteurOutboundPort rbp;
+	protected ArrayList<RepartiteurOutboundPort> Listrbp;
 	protected DynamicallyConnectableComponentInboundPort dccInboundPort ;
 	
-	public Repartitor(String outboundPortURI) throws Exception{
+	public Repartitor(String outboundPortURI,Controleur controleur) throws Exception{
 		this.addRequiredInterface(RequestArrivalI.class) ;
-		
-		
+		control = controleur;
+		Listrbp = new ArrayList<RepartiteurOutboundPort>();
 		
 		
 		// partie Dynanimique
@@ -70,10 +70,20 @@ public class Repartitor extends AbstractComponent implements	DynamicallyConnecta
 	 * Cr�ation du r�partiteur
 	 * 
 	 * @param controleur
+	 * @throws Exception 
 	 */
 	
-	public Repartitor(Controleur controleur){
-		control = controleur;
+	public void addNewPort(String portURI) throws Exception{
+		RepartiteurOutboundPort rbp;
+		
+		
+		rbp = new RepartiteurOutboundPort(portURI + "-RepartiteurOutboundPort", this) ;
+		this.addPort(rbp) ;
+		rbp.localPublishPort() ;
+		
+		Listrbp.add(rbp);
+		
+		
 		
 	}
 	
@@ -90,11 +100,9 @@ public class Repartitor extends AbstractComponent implements	DynamicallyConnecta
 	 * @return int
 	 * @throws Exception
 	 */
-	public int dispatch(Request req, ArrayList<String> sendingList) throws Exception {
-		for(int i =0; i<sendingList.size();i++){
-			this.rbp = new RepartiteurOutboundPort(sendingList.get(i) + "-RepartiteurOutboundPort", this) ;
-			this.addPort(this.rbp) ;
-			this.rbp.localPublishPort() ;
+	public int dispatch(Request req) throws Exception {
+		for(RepartiteurOutboundPort rbp:Listrbp){
+			
 			if(!rbp.queueIsFull()){
 				
 				rbp.processRequest(req);
