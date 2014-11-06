@@ -7,7 +7,6 @@ import fr.upmc.alasca.computer.interfaces.ComputerProviderI;
 import fr.upmc.alasca.computer.interfaces.ManagementVMI;
 import fr.upmc.alasca.computer.main.VMConnector;
 import fr.upmc.alasca.computer.ports.ComputerInboundPort;
-import fr.upmc.alasca.requestgen.objects.Request;
 import fr.upmc.components.AbstractComponent;
 import fr.upmc.components.cvm.AbstractCVM;
 import fr.upmc.components.cvm.pre.dcc.DynamicComponentCreationConnector;
@@ -62,6 +61,7 @@ public class Computer extends AbstractComponent implements ComputerProviderI {
 	// Liste des machines virtuelles allouees
 	private List<String> listVM;
 	
+	// 
 	protected AbstractCVM cvm;
 
 	/**
@@ -137,12 +137,12 @@ public class Computer extends AbstractComponent implements ComputerProviderI {
 	 * 
 	 * @return nbCoresFree
 	 */
-	public int nbCoreDispo() {
+	public int getNbCoreDispo() {
 		return getNbCores() - getNbCoresUsed();
 	}
 
 	/**
-	 * Retourne le nombre de coeurs utilis� par les machines virtuelles
+	 * Retourne le nombre de coeurs utilise par les machines virtuelles
 	 * 
 	 * @return nbCoresUsed
 	 */
@@ -217,17 +217,6 @@ public class Computer extends AbstractComponent implements ComputerProviderI {
 		// nbCoresUsed -= vm.getNbCores();
 		// listVM.remove(vm);
 		// System.out.println("Virtual Machine killed !");
-		return true;
-	}
-
-	@Override
-	public List<String> getListVM() {
-		return listVM;
-	}
-
-	@Override
-	public boolean getRequest(String vm, Request req) {
-		// vm.addRequest(req);
 		return true;
 	}
 

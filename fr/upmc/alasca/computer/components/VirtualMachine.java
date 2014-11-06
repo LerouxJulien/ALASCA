@@ -56,7 +56,7 @@ public class VirtualMachine extends AbstractComponent{
 	// FREE : Libre (Au moins un fil d'execution libre)
 	// BUSY : Occupe (Tous les fils occupes)
 	// STOP : En attente d'eutanasie (S'il ne fout toujours rien)
-	private enum Status {NEW, FREE, BUSY, }
+	private enum Status {NEW, FREE, BUSY, STOP}
 	private Status status;
 
 	// Taille maximale de la file d'attente
@@ -161,6 +161,19 @@ public class VirtualMachine extends AbstractComponent{
 	}
 
 	/**
+	 * Retourne le nombre de coeurs en cours d'utilisation
+	 * 
+	 * @return nbCoresUsed
+	 */
+	public int getNbCoresUsed() {
+		int nbCoresUsed = 0;
+		for (int i = 0; i < nbCores; i++)
+			if (threads.get(i).isWaiting())
+				nbCoresUsed++;
+		return nbCoresUsed;
+	}
+
+	/**
 	 * Retourne le nombre de requetes traites par la VM
 	 * 
 	 * @return nbRequest
@@ -201,27 +214,16 @@ public class VirtualMachine extends AbstractComponent{
 	 * NEW  : VM venant d'etre deployee (Aucune requete traitee)
 	 * FREE : Libre (Au moins un fil d'execution libre)
 	 * BUSY : Occupe (Tous les fils occupes)
+	 * STOP : En attente d'eutanasie (S'il ne fout toujours rien)
 	 * 
 	 * @return status
 	 */
 	public Status getStatus() {
 		return status;
 	}
-
-	/**
-	 * Teste si une des files d'execution est libre
-	 * 
-	 * @return isIdle
-	 */
-	public boolean isIdle() {
-		boolean isIdle = false;
-		for (int i = 0; i < nbCores; i++)
-			isIdle |= threads.get(i).isWaiting();
-		return isIdle;
-	}
 	
 	/**
-	 * Alias de isIdle
+	 * Teste si une des files d'execution est libre
 	 * 
 	 * @return isIdle
 	 */
@@ -230,40 +232,6 @@ public class VirtualMachine extends AbstractComponent{
 		for (int i = 0; i < nbCores; i++)
 			isIdle |= threads.get(i).isWaiting();
 		return isIdle;
-	}
-
-	/**
-	 * Traite la premiere requete de la file et retourne le temps d'execution
-	 * 
-	 * @return time
-	 */
-	public double process() {
-		double time = 0;
-		if (!isIdle()) {
-			status = Status.BUSY;
-			System.out.println("VM " + mvID + " is not idle !");
-		}
-		else if (getQueueSize() == 0) {
-			status = Status.FREE;
-			System.out.println("No request in queue in VM " + mvID + " !");
-		}
-		else {
-			// Parcours la liste de fils d'execution et recupere le thread libre
-			// pour traiter la requete.
-			for (int i = 0; i < nbCores; i++) {
-				status = Status.FREE;
-				if (i == nbCores - 1)
-					status = Status.BUSY;
-				if (threads.get(i).isWaiting) {
-					// Traite qu'une seule requete lorsqu'un fil est libre
-					time = threads.get(i).process();
-					status = Status.FREE;
-					break;
-				}
-			}
-			nbRequest++;
-		}
-		return time;
 	}
 
 	/**
@@ -294,28 +262,40 @@ public class VirtualMachine extends AbstractComponent{
 	public void requestArrivalEvent(Request r) throws Exception {
 		assert r != null;
 		long t = System.currentTimeMillis();
-		if(!this.queueIsFull()){
+		// La file d'attente est pleine.
+		if (this.queueIsFull()) {
+			status = Status.BUSY;
+			System.out.println("Demande rejetée par la VM " + this.mvID
+					+ " : queue pleine");
+		}
+		// Au moins une file d'exécution est libre.
+		else {
 			this.queue.add(r);
 			System.out.println("Accepting request       " + r + " at "
 					+ TimeProcessing.toString(t));
 			r.setArrivalTime(t);
-		
-		if (!this.hasAvailableCore()) {
-			System.out.println("Queueing request " + r);
-		} else {
-			for (compteurCyclique = (compteurCyclique + 1) % getNbCores();
-					compteurCyclique < nbCores;
-					compteurCyclique = (compteurCyclique + 1)
-					% getNbCores()) {
-				if (threads.get(compteurCyclique).isWaiting()) {
-					threads.get(compteurCyclique).process();
-					break;
+			// Aucun thread n'est disponible pour traiter la requête courante.
+			if (!this.hasAvailableCore()) {
+				status = Status.BUSY;
+				System.out.println("Queueing request " + r);
+			}
+			else {
+				status = Status.FREE;
+				// Parcours la liste de fils d'exécution
+				for (compteurCyclique = (compteurCyclique + 1) % getNbCores();
+						compteurCyclique < nbCores;
+						compteurCyclique = (compteurCyclique + 1)
+						% getNbCores()) {
+					// Vérifie la disponibilité des fils d'exécution pour les
+					// requêtes suivantes.
+					if (getNbCoresUsed() == nbCores - 1)
+						status = Status.BUSY;
+					if (threads.get(compteurCyclique).isWaiting()) {
+						threads.get(compteurCyclique).process();
+						break;
+					}
 				}
 			}
-		}
-		}
-		else {
-			System.out.println("Demande rejet�e par la VM " + this.mvID +" : queue pleine");
 		}
 	}
 

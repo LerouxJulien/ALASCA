@@ -5,11 +5,11 @@ import java.util.ArrayList;
 import fr.upmc.alasca.controleurAdmission.exceptions.NotEnoughCoreException;
 import fr.upmc.alasca.controleurAdmission.interfaces.ControleurConsumerComputerI;
 import fr.upmc.alasca.controleurAdmission.interfaces.ControleurProviderClientI;
+import fr.upmc.alasca.controleurAdmission.ports.URIControleurInboundPort;
+import fr.upmc.alasca.controleurAdmission.ports.URIControleurOutboundPort;
 import fr.upmc.alasca.dispatcher.Dispatcher;
 import fr.upmc.alasca.requestgen.objects.Request;
 import fr.upmc.components.AbstractComponent;
-import fr.upmc.components.cvm.pre.dcc.DynamicallyConnectableComponentI;
-import fr.upmc.components.cvm.pre.dcc.DynamicallyConnectableComponentInboundPort;
 import fr.upmc.components.cvm.pre.dcc.DynamicallyConnectableI;
 import fr.upmc.components.ports.PortI;
 
@@ -40,17 +40,14 @@ public class Controleur extends AbstractComponent implements DynamicallyConnecta
 	//La liste des URI des Computer
 	protected ArrayList<String> listeURIComputer = new ArrayList<String>();
 	
-	//La liste des URI des VM libres
-	protected ArrayList<String> listeURIVM = new ArrayList<String>();
-	
 	//URI du composant Controleur
 	protected String uriPrefix;
 	
 	//Port de liaison avec le Client (unique pour l'instant)
-	protected DynamicallyConnectableComponentInboundPort dccInboundPortClient;
+	protected URIControleurInboundPort inboundPortClient;
 	
 	//Ports de liaison avec les différents Computer
-	protected ArrayList<DynamicallyConnectableComponentInboundPort> listeDccInboundPortComputer = new ArrayList<DynamicallyConnectableComponentInboundPort>();
+	protected ArrayList<URIControleurOutboundPort> listeInboundPortComputer = new ArrayList<URIControleurOutboundPort>();
 	
 	
 	/**
@@ -65,23 +62,22 @@ public class Controleur extends AbstractComponent implements DynamicallyConnecta
 		this.listeURIComputer = listeURIComputer;
 		this.dispatcher = new Dispatcher(this);
 		
-		this.addOfferedInterface(DynamicallyConnectableComponentI.class);
 		this.addOfferedInterface(ControleurProviderClientI.class);
 		this.addRequiredInterface(ControleurConsumerComputerI.class);
 		
-		this.dccInboundPortClient = new DynamicallyConnectableComponentInboundPort(uriPrefix + "client-dcc", this);
+		this.inboundPortClient = new URIControleurInboundPort(uriPrefix + "client-dcc", this);
 		for(int i = 0; i < listeURIComputer.size(); i++){
-			listeDccInboundPortComputer.add(new DynamicallyConnectableComponentInboundPort(uriPrefix + "computer" + i + "-dcc", this));
+			listeInboundPortComputer.add(new URIControleurOutboundPort(uriPrefix + "computer" + i + "-dcc", this));
 		}
 		
-		this.addPort(this.dccInboundPortClient);
-		for(int i = 0; i < listeDccInboundPortComputer.size(); i++){
-			this.addPort(listeDccInboundPortComputer.get(i));
+		this.addPort(this.inboundPortClient);
+		for(int i = 0; i < listeInboundPortComputer.size(); i++){
+			this.addPort(listeInboundPortComputer.get(i));
 		}
 		
-		this.dccInboundPortClient.publishPort();
-		for(int i = 0; i < listeDccInboundPortComputer.size(); i++){
-			listeDccInboundPortComputer.get(i).publishPort();;
+		this.inboundPortClient.publishPort();
+		for(int i = 0; i < listeInboundPortComputer.size(); i++){
+			listeInboundPortComputer.get(i).publishPort();
 		}
 	}
 	
@@ -91,22 +87,15 @@ public class Controleur extends AbstractComponent implements DynamicallyConnecta
 	 * @throws Exception
 	 */
 	public void transfertRequeteDispatcher(Request r) throws Exception{
-		this.listeURIVM.clear();
-		for(int i = 0; i < this.listeDccInboundPortComputer.size(); i++){
-			try {
-				this.listeURIVM.addAll(((ControleurConsumerComputerI) listeDccInboundPortComputer.get(i)).getListVM());
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-		}
-		dispatcher.processRequest(r, listeURIVM);
+		dispatcher.processRequest(r);
 	}
 	
 	/**
 	 * fonction de récupération et d'envoi d'une application Client vers le Dispatcher
 	 * @param id l'application a transférer au Dispatcher
+	 * @throws Exception 
 	 */
-	public void transfertNouvelleApplication(int id) {
+	public void transfertNouvelleApplication(int id) throws Exception {
 		dispatcher.createApplication(id);
 	}
 	
@@ -117,12 +106,11 @@ public class Controleur extends AbstractComponent implements DynamicallyConnecta
 	 * @param r la requête a traiter
 	 * @throws Exception
 	 */
-	public void demandeVM(int nbCoeur, int appId, Request r) throws Exception {
+	public void demandeVM(int nbCoeur, int appId, Request r, String URIRepartiteur) throws Exception {
 		int nbTrouvee = 0;
 		
-		/* TODO demande de coeur au lieu des VM */
-		for(int i = 0; i < this.listeDccInboundPortComputer.size(); i++){
-			nbTrouvee += ((ControleurConsumerComputerI) this.listeDccInboundPortComputer.get(i)).nbCoreDispo();
+		for(int i = 0; i < this.listeInboundPortComputer.size(); i++){
+			nbTrouvee += this.listeInboundPortComputer.get(i).nbCoreDispo();
 			if(nbTrouvee >= nbCoeur){
 				break;
 			}
@@ -131,16 +119,17 @@ public class Controleur extends AbstractComponent implements DynamicallyConnecta
 			throw new NotEnoughCoreException("Plus assez de coeurs disponible pour traiter la requête !");
 		}
 		nbTrouvee = 0;
-		for(int i = 0; i < this.listeDccInboundPortComputer.size(); i++){
-			int nbVMAPrendre;
-			if(((ControleurConsumerComputerI) this.listeDccInboundPortComputer.get(i)).nbCoreDispo() > nbCoeur - nbTrouvee){
-				nbVMAPrendre = nbCoeur - nbTrouvee;
+		for(int i = 0; i < this.listeInboundPortComputer.size(); i++){
+			int nbCoreAPrendre;
+			if(this.listeInboundPortComputer.get(i).nbCoreDispo() > nbCoeur - nbTrouvee){
+				nbCoreAPrendre = nbCoeur - nbTrouvee;
 			} else {
-					nbVMAPrendre = ((ControleurConsumerComputerI) this.listeDccInboundPortComputer.get(i)).nbCoreDispo();
-				}
-				for(int j = 0; j < nbVMAPrendre; j++){
-					nbTrouvee++;
-				}
+				nbCoreAPrendre = this.listeInboundPortComputer.get(i).nbCoreDispo();
+			}
+			if(nbCoreAPrendre > 0){
+				this.listeInboundPortComputer.get(i).deployVM(nbCoreAPrendre, appId, URIRepartiteur);
+				nbTrouvee += nbCoreAPrendre;
+			}
 			if(nbTrouvee == nbCoeur){
 				break;
 			}

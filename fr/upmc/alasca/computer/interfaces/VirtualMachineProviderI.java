@@ -6,7 +6,12 @@ import fr.upmc.components.interfaces.OfferedI;
  */
 public interface VirtualMachineProviderI extends OfferedI {
 
-	// Deploie la VM et creer une URI pour la VM
+	/**
+	 * Deploie la VM et creer une URI pour la VM
+	 * 
+	 * @return VM URI
+	 * @throws Exception
+	 */
 	public String provideURI() throws Exception;
 	
 }
