@@ -8,12 +8,7 @@ import fr.upmc.components.interfaces.RequiredI;
  */
 public interface VMProviderI extends OfferedI, RequiredI {
 
-	/**
-	 * Deploie la VM et creer une URI pour la VM
-	 * 
-	 * @param request
-	 * @throws Exception
-	 */
+	// Deploie la VM et creer une URI pour la VM
 	public void processRequest(Request r) throws Exception;
-	
+	public boolean queueIsFull() throws Exception;
 }

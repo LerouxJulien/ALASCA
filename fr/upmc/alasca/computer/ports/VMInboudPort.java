@@ -24,4 +24,10 @@ public class VMInboudPort extends AbstractInboundPort implements VMProviderI{
 		vm.requestArrivalEvent(r);
 	}
 
+	@Override
+	public boolean queueIsFull() {
+		final VirtualMachine vm = (VirtualMachine) this.owner ;
+		return vm.queueIsFull();
+	}
+
 }

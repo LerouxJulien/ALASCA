@@ -1,5 +1,8 @@
 package fr.upmc.alasca.computer.interfaces;
 
+import java.util.List;
+
+import fr.upmc.alasca.requestgen.objects.Request;
 import fr.upmc.components.interfaces.OfferedI;
 
 /**
@@ -25,10 +28,11 @@ public interface ComputerProviderI extends OfferedI {
 	 * 
 	 * @param nbCores
 	 * @param app
-	 * @param RepartiteurURI necessaire pour connecter le repartiteur et la vm
+	 * @param RepartiteurURI URI du port dans Repartiteur
+	 * @param RepartiteurURIDCC URI du dcc dans Repartiteur
 	 * @return boolean
 	 */
-	public boolean deployVM(int nbCores, int app, String RepartiteurURI) throws Exception;
+	public boolean deployVM(int nbCores, int app, String RepartiteurURI, String RepartiteurURIDCC) throws Exception;
 	
 	/**
 	 * Detruit une machine virtuelle via son URI
@@ -39,11 +43,22 @@ public interface ComputerProviderI extends OfferedI {
 	public boolean destroyVM(String mv) throws Exception;
 	
 	/**
-	 * Retourne le nombre de coeurs disponibles
+	 * Envoie la liste des URI des machines virtuelles allouees
 	 * 
-	 * @return nbCoresFree
+	 * @return boolean
 	 */
-	public int getNbCoreDispo();
+	public List<String> getListVM() throws Exception;
+	
+	
+	public Integer availableCores() throws Exception;
+	/**
+	 *  Recupere une requete envoyee par le repartiteur de requetes
+	 *  
+	 * @param mv
+	 * @param req
+	 * @return boolean
+	 */
+	public boolean getRequest(String mv, Request req) throws Exception;
 	
 	/**
 	 * Reinitialise une machine virtuelle via son URI

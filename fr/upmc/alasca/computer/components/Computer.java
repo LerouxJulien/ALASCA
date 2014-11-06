@@ -4,9 +4,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import fr.upmc.alasca.computer.interfaces.ComputerProviderI;
-import fr.upmc.alasca.computer.interfaces.ManagementVMI;
 import fr.upmc.alasca.computer.main.VMConnector;
 import fr.upmc.alasca.computer.ports.ComputerInboundPort;
+import fr.upmc.alasca.requestgen.objects.Request;
 import fr.upmc.components.AbstractComponent;
 import fr.upmc.components.cvm.AbstractCVM;
 import fr.upmc.components.cvm.pre.dcc.DynamicComponentCreationConnector;
@@ -46,6 +46,8 @@ public class Computer extends AbstractComponent implements ComputerProviderI {
 	// ID de la machine
 	private final int machineID;
 
+	private ArrayList<DynamicComponentCreationOutboundPort> VMS = new ArrayList<DynamicComponentCreationOutboundPort>();
+
 	// Nombre de coeurs de la machine
 	// private final int nbCores;
 
@@ -61,7 +63,6 @@ public class Computer extends AbstractComponent implements ComputerProviderI {
 	// Liste des machines virtuelles allouees
 	private List<String> listVM;
 	
-	// 
 	protected AbstractCVM cvm;
 
 	/**
@@ -83,7 +84,7 @@ public class Computer extends AbstractComponent implements ComputerProviderI {
 		nbCoresUsed = 0;
 		listVM = new ArrayList<String>();
 
-		this.addOfferedInterface(ManagementVMI.class);
+		this.addOfferedInterface(ComputerProviderI.class);
 		PortI p = new ComputerInboundPort(port, this);
 		this.addPort(p);
 		if (isDistributed) {
@@ -131,18 +132,9 @@ public class Computer extends AbstractComponent implements ComputerProviderI {
 	public int getNbCores() {
 		return getFrequencies().size();
 	}
-	
-	/**
-	 * Retourne le nombre de coeurs disponibles
-	 * 
-	 * @return nbCoresFree
-	 */
-	public int getNbCoreDispo() {
-		return getNbCores() - getNbCoresUsed();
-	}
 
 	/**
-	 * Retourne le nombre de coeurs utilise par les machines virtuelles
+	 * Retourne le nombre de coeurs utilisé par les machines virtuelles
 	 * 
 	 * @return nbCoresUsed
 	 */
@@ -168,7 +160,7 @@ public class Computer extends AbstractComponent implements ComputerProviderI {
 	 * Deploie une mv et la connecte au repartiteur de l'application
 	 */
 	@Override
-	public boolean deployVM(int nbCores, int app, String RepartiteurURI) throws Exception {
+	public boolean deployVM(int nbCores, int app, String URIRepartiteurFixe, String URIRepartiteurDCC) throws Exception {
 		int nbCoresTotal = nbCores + nbCoresUsed;
 		if (nbCoresTotal > getFrequencies().size()) {
 			System.out.println("No more capacity for deploying "
@@ -196,10 +188,10 @@ public class Computer extends AbstractComponent implements ComputerProviderI {
 				this);
 		this.addPort(p);
 		p.localPublishPort();
-		p.doConnection(RepartiteurURI + "-dcc",
+		p.doConnection(URIRepartiteurDCC,
 				DynamicallyConnectableComponentConnector.class
 						.getCanonicalName());
-		p.connectWith(randomString, RepartiteurURI
+		p.connectWith(randomString, URIRepartiteurFixe
 				+ "-RepartiteurOutboundPort",
 				VMConnector.class.getCanonicalName());
 		p.doDisconnection();
@@ -221,6 +213,17 @@ public class Computer extends AbstractComponent implements ComputerProviderI {
 	}
 
 	@Override
+	public List<String> getListVM() {
+		return listVM;
+	}
+
+	@Override
+	public boolean getRequest(String vm, Request req) {
+		// vm.addRequest(req);
+		return true;
+	}
+
+	@Override
 	public boolean reInit(String vm) {
 		// if (!vm.isIdle()) {
 		// System.out.println("Virtual Machine is still running !");
@@ -228,6 +231,11 @@ public class Computer extends AbstractComponent implements ComputerProviderI {
 		// }
 		// System.out.println("Virtual Machine re-initialized !");
 		return true;
+	}
+
+	@Override
+	public Integer availableCores() throws Exception {
+		return getNbCores() - getNbCoresUsed() ;
 	}
 
 }

@@ -41,6 +41,7 @@ implements 	Serializable
 	
 	protected int application;
 
+
 	/**
 	 * create a new request with given uri and processing time.
 	 * 
@@ -72,6 +73,10 @@ implements 	Serializable
 		assert	this.instructions > 0 && this.arrivalTime >= 0 ;
 	}
 
+	public int getUri() {
+		return uri;
+	}
+
 	/**
 	 * return the processing time of the request.
 	 * 
@@ -86,6 +91,11 @@ implements 	Serializable
 	 */
 	public long		getInstructions() {
 		return instructions;
+	}
+	
+
+	public int getAppId() {
+		return application;
 	}
 
 	/**
@@ -131,10 +141,5 @@ implements 	Serializable
 	@Override
 	public String		toString() {
 		return "" + this.uri ;
-	}
-
-	public int getAppId() {
-		
-		return this.application;
 	}
 }

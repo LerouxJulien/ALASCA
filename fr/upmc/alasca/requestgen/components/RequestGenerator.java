@@ -165,7 +165,7 @@ extends		AbstractComponent
 	{
 		long instructions =
 				(long)nd.sample() ;
-		this.rgop.acceptRequest(new Request(this.counter++, instructions, 5)) ; // appli 5 fixe pour le moment
+		this.rgop.acceptRequest(new Request(this.counter++, instructions, rng.nextInt(0, 1))) ; //2 appli au hasard
 		final RequestGenerator cg = this ;
 		long interArrivalDelay =
 				(long) this.rng.nextExponential(this.meanInterArrivalTime) ;

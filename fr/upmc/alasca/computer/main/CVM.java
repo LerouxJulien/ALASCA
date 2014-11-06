@@ -43,7 +43,7 @@ public class CVM extends AbstractCVM {
 		cont = new Controleur(CONTROLER_OUTBOUNDPORT_URI,CONTROLER_INBOUNDPORT_URI, NB_COMPUTERS);
 		this.deployedComponents.add(cont);
 		
-		this.rg = new RequestGenerator(750.0, 2200000, 500000,
+		this.rg = new RequestGenerator(500.0, 5000000, 1000000,
 				   REQUEST_GENERATOR_OUTBOUNDPORT_URI) ;
 		this.deployedComponents.add(this.rg) ;
 		
@@ -88,7 +88,10 @@ public class CVM extends AbstractCVM {
 			a.start() ;
 			final Controleur controleur = a.cont ;
 			final RequestGenerator fcg = a.rg ;
-			controleur.testConnexion();
+			// Deploie 1 VM
+			//controleur.deployVM();
+			controleur.acceptApplication(0);
+			controleur.acceptApplication(1);
 			System.out.println("Scheduling request at " +
 						TimeProcessing.toString(System.currentTimeMillis())) ;
 			fcg.runTask(new ComponentTask() {
