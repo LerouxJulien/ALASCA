@@ -17,7 +17,7 @@ import fr.upmc.components.ports.PortI;
 
 /**
  * 
- * Classe <code> Repartitor </code> representant un repartiteur lie a une id d'application.
+ * Classe <code> Repartitor </code> reprï¿½sentant un rï¿½partiteur liï¿½ a une if d'application.
  * 
  * 
  * 
@@ -26,21 +26,10 @@ import fr.upmc.components.ports.PortI;
  */
 public class Repartitor extends AbstractComponent implements	DynamicallyConnectableI{
 
-	// Controleur responsable du dispatcher
+	//private static long VMMAXINST = 20000000;
 	Controleur control;
-	// Liste des ports de sortie du repartiteur 1 port = 1 VM
 	protected ArrayList<RepartiteurOutboundPort> Listrbp;
-	//Port dynamique du répartiteur
 	protected DynamicallyConnectableComponentInboundPort dccInboundPort ;
-	
-	/**
-	 * 
-	 * Creation du repartiteur
-	 * 
-	 * @param outboundPortURI
-	 * @param controleur
-	 * @throws Exception 
-	 */
 	
 	public Repartitor(String outboundPortURI,Controleur controleur) throws Exception{
 		this.addRequiredInterface(RequestArrivalI.class) ;
@@ -48,7 +37,7 @@ public class Repartitor extends AbstractComponent implements	DynamicallyConnecta
 		Listrbp = new ArrayList<RepartiteurOutboundPort>();
 		
 		
-		// partie Dynamique
+		// partie Dynanimique
 		this.addOfferedInterface(DynamicallyConnectableComponentI.class) ;
 		this.dccInboundPort =
 			new DynamicallyConnectableComponentInboundPort(
@@ -76,14 +65,14 @@ public class Repartitor extends AbstractComponent implements	DynamicallyConnecta
 		PortI uriConsumerPort = this.findPortFromURI(clientPortURI) ;
 		uriConsumerPort.doDisconnection() ;
 	}
-	
 	/**
 	 * 
-	 * Methode d'ajout d'un port au repartiteur en vue de connexion a une nouvelle VM 
+	 * Crï¿½ation du rï¿½partiteur
 	 * 
-	 * @param portURI
-	 * @throws Exception
+	 * @param controleur
+	 * @throws Exception 
 	 */
+	
 	public void addNewPort(String portURI) throws Exception{
 		RepartiteurOutboundPort rbp;
 		
@@ -102,11 +91,12 @@ public class Repartitor extends AbstractComponent implements	DynamicallyConnecta
 	
 	
 	/**
-	 * Methode de repartition des requettes sur la liste de port
-	 * renvoi 0 si aucune creation de VM n'est requise
-	 * un entier representant le nombre de VM a creer sinon
+	 * Methode de repartition des requettes sur une liste de VM
+	 * renvoi 0 si aucune crï¿½ation de VM n'est requise
+	 * un entier reprï¿½sentant le nombre a creer sinon
 	 * 
 	 * @param req
+	 * @param sendingList
 	 * @return int
 	 * @throws Exception
 	 */

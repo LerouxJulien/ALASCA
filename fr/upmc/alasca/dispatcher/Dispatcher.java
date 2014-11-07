@@ -31,7 +31,9 @@ public class Dispatcher {
 	
 	private Controleur control;
 	
+	//Liste des VM provenant du controleur d'admissions **VM bouvhon utilisÃ©**
 	
+	private ArrayList<String> VMList;
 	
 	// Map des couples applications/repartiteurs.
 	
@@ -69,7 +71,7 @@ public class Dispatcher {
 	 * Envoi d'une requette au dispatcher
 	 * 
 	 * @param req
-	 * 
+	 * @param listVM
 	 * @throws Exception 
 	 */
 	public void processRequest(Request req) throws Exception{
@@ -80,11 +82,8 @@ public class Dispatcher {
 		Repartitor repart;
 		
 		if(repartitorList.containsKey(req.getAppId())){
-			//acces au repartiteur de l'application
 			repart= repartitorList.get(req.getAppId());
-			// envoi de la requette + retour du nombre de VM a lancer (0 si la requette a ete envoyée
 			int VMtoLaunch =repart.dispatch(req);
-			// Cas où on doit lancer une nouvelle VM, creation d'un port sur le repartiteur, demande de lien au controleur
 			if(VMtoLaunch!=0){
 				
 				String randomString = req.getAppId() + java.util.UUID.randomUUID().toString();
