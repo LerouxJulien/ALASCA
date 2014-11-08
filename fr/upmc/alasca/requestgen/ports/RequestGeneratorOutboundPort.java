@@ -64,8 +64,6 @@ implements	RequestArrivalI
 	 * pre	true				// no more preconditions.
 	 * post	true				// no more postconditions.
 	 * </pre>
-	 * 
-	 * @see fr.upmc.alasca.ssqueue.interfaces.RequestArrivalI#acceptRequest(fr.upmc.alasca.ssqueue.objects.Request)
 	 */
 	@Override
 	public void			acceptRequest(Request r) throws Exception

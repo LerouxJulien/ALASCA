@@ -3,8 +3,8 @@ package fr.upmc.alasca.computer.components;
 import java.util.ArrayList;
 import java.util.List;
 
+import fr.upmc.alasca.computer.connectors.VMConnector;
 import fr.upmc.alasca.computer.interfaces.ComputerProviderI;
-import fr.upmc.alasca.computer.main.VMConnector;
 import fr.upmc.alasca.computer.ports.ComputerInboundPort;
 import fr.upmc.alasca.requestgen.objects.Request;
 import fr.upmc.components.AbstractComponent;
@@ -19,37 +19,15 @@ import fr.upmc.components.ports.PortI;
 
 /**
  * La classe <code>Computer</code> definit la machine qui recoit les requetes et
- * qui gere la creation et la destruction des machines virtuelles
- * <code>VirtualMachine</code>.
- *
- * <p>
- * <strong>Description</strong>
- * </p>
- * 
- * <p>
- * <strong>Invariant</strong>
- * </p>
- * 
- * <pre>
- * invariant	true
- * </pre>
- * 
+ * qui gere la creation et la destruction des <code>VirtualMachine</code>.
  * <p>
  * Created on : 10 oct. 2014
  * </p>
- * 
- * @author <a href="mailto:henri.ng@etu.upmc.fr">Henri NG</a>
- * @version $Name$ -- $Revision$ -- $Date$
  */
 public class Computer extends AbstractComponent implements ComputerProviderI {
 
-	// ID de la machine
+	// id de la machine
 	private final int machineID;
-
-	private ArrayList<DynamicComponentCreationOutboundPort> VMS = new ArrayList<DynamicComponentCreationOutboundPort>();
-
-	// Nombre de coeurs de la machine
-	// private final int nbCores;
 
 	// Frequence des coeurs
 	private final List<Double> frequencies;
@@ -59,9 +37,9 @@ public class Computer extends AbstractComponent implements ComputerProviderI {
 
 	// Nombre de coeurs monopolises par les VM
 	private int nbCoresUsed;
-
-	// Liste des machines virtuelles allouees
-	private List<String> listVM;
+	
+	// compteur utilise pour differencier les identifiants des vm (ne depasse pas 1000)
+	private Integer cptVM;
 	
 	protected AbstractCVM cvm;
 
@@ -69,10 +47,9 @@ public class Computer extends AbstractComponent implements ComputerProviderI {
 	 * Demarre une machine.
 	 *
 	 * @param machineID
-	 * @param nbCores
-	 * @param frequencies
-	 * @param difference
-	 * @param cCVM
+	 * @param frequencies	Liste des coeurs physiques
+	 * @param difference	Difference maximale entre les coeurs
+	 * @param cvm
 	 */
 	public Computer(String port, int machineID, List<Double> frequencies,
 			double difference, boolean isDistributed, AbstractCVM cvm) throws Exception {
@@ -81,8 +58,8 @@ public class Computer extends AbstractComponent implements ComputerProviderI {
 		this.machineID = machineID;
 		this.frequencies = frequencies;
 		this.difference = difference;
-		nbCoresUsed = 0;
-		listVM = new ArrayList<String>();
+		this.cptVM = 0;
+		this.nbCoresUsed = 0;
 
 		this.addOfferedInterface(ComputerProviderI.class);
 		PortI p = new ComputerInboundPort(port, this);
@@ -151,8 +128,7 @@ public class Computer extends AbstractComponent implements ComputerProviderI {
 	public String toString() {
 		return "Computer [machineID=" + machineID + ", nbCores="
 				+ getFrequencies().size() + ", frequencies=" + frequencies
-				+ ", difference=" + difference + ", nbCoresUsed=" + nbCoresUsed
-				+ ", listVM=" + listVM + "]";
+				+ ", difference=" + difference + ", nbCoresUsed=" + nbCoresUsed + "]";
 	}
 
 	/* ---------------- Implementation of offered functions ----------------- */
@@ -161,17 +137,18 @@ public class Computer extends AbstractComponent implements ComputerProviderI {
 	 */
 	@Override
 	public boolean deployVM(int nbCores, int app, String URIRepartiteurFixe, String URIRepartiteurDCC) throws Exception {
+		// On verifie que le Computer a assez de coeurs pour allouer la machine virtuelle
 		int nbCoresTotal = nbCores + nbCoresUsed;
 		if (nbCoresTotal > getFrequencies().size()) {
 			System.out.println("No more capacity for deploying "
-					+ "a new virtual machine !");
+					+ "a new virtual machine");
 			return false;
 		}
-		int mvID = machineID * 10 + listVM.size();
+		String mvID = (machineID * 1000 + ((cptVM++)%1000)) + "";
 		List<Double> coresFreq = new ArrayList<Double>(frequencies.subList(
 				nbCoresUsed, nbCoresTotal));
 		
-		///////////////////////////
+		// Instanciation machine virtuelle
 		DynamicComponentCreationOutboundPort newvm = new DynamicComponentCreationOutboundPort(this);
 		newvm.localPublishPort();
 		
@@ -180,10 +157,12 @@ public class Computer extends AbstractComponent implements ComputerProviderI {
 				+ AbstractCVM.DYNAMIC_COMPONENT_CREATOR_INBOUNDPORT_URI,
 				DynamicComponentCreationConnector.class.getCanonicalName());
 		
-		/////////////////////////////
+		
 		String randomString = this.getMachineID() + java.util.UUID.randomUUID().toString();
 		newvm.createComponent(VirtualMachine.class.getCanonicalName(),
-				new Object [] {randomString, mvID, app, nbCores, 5, coresFreq});
+				new Object [] {randomString, mvID, app, 5, coresFreq});
+		
+		// Connexion machine virtuelle
 		DynamicallyConnectableComponentOutboundPort p = new DynamicallyConnectableComponentOutboundPort(
 				this);
 		this.addPort(p);
@@ -196,46 +175,31 @@ public class Computer extends AbstractComponent implements ComputerProviderI {
 				VMConnector.class.getCanonicalName());
 		p.doDisconnection();
 		nbCoresUsed += nbCores;
-		System.out.println("Virtual Machine deployed !");
-		return true;
-	}
-
-	@Override
-	public boolean destroyVM(String vm) {
-		// if (!vm.isIdle()) {
-		// System.out.println("Virtual Machine is still processing !");
-		// return false;
-		// }
-		// nbCoresUsed -= vm.getNbCores();
-		// listVM.remove(vm);
-		// System.out.println("Virtual Machine killed !");
-		return true;
-	}
-
-	@Override
-	public List<String> getListVM() {
-		return listVM;
-	}
-
-	@Override
-	public boolean getRequest(String vm, Request req) {
-		// vm.addRequest(req);
-		return true;
-	}
-
-	@Override
-	public boolean reInit(String vm) {
-		// if (!vm.isIdle()) {
-		// System.out.println("Virtual Machine is still running !");
-		// return false;
-		// }
-		// System.out.println("Virtual Machine re-initialized !");
+		System.out.println("Virtual Machine deployed");
 		return true;
 	}
 
 	@Override
 	public Integer availableCores() throws Exception {
 		return getNbCores() - getNbCoresUsed() ;
+	}
+
+	@Override
+	public boolean destroyVM(String vm) {
+		// TODO
+		return true;
+	}
+
+	@Override
+	public boolean reInit(String vm) {
+		// TODO
+		return true;
+	}
+
+	@Override
+	public List<String> getListVM() throws Exception {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }

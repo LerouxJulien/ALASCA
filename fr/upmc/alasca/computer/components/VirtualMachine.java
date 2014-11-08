@@ -16,31 +16,17 @@ import fr.upmc.components.ports.PortI;
 
 /**
  * La classe <code>VirtualMachine</code> definit la machine virtuelle qui
- * recupere les requetes transmises par la machine h�te et qui les traitent.
+ * recupere les requetes transmises par la machine hote et qui les traitent.
  *
- * <p>
- * <strong>Description</strong>
- * </p>
- * 
- * <p>
- * <strong>Invariant</strong>
- * </p>
- * 
- * <pre>
- * invariant	true
- * </pre>
  * 
  * <p>
  * Created on : 10 oct. 2014
  * </p>
- * 
- * @author <a href="mailto:henri.ng@etu.upmc.fr">Henri NG</a>
- * @version $Name$ -- $Revision$ -- $Date$
  */
 public class VirtualMachine extends AbstractComponent{
 
 	// ID de la VM
-	private final int mvID;
+	private final String mvID;
 
 	// ID de l'application
 	private final int appID;
@@ -78,31 +64,28 @@ public class VirtualMachine extends AbstractComponent{
 	/**
 	 * Alloue une machine virtuelle.
 	 * 
-	 * On suppose que l'allocation de la machine se fait forcement avec la
-	 * requete et son application associee. Le nombre de coeur est donnee par la
-	 * machine h�te.
-	 * 
 	 * @param mvID
 	 * @param appID
-	 * @param nbCores
-	 * @param frequence
+	 * @param frequencies	Liste des frequences des coeurs de la machine virtuelle
+	 * @param queueMax		Nombre maximum de requetes dans la queue
 	 * @throws Exception 
 	 */
-	public VirtualMachine(String port, Integer mvID, Integer appID, Integer nbCores, Integer queueMax,
+	public VirtualMachine(String port, String mvID, Integer appID, Integer queueMax,
 			ArrayList<Double> frequencies) throws Exception {
 		super();
 		this.mvID      = mvID;
 		this.appID     = appID;
-		this.nbCores   = nbCores;
+		this.nbCores   = frequencies.size();
 		this.queueMax  = queueMax;
 		this.frequencies = new ArrayList<Double>(frequencies);
 		this.status    = Status.NEW;
 		this.nbRequest = 0;
 		queue   = new LinkedBlockingQueue<Request>();
-		threads = new ArrayList<VMThread>();
+		
 		// Initialise les VMThread de la VM
+		threads = new ArrayList<VMThread>();
 		for (int i = 0; i < nbCores; i++) {
-			int VMThreadID = mvID * 10 + i;
+			String VMThreadID = mvID + i + "";
 			threads.add(new VMThread(VMThreadID, frequencies.get(i), this));
 		}
 		
@@ -146,7 +129,7 @@ public class VirtualMachine extends AbstractComponent{
 	 * 
 	 * @return mvID
 	 */
-	public int getMvID() {
+	public String getMvID() {
 		return mvID;
 	}
 
@@ -345,23 +328,10 @@ public class VirtualMachine extends AbstractComponent{
 	 * la file d'attente et la met dans son fil d'execution.
 	 * 
 	 * <p>
-	 * <strong>Description</strong>
-	 * </p>
-	 * 
-	 * <p>
-	 * <strong>Invariant</strong>
-	 * </p>
-	 * 
-	 * <pre>
-	 * invariant	true
-	 * </pre>
-	 * 
-	 * <p>
 	 * Created on : 16 oct. 2014
 	 * </p>
 	 * 
 	 * @author <a href="mailto:henri.ng@etu.upmc.fr">Henri NG</a>
-	 * @version $Name$ -- $Revision$ -- $Date$
 	 */
 	public class VMThread extends AbstractComponent {
 
@@ -370,7 +340,7 @@ public class VirtualMachine extends AbstractComponent{
 		private VirtualMachine owner;
 
 		// ID du thread de la VM
-		private final int VMThreadID;
+		private final String VMThreadID;
 
 		// Frequence du coeur associe
 		private final double frequence;
@@ -381,18 +351,18 @@ public class VirtualMachine extends AbstractComponent{
 		protected Future<?> nextEndServicingTaskFuture;
 
 		/**
-		 * Initialisation des threads internes a la VM (correspond a la fil
+		 * Initialisation des threads internes a la VM (correspond a un fil
 		 * d'execution dans le sujet)
 		 * 
 		 * Les VMThread sont inialises en meme temps que le deploiement de la
 		 * VM. Un VMThread correspond a un coeur de la VM avec sa frequence
-		 * associee. Il est par defaut en attente de requete a traiter.
+		 * associee.
 		 * 
-		 * @param threadID
+		 * @param VMThreadID
 		 * @param frequence
-		 * @param isWaiting
+		 * @param owner
 		 */
-		public VMThread(int VMThreadID, double frequence, VirtualMachine owner) {
+		public VMThread(String VMThreadID, double frequence, VirtualMachine owner) {
 			super(true, true);
 			this.VMThreadID = VMThreadID;
 			this.frequence = frequence;
@@ -415,7 +385,7 @@ public class VirtualMachine extends AbstractComponent{
 		 * 
 		 * @return VMThreadID
 		 */
-		public int getVMThreadID() {
+		public String getVMThreadID() {
 			return VMThreadID;
 		}
 
@@ -439,7 +409,7 @@ public class VirtualMachine extends AbstractComponent{
 			System.out.println("Begin servicing request " + this.servicing
 					+ " at "
 					+ TimeProcessing.toString(System.currentTimeMillis())
-					+ " by core " + this.VMThreadID
+					+ " by vm " + this.owner.getMvID()
 					+ " with " + this.servicing.getInstructions() + " instructions");
 			this.isWaiting = false;
 			final VMThread vmt = (VMThread) this;
@@ -459,13 +429,17 @@ public class VirtualMachine extends AbstractComponent{
 			return processingTime;
 		}
 
+		/**
+		 * Methode appelee pour terminer le traitement d'une requete
+		 * @throws Exception
+		 */
 		public void endServicingEvent() throws Exception {
 			long t = System.currentTimeMillis();
 			long st = t - this.servicing.getArrivalTime();
 			System.out.println("End servicing request   " + this.servicing
 					+ " at " + TimeProcessing.toString(t)
 					+ " with service time " + st
-					+ " by " + this.VMThreadID
+					+ " by vm " + this.owner.getMvID()
 					+ " --- Size queue : " + this.owner.queue.size());
 			if (owner.queue.isEmpty()) {
 				this.servicing = null;
