@@ -28,6 +28,9 @@ public class			ClientArrivalConnector
 extends		AbstractConnector
 implements	RequestArrivalI
 {
+	/**
+	 * @see fr.upmc.alasca.ssqueue.interfaces.RequestArrivalI#acceptRequest(fr.upmc.alasca.ssqueue.objects.Request)
+	 */
 	@Override
 	public void			acceptRequest(Request c) throws Exception
 	{

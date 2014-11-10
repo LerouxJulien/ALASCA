@@ -1,6 +1,5 @@
 package fr.upmc.alasca.requestgen.components;
 
-import java.util.List;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
@@ -42,6 +41,7 @@ import fr.upmc.components.exceptions.ComponentStartException;
  * <p>Created on : 2 sept. 2014</p>
  * 
  * @author	<a href="mailto:Jacques.Malenfant@lip6.fr">Jacques Malenfant</a>
+ * @version	$Name$ -- $Revision$ -- $Date$
  */
 public class			RequestGenerator
 extends		AbstractComponent
@@ -58,9 +58,6 @@ extends		AbstractComponent
 	protected double				meanInterArrivalTime ;
 	/** the mean processing time of requests in ms.							*/
 	protected double				meanProcessingTime ;
-	
-	/** numero des applications lancees */
-	protected List<Integer> numberAppLaunched;
 	
 	
 	protected RandomDataGenerator	rng ;
@@ -80,19 +77,18 @@ extends		AbstractComponent
 	 * <pre>
 	 * pre	meanInterArrivalTime > 0.0 && meanProcessingTime > 0.0
 	 * pre	outboundPortURI != null
+	 * post	true			// no postcondition.
 	 * </pre>
 	 *
-	 * @param meanInterArrivalTime	mean interarrival time of the requests in ms
-	 * @param meanNumberInstructions mean number of instructions
-	 * @param outboundPortURI		URI of the outbound port to connect to the service provider
-	 * @param numberAppLaunched		numeros des applications lancees
+	 * @param meanInterArrivalTime	mean interarrival time of the requests in ms.
+	 * @param meanProcessingTime	mean processing time of the requests in ms.
+	 * @param outboundPortURI		URI of the outbound port to connect to the service provider.
 	 * @throws Exception
 	 */
 	public				RequestGenerator(
 		double meanInterArrivalTime,
 		int meanNumberInstructions,
 		int standardDeviation,
-		List<Integer> numberAppLaunched,
 		String outboundPortURI
 		) throws Exception
 	{
@@ -104,7 +100,6 @@ extends		AbstractComponent
 		this.counter = 0 ;
 		this.meanInterArrivalTime = meanInterArrivalTime ;
 		this.nd = new NormalDistribution(meanNumberInstructions, standardDeviation) ;
-		this.numberAppLaunched = numberAppLaunched;
 		this.rng = new RandomDataGenerator() ;
 		this.rng.reSeed() ;
 		this.nextRequestTaskFuture = null ;
@@ -170,7 +165,7 @@ extends		AbstractComponent
 	{
 		long instructions =
 				(long)nd.sample() ;
-		this.rgop.acceptRequest(new Request(this.counter++, instructions, numberAppLaunched.get(rng.nextInt(0, numberAppLaunched.size() - 1)))) ;
+		this.rgop.acceptRequest(new Request(this.counter++, instructions, rng.nextInt(0, 1))) ; //2 appli au hasard
 		final RequestGenerator cg = this ;
 		long interArrivalDelay =
 				(long) this.rng.nextExponential(this.meanInterArrivalTime) ;

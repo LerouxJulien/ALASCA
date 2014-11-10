@@ -39,6 +39,12 @@ public class ComputerInboundPort extends AbstractInboundPort implements Computer
 	}
 
 	@Override
+	public boolean getRequest(String mv, Request req) throws Exception {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
 	public boolean reInit(String vm) throws Exception {
 		// TODO Auto-generated method stub
 		return false;

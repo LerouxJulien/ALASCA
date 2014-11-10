@@ -25,6 +25,7 @@ import java.io.Serializable;
  * <p>Created on : 2 sept. 2014</p>
  * 
  * @author	<a href="mailto:Jacques.Malenfant@lip6.fr">Jacques Malenfant</a>
+ * @version	$Name$ -- $Revision$ -- $Date$
  */
 public class			Request
 implements 	Serializable
@@ -51,9 +52,8 @@ implements 	Serializable
 	 * post	true			// no postcondition.
 	 * </pre>
 	 *
-	 * @param uri				unique identifier of the new request.
-	 * @param instructions		number of instructions in the request
-	 * @param application		application number
+	 * @param uri				unique identifier of the nesw request.
+	 * @param processingTime	time required to execute the request.
 	 */
 	public				Request(
 		int uri,
