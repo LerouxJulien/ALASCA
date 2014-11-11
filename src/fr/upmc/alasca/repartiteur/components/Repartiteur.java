@@ -15,7 +15,7 @@ import fr.upmc.components.ports.PortI;
 
 /**
  * Le repartiteur de requete est charge de transmettre les requetes d'une unique
- * application aux VM auxquelles il est connectee. Il doit être vu comme un
+ * application aux VM auxquelles il est connecte. Il doit être vu comme un
  * sous-composant du Controleur, d'ou les appels directs permis du Controleur
  * aux methodes du repartiteur sans passer par des ports (processRequest et
  * addNewPort par exemple).

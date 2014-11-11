@@ -11,8 +11,11 @@ import fr.upmc.components.ports.PortI;
 
 /**
  * Classe parametrant la simulation du centre de calcul. Contient le main pour
- * lancer la simulation
- *
+ * lancer la simulation. Paramètres de cette simulation :
+ * <ul>
+ * <li>Nombre de pc : 4</li>
+ * <li>Nombre de coeurs par pc : 8</li>
+ * </ul>
  */
 public class CVM extends AbstractCVM {
 
