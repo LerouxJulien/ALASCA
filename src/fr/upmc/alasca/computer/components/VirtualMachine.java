@@ -24,7 +24,7 @@ import fr.upmc.components.ports.PortI;
  * </p>
  * 
  * @author <a href="mailto:nicolas.mounier@etu.upmc.fr">Nicolas Mounier</a>
- * 		   <a href="mailto:henri.ng@etu.upmc.fr">Henri NG</a>
+ * @author <a href="mailto:henri.ng@etu.upmc.fr">Henri NG</a>
  * @version $Name$ -- $Revision$ -- $Date$
  */
 public class VirtualMachine extends AbstractComponent {

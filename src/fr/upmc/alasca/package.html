@@ -1,0 +1,47 @@
+<html>
+<body>
+	<p>Ce package contient l'ensemble du code produit pour le projet du
+		centre de calcul de l'UE ALASCA.</p>
+
+	<p>Le projet à proprement parlé est divisé en deux parties :
+	<ul>
+		<li>le client qui est composé d'un composant, le <b>générateur
+				de requêtes</b> (qui gère aussi la demande d'application); ce client
+			servira de test pour la demande d'application et l'envoi de requêtes
+			vers le centre de calcul.
+		<li>le centre de calcul qui est composé des entités suivantes :
+			<ul>
+				<li>le <b>contrôleur d'admission</b> qui gère essentiellement
+					la demande de deploiement et/ou de destruction de machines
+					virtuelles par le dispatcher;
+				<li>le <b>dispatcher</b> qui gère la liste des <b>répartiteurs
+						de requêtes</b>;
+				<li>la <b>machine</b> qui s'occupe de la création et
+					destruction des <b>machines virtuelles</b>;
+				<li>la <b>machine virtuelle</b> qui traite les requêtes.
+			</ul>
+	</ul>
+	Le
+	<b>contrôleur d'admission</b> est le composant principal du centre de
+	calcul. Le
+	<b>dispatcher</b> est un sous-composant du
+	<b>contrôleur</b> mais ce n'est pas un composant en terme
+	d'implémentation. Les
+	<b>répartiteurs de requêtes</b> sont des composants générés à chaque
+	demande d'application. À chaque
+	<b>répartiteur de requêtes</b> sont rattachés la liste des
+	<b>machines virtuelles</b> qui traitent les requêtes reçus. Les
+	<b>machines</b> permettent quand à elles de créer la liaison entre un
+	<b>répartiteur de requêtes</b> et la
+	<b>machine virtuelle</b> déployée.
+	</p>
+
+	<p>
+		Les images ci-dessous présentent respectivement les différents
+		composants du centre de calcul et le diagramme de séquences de l'étape
+		de la demande d'application jusqu'au traitement de la requête. <img
+			src="img/Interactions_Composants.jpg" /> <img
+			src="img/Diagramme_Sequence.png.jpg" />
+	</p>
+</body>
+</html>

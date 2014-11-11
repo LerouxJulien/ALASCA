@@ -25,7 +25,7 @@ import fr.upmc.components.ports.PortI;
  * </p>
  * 
  * @author <a href="mailto:nicolas.mounier@etu.upmc.fr">Nicolas Mounier</a>
- *         <a href="mailto:henri.ng@etu.upmc.fr">Henri NG</a>
+ * @author <a href="mailto:henri.ng@etu.upmc.fr">Henri NG</a>
  * @version $Name$ -- $Revision$ -- $Date$
  */
 public class Computer extends AbstractComponent implements ComputerProviderI {
@@ -119,7 +119,7 @@ public class Computer extends AbstractComponent implements ComputerProviderI {
 	}
 
 	/**
-	 * Retourne le nombre de coeurs utilisé par les machines virtuelles
+	 * Retourne le nombre de coeurs utilisï¿½ par les machines virtuelles
 	 * 
 	 * @return nbCoresUsed
 	 */
@@ -159,7 +159,7 @@ public class Computer extends AbstractComponent implements ComputerProviderI {
 	 * l'application
 	 * 
 	 * @param nbCores
-	 * 			  Nombre de coeurs attribues à la machine virtuelle
+	 * 			  Nombre de coeurs attribues ï¿½ la machine virtuelle
 	 * @param app
 	 *			  ID de l'application
 	 * @param URIRepartiteurFixe
