@@ -2,6 +2,7 @@ package fr.upmc.alasca.controleur.components;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.HashMap;
 
 import fr.upmc.alasca.computer.interfaces.VMProviderI;
 import fr.upmc.alasca.controleur.ports.ControleurInboundPort;
