@@ -10,8 +10,9 @@ import fr.upmc.components.cvm.AbstractCVM;
 import fr.upmc.components.ports.PortI;
 
 /**
- * Classe parametrant la simulation du centre de calcul. Contient le main pour
- * lancer la simulation. Paramètres de cette simulation :
+ * <p>Classe parametrant la simulation du centre de calcul. Contient le main pour
+ * lancer la simulation.</p>
+ * <p>Paramètres de cette simulation :</p>
  * <ul>
  * <li>Nombre de pc : 2</li>
  * <li>Nombre de coeurs par pc : 2</li>
@@ -30,7 +31,7 @@ public class CVM3 extends AbstractCVM {
 
 	@Override
 	public void deploy() throws Exception {
-		// processeur a 8 coeurs : toutes les machines physiques ont ce
+		// processeur a 2 coeurs : toutes les machines physiques ont ce
 		// processeur
 		ArrayList<Double> freq = new ArrayList<Double>();
 		freq.add(4.0);

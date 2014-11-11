@@ -10,8 +10,9 @@ import fr.upmc.components.cvm.AbstractCVM;
 import fr.upmc.components.ports.PortI;
 
 /**
- * Classe parametrant la simulation du centre de calcul. Contient le main pour
- * lancer la simulation. Paramètres de cette simulation :
+ * <p>Classe parametrant la simulation du centre de calcul. Contient le main pour
+ * lancer la simulation.</p>
+ * <p>Paramètres de cette simulation :</p>
  * <ul>
  * <li>Nombre de pc : 4</li>
  * <li>Nombre de coeurs par pc : 8</li>
