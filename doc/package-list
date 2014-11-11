@@ -1,0 +1,15 @@
+fr.upmc.alasca.computer.components
+fr.upmc.alasca.computer.connectors
+fr.upmc.alasca.computer.interfaces
+fr.upmc.alasca.computer.ports
+fr.upmc.alasca.controleur.components
+fr.upmc.alasca.controleur.main
+fr.upmc.alasca.controleur.ports
+fr.upmc.alasca.repartiteur.components
+fr.upmc.alasca.repartiteur.ports
+fr.upmc.alasca.requestgen.components
+fr.upmc.alasca.requestgen.interfaces
+fr.upmc.alasca.requestgen.main
+fr.upmc.alasca.requestgen.objects
+fr.upmc.alasca.requestgen.ports
+fr.upmc.alasca.requestgen.utils
