@@ -78,7 +78,7 @@ public class Repartiteur extends AbstractComponent implements
 				return true;
 			}
 		}
-		System.out.println("PAS DE VM LIBRE POUR LE REPARTITEUR");
+		System.out.println("No available mv for the application number: " + r.getAppId());
 		return false;
 	}
 
@@ -127,8 +127,6 @@ public class Repartiteur extends AbstractComponent implements
 	}
 
 	/**
-	 * 
-	 * 
 	 * @return l'id de application associee a ce repartiteur
 	 */
 	public int getAppId() {

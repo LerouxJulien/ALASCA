@@ -217,7 +217,7 @@ public class Computer extends AbstractComponent implements ComputerProviderI {
 	/**
 	 * Detruit une machine virtuelle via son URI
 	 * 
-	 * @param virtualMachine
+	 * @param vm
 	 * @return boolean
 	 */
 	@Override
@@ -229,7 +229,7 @@ public class Computer extends AbstractComponent implements ComputerProviderI {
 	/**
 	 * Reinitialise une machine virtuelle via son URI
 	 * 
-	 * @param virtualMachine
+	 * @param vm
 	 * @return boolean
 	 */
 	@Override

@@ -12,6 +12,14 @@ import fr.upmc.alasca.requestgen.interfaces.RequestArrivalI;
 import fr.upmc.alasca.requestgen.objects.Request;
 import fr.upmc.components.AbstractComponent;
 
+/**
+ * Le Controleur est connecte au RequestGenerator et aux Computers.
+ * Il reçoit les requetes du generateur de requetes.
+ * Il fait des demandes de deploiement de VirtualMachine aupres des Computer
+ * si necessaire: c'est-a-dire en ce moment si les queues de toutes
+ * les VM dediees a une application sont  pleines.
+ *
+ */
 public class Controleur extends AbstractComponent {
 
 	// ports par lesquels sont faites les demandes de deploiement de vm aux
@@ -59,12 +67,12 @@ public class Controleur extends AbstractComponent {
 	 */
 	public boolean deployVM(Repartiteur r, String repartiteurURIFixe)
 			throws Exception {
-		// TODO actuellement c'est n'importe quoi
+		// TODO Modifier politique de deploiement
 		String uri;
 		for (ControleurOutboundPort cbop : portsToMachine) {
 			if (cbop.availableCores() >= 2) {
 				uri = r.addNewPort(repartiteurURIFixe);
-				System.out.println("DEPLOY VM args : appid = " + r.getAppId()
+				System.out.println("deployvm passed parameters : appid = " + r.getAppId()
 						+ " urifixe = " + uri + " uridcc = "
 						+ r.getRepartiteurURIDCC());
 				if (cbop.availableCores() >= 4)
@@ -82,7 +90,7 @@ public class Controleur extends AbstractComponent {
 	/**
 	 * Accepte une requete du generateur de requete
 	 *
-	 * @param r
+	 * @param r			Requete reçue par le Controleur
 	 * @throws Exception
 	 */
 	public void acceptRequest(Request r) throws Exception {
@@ -97,13 +105,13 @@ public class Controleur extends AbstractComponent {
 						rr.processRequest(r);
                 else
 						System.out
-								.println("Requete rejetee : queues pleines et nombre de vm maximum atteint");
+								.println("Rejected request: all queues full and maximal number of mv reached");
             }
             return;
 
 		}else{
 		System.out
-				.println("Requête rejetée : Pas de répartiteur dédié à cette application --- Numero app = "
+				.println("Rejected request: no dispatcher dedicated to the application number: "
 						+ r.getAppId());
 		}
 	}
@@ -118,11 +126,11 @@ public class Controleur extends AbstractComponent {
 	 */
 	public void acceptApplication(Integer appId) throws Exception {
 		rbs.put(appId,new Repartiteur(repartiteurURIgenericName + appId, appId));
-		System.out.println("Application nouvellement acceptee : " + appId);
+		System.out.println("New accepted application: " + appId);
 	}
 
 	/**
-	 * @return ports par lesquels sont faites les communication entre le
+	 * @return ports par lesquels sont faites les communications entre le
 	 *         controleur et les Computers (deploiement d'une machine virtuelle
 	 *         par exemple)
 	 */

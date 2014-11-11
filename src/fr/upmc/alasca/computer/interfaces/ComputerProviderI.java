@@ -42,7 +42,7 @@ public interface ComputerProviderI extends OfferedI {
 	/**
 	 * Detruit une machine virtuelle via son URI
 	 * 
-	 * @param virtualMachine
+	 * @param mv
 	 * @return boolean
 	 */
 	public boolean destroyVM(String mv) throws Exception;
@@ -50,7 +50,7 @@ public interface ComputerProviderI extends OfferedI {
 	/**
 	 * Reinitialise une machine virtuelle via son URI
 	 * 
-	 * @param virtualMachine
+	 * @param vm
 	 * @return boolean
 	 */
 	public boolean reInit(String vm) throws Exception;

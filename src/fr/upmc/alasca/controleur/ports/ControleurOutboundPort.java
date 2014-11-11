@@ -4,14 +4,17 @@ import fr.upmc.alasca.computer.interfaces.ComputerProviderI;
 import fr.upmc.components.ComponentI;
 import fr.upmc.components.ports.AbstractOutboundPort;
 
+/**
+ * Port par lequel le Controleur demande a un Computer de deployer une
+ * nouvelle machine virtuelle
+ *
+ */
 public class ControleurOutboundPort extends AbstractOutboundPort implements
 		ComputerProviderI {
 
 	public ControleurOutboundPort(String uri, ComponentI owner)
 			throws Exception {
 		super(uri, ComputerProviderI.class, owner);
-
-		// TODO Auto-generated constructor stub
 	}
 
 	@Override

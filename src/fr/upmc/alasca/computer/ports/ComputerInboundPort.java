@@ -5,6 +5,9 @@ import fr.upmc.alasca.computer.interfaces.ComputerProviderI;
 import fr.upmc.components.ComponentI;
 import fr.upmc.components.ports.AbstractInboundPort;
 
+/**
+ * Port par lequel un computer recoit une demande de deploiement de VirtualMachine
+ */
 public class ComputerInboundPort extends AbstractInboundPort implements
 		ComputerProviderI {
 

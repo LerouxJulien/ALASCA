@@ -241,7 +241,7 @@ public class VirtualMachine extends AbstractComponent {
 	 * dans la file d'attente. Le traitement de la requete debute lorsque
 	 * le serveur a un fil d'execution de libre.
 	 *
-	 * @param request
+	 * @param r
 	 * @throws Exception
 	 */
 	public void requestArrivalEvent(Request r) throws Exception {
