@@ -38,7 +38,12 @@ public class Repartiteur extends AbstractComponent implements
 	protected String RepartiteurURIDCC;
 
 	protected List<RepartiteurOutboundPort> rbps = new ArrayList<RepartiteurOutboundPort>();
-
+	/**
+	 * Constructeur du repartiteur
+	 * 
+	 * @param outboundPortURI port de sortie du repartiteur
+	 * @param appId id de l'application liée au repartiteur
+	 */
 	public Repartiteur(String outboundPortURI, Integer appId) throws Exception {
 		this.addRequiredInterface(RequestArrivalI.class);
 
@@ -57,11 +62,10 @@ public class Repartiteur extends AbstractComponent implements
 	}
 
 	/**
-	 * transmet la requete r a une machine virtuelle dont la queue n'est pas
+	 * Transmet la requete r a une machine virtuelle dont la queue n'est pas
 	 * pleine
 	 *
-	 * @param r
-	 *            requete a transmettre
+	 * @param r requete a transmettre
 	 * @return false si toutes les machines virtuelle ont une queue pleine
 	 * @throws Exception
 	 */
@@ -100,6 +104,8 @@ public class Repartiteur extends AbstractComponent implements
 	}
 
 	/**
+	 * 
+	 * 
 	 * @return uri du port permettant la connexion dynamique
 	 */
 	public String getRepartiteurURIDCC() {
@@ -121,6 +127,8 @@ public class Repartiteur extends AbstractComponent implements
 	}
 
 	/**
+	 * 
+	 * 
 	 * @return l'id de application associee a ce repartiteur
 	 */
 	public int getAppId() {
