@@ -19,7 +19,7 @@ import fr.upmc.components.ports.PortI;
  * sous-composant du Controleur, d'ou les appels directs permis du Controleur
  * aux methodes du repartiteur sans passer par des ports (processRequest et
  * addNewPort par exemple).
- * 
+ *
  */
 public class Repartiteur extends AbstractComponent implements
 		DynamicallyConnectableI {
@@ -59,7 +59,7 @@ public class Repartiteur extends AbstractComponent implements
 	/**
 	 * transmet la requete r a une machine virtuelle dont la queue n'est pas
 	 * pleine
-	 * 
+	 *
 	 * @param r
 	 *            requete a transmettre
 	 * @return false si toutes les machines virtuelle ont une queue pleine
@@ -74,13 +74,13 @@ public class Repartiteur extends AbstractComponent implements
 				return true;
 			}
 		}
-		System.out.println("ALL QUEUES FULL");
+		System.out.println("PAS DE VM LIBRE POUR LE REPARTITEUR");
 		return false;
 	}
 
 	/**
 	 * Ajoute un nouveau port vers une machine virtuelle
-	 * 
+	 *
 	 * @param portURI
 	 *            base/prefixe de l'uri du port cree
 	 * @return uri actuellement utilisee pour le port cree

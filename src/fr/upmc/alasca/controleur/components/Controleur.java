@@ -24,7 +24,7 @@ public class Controleur extends AbstractComponent {
 	protected ControleurInboundPort port_i;
 
 	// les repartiteurs de requetes du controleur
-	protected List<Repartiteur> rbs = new ArrayList<Repartiteur>();
+	protected HashMap<Integer,Repartiteur> rbs = new HashMap<Integer,Repartiteur>();
 
 	public Controleur(String controleur_uri_outboundport,
 			String controleur_uri_inboundport, Integer nb_computers)
@@ -48,7 +48,7 @@ public class Controleur extends AbstractComponent {
 
 	/**
 	 * Deploie une vm sur un Computer s'il y a de la place
-	 * 
+	 *
 	 * @param r
 	 *            repartiteur connecte a la vm deployee
 	 * @param repartiteurURIFixe
@@ -85,35 +85,38 @@ public class Controleur extends AbstractComponent {
 	 * @throws Exception
 	 */
 	public void acceptRequest(Request r) throws Exception {
-		for (Repartiteur rr : rbs) {
-			if (r.getAppId() == rr.getAppId()) {
-				if (!rr.processRequest(r)) {
-					String URInewPortRepartiteur = repartiteurURIgenericName
+		if(rbs.containsKey(r.getAppId())){
+
+            Repartiteur rr = rbs.get(r.getAppId());
+
+            if (!rr.processRequest(r)) {
+                String URInewPortRepartiteur = repartiteurURIgenericName
 							+ rr.getAppId();
-					if (this.deployVM(rr, URInewPortRepartiteur))
+                if (this.deployVM(rr, URInewPortRepartiteur))
 						rr.processRequest(r);
-					else
+                else
 						System.out
 								.println("Requete rejetee : queues pleines et nombre de vm maximum atteint");
-				}
-				return;
-			}
-		}
+            }
+            return;
+
+		}else{
 		System.out
 				.println("Requête rejetée : Pas de répartiteur dédié à cette application --- Numero app = "
 						+ r.getAppId());
+		}
 	}
 
 	/**
 	 * Cree un repartiteur de requete dedie a l'application dont l'id est passe
 	 * en parametre
-	 * 
+	 *
 	 * @param appId
 	 *            Id de l'application
 	 * @throws Exception
 	 */
 	public void acceptApplication(Integer appId) throws Exception {
-		rbs.add(new Repartiteur(repartiteurURIgenericName + appId, appId));
+		rbs.put(appId,new Repartiteur(repartiteurURIgenericName + appId, appId));
 		System.out.println("Application nouvellement acceptee : " + appId);
 	}
 
