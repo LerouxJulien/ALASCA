@@ -7,6 +7,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
+import fr.upmc.alasca.computer.enums.Status;
 import fr.upmc.alasca.computer.interfaces.VMProviderI;
 import fr.upmc.alasca.computer.ports.VMInboudPort;
 import fr.upmc.alasca.requestgen.objects.Request;
@@ -40,15 +41,6 @@ public class VirtualMachine extends AbstractComponent {
 
 	// Frequence des coeurs de la VM
 	private final List<Double> frequencies;
-
-	// Statut de la VM
-	// NEW  : VM venant d'etre deployee (Aucune requete n'est traitee.)
-	// FREE : Libre (Au moins un fil d'execution est libre.)
-	// BUSY : Occupe (Tous les fils d'execution sont occupes.)
-	// IDLE : En attente d'eutanasie (S'il ne fout rien pendant X temps.)
-	private enum Status {
-		NEW, FREE, BUSY, IDLE
-	}
 
 	private Status status;
 

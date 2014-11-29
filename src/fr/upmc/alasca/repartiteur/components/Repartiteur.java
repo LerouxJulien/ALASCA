@@ -1,9 +1,11 @@
 package fr.upmc.alasca.repartiteur.components;
 
-import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
-import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 
+import fr.upmc.alasca.computer.enums.Status;
 import fr.upmc.alasca.repartiteur.ports.RepartiteurOutboundPort;
 import fr.upmc.alasca.requestgen.interfaces.RequestArrivalI;
 import fr.upmc.alasca.requestgen.objects.Request;
@@ -39,10 +41,10 @@ public class Repartiteur extends AbstractComponent implements
 	protected String RepartiteurURIDCC;
 	
 	// Liste des machines virtuelles du repartiteur de requetes
-	protected List<RepartiteurOutboundPort> rbps = new ArrayList<RepartiteurOutboundPort>();
+	protected Map<RepartiteurOutboundPort, Status> rbps = new HashMap<RepartiteurOutboundPort, Status>();
 	
 	// Derniere machine virtuelle a avoir recu une requete du repartiteur
-	protected Iterator<RepartiteurOutboundPort> current_rbp = rbps.iterator();
+	protected Iterator<Entry<RepartiteurOutboundPort, Status>> current_rbp = rbps.entrySet().iterator();
 	
 	/**
 	 * Constructeur du repartiteur
@@ -76,15 +78,18 @@ public class Repartiteur extends AbstractComponent implements
 	 * @return false si toutes les machines virtuelle ont une queue pleine
 	 * @throws Exception
 	 */
+	@SuppressWarnings("rawtypes")
 	public boolean processRequest(Request r) throws Exception {
-		RepartiteurOutboundPort rbp;
+		Map.Entry rbp;
+		if (rbps.isEmpty())
+			return false;
 		// Fin de la liste de machines virtuelles du repartiteur de requetes
 		if (!current_rbp.hasNext())
-			current_rbp = rbps.iterator();
-		rbp = current_rbp.next();
-		rbp.processRequest(r);
+			current_rbp = rbps.entrySet().iterator();
+		rbp = (Map.Entry)current_rbp.next();
+		((RepartiteurOutboundPort)rbp.getKey()).processRequest(r);
 		System.out.println("No available mv for the application number: " + r.getAppId());
-		return false;
+		return true;
 	}
 
 	/**
@@ -103,7 +108,7 @@ public class Repartiteur extends AbstractComponent implements
 				this);
 		this.addPort(rbp);
 		rbp.localPublishPort();
-		rbps.add(rbp);
+		rbps.put(rbp, Status.NEW);
 
 		return URIused;
 	}
