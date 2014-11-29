@@ -1,6 +1,7 @@
 package fr.upmc.alasca.repartiteur.components;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import fr.upmc.alasca.repartiteur.ports.RepartiteurOutboundPort;
@@ -36,8 +37,13 @@ public class Repartiteur extends AbstractComponent implements
 
 	// uri du port permettant la connexion dynamique
 	protected String RepartiteurURIDCC;
-
+	
+	// Liste des machines virtuelles du repartiteur de requetes
 	protected List<RepartiteurOutboundPort> rbps = new ArrayList<RepartiteurOutboundPort>();
+	
+	// Derniere machine virtuelle a avoir recu une requete du repartiteur
+	protected Iterator<RepartiteurOutboundPort> current_rbp = rbps.iterator();
+	
 	/**
 	 * Constructeur du repartiteur
 	 * 
@@ -62,22 +68,21 @@ public class Repartiteur extends AbstractComponent implements
 	}
 
 	/**
-	 * Transmet la requete r a une machine virtuelle dont la queue n'est pas
-	 * pleine
+	 * Transmet la requete r a une machine virtuelle
+	 * Les machines virtuelles recoivent tour a tour les requetes envoyes par
+	 * le repartiteur de requetes. 
 	 *
 	 * @param r requete a transmettre
 	 * @return false si toutes les machines virtuelle ont une queue pleine
 	 * @throws Exception
 	 */
 	public boolean processRequest(Request r) throws Exception {
-		for (RepartiteurOutboundPort rbp : rbps) {
-
-			if (!rbp.queueIsFull()) {
-
-				rbp.processRequest(r);
-				return true;
-			}
-		}
+		RepartiteurOutboundPort rbp;
+		// Fin de la liste de machines virtuelles du repartiteur de requetes
+		if (!current_rbp.hasNext())
+			current_rbp = rbps.iterator();
+		rbp = current_rbp.next();
+		rbp.processRequest(r);
 		System.out.println("No available mv for the application number: " + r.getAppId());
 		return false;
 	}
