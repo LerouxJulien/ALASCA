@@ -7,6 +7,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
+import fr.upmc.alasca.computer.enums.Status;
 import fr.upmc.alasca.computer.interfaces.VMProviderI;
 import fr.upmc.alasca.computer.ports.VMInboudPort;
 import fr.upmc.alasca.requestgen.objects.Request;
@@ -41,19 +42,7 @@ public class VirtualMachine extends AbstractComponent {
 	// Frequence des coeurs de la VM
 	private final List<Double> frequencies;
 
-	// Statut de la VM
-	// NEW  : VM venant d'etre deployee (Aucune requete n'est traitee.)
-	// FREE : Libre (Au moins un fil d'execution est libre.)
-	// BUSY : Occupe (Tous les fils d'execution sont occupes.)
-	// IDLE : En attente d'eutanasie (S'il ne fout rien pendant X temps.)
-	private enum Status {
-		NEW, FREE, BUSY, IDLE
-	}
-
 	private Status status;
-
-	// Taille maximale de la file d'attente
-	private final int queueMax;
 
 	// Nombre de requete traites par la VM
 	private int nbRequest;
@@ -82,12 +71,11 @@ public class VirtualMachine extends AbstractComponent {
 	 * @throws Exception
 	 */
 	public VirtualMachine(String port, String mvID, Integer appID,
-			Integer queueMax, ArrayList<Double> frequencies) throws Exception {
+			ArrayList<Double> frequencies) throws Exception {
 		super();
 		this.mvID = mvID;
 		this.appID = appID;
 		this.nbCores = frequencies.size();
-		this.queueMax = queueMax;
 		this.frequencies = new ArrayList<Double>(frequencies);
 		this.status = Status.NEW;
 		this.nbRequest = 0;
@@ -185,15 +173,6 @@ public class VirtualMachine extends AbstractComponent {
 	}
 
 	/**
-	 * Retourne la taille maximale de la file d'attente
-	 * 
-	 * @return queueMax
-	 */
-	public int getQueueMax() {
-		return queueMax;
-	}
-
-	/**
 	 * Retourne le nombre de requetes dans la file d'attente
 	 * 
 	 * @return size
@@ -247,50 +226,31 @@ public class VirtualMachine extends AbstractComponent {
 	public void requestArrivalEvent(Request r) throws Exception {
 		assert r != null;
 		long t = System.currentTimeMillis();
-		// La file d'attente est pleine.
-		if (this.queueIsFull()) {
+		this.queue.add(r);
+		System.out.println("Accepting request       " + r + " at "
+				+ TimeProcessing.toString(t) + " --- Application number : "
+				+ r.getAppId());
+		r.setArrivalTime(t);
+		// Aucun thread n'est disponible pour traiter la requete courante.
+		if (!this.hasAvailableCore()) {
 			status = Status.BUSY;
-			System.out.println("Rejected request       " + r + " at "
-					+ TimeProcessing.toString(t) + " --- VirtualMachine number : "
-					+ this.mvID);
-		}
-		// Au moins une file d'execution est libre.
-		else {
-			this.queue.add(r);
-			System.out.println("Accepting request       " + r + " at "
-					+ TimeProcessing.toString(t) + " --- Application number : "
-					+ r.getAppId());
-			r.setArrivalTime(t);
-			// Aucun thread n'est disponible pour traiter la requete courante.
-			if (!this.hasAvailableCore()) {
-				status = Status.BUSY;
-				System.out.println("Queueing request " + r);
-			} else {
-				status = Status.FREE;
-				// Parcours la liste de fils d'execution
-				for (compteurCyclique = (compteurCyclique + 1) % getNbCores();
-						compteurCyclique < nbCores;
-						compteurCyclique = (compteurCyclique + 1) % getNbCores()) {
-					// Verifie la disponibilite des fils d'execution pour les
-					// requetes suivantes.
-					if (getNbCoresUsed() == nbCores - 1)
-						status = Status.BUSY;
-					if (threads.get(compteurCyclique).isWaiting()) {
-						threads.get(compteurCyclique).process();
-						break;
-					}
+			System.out.println("Queueing request " + r);
+		} else {
+			status = Status.FREE;
+			// Parcours la liste de fils d'execution
+			for (compteurCyclique = (compteurCyclique + 1) % getNbCores();
+					compteurCyclique < nbCores;
+					compteurCyclique = (compteurCyclique + 1) % getNbCores()) {
+				// Verifie la disponibilite des fils d'execution pour les
+				// requetes suivantes.
+				if (getNbCoresUsed() == nbCores - 1)
+					status = Status.BUSY;
+				if (threads.get(compteurCyclique).isWaiting()) {
+					threads.get(compteurCyclique).process();
+					break;
 				}
 			}
 		}
-	}
-
-	/**
-	 * Teste la taille de la file d'attente
-	 * 
-	 * @return boolean
-	 */
-	public boolean queueIsFull() {
-		return getQueueSize() >= queueMax;
 	}
 
 	/**
