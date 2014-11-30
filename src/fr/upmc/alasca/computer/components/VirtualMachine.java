@@ -7,7 +7,9 @@ import java.util.concurrent.Future;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
+import fr.upmc.alasca.computer.enums.Status;
 import fr.upmc.alasca.computer.interfaces.VMProviderI;
+import fr.upmc.alasca.computer.objects.VMMessages;
 import fr.upmc.alasca.computer.ports.VMInboudPort;
 import fr.upmc.alasca.requestgen.objects.Request;
 import fr.upmc.alasca.requestgen.utils.TimeProcessing;
@@ -46,10 +48,6 @@ public class VirtualMachine extends AbstractComponent {
 	// FREE : Libre (Au moins un fil d'execution est libre.)
 	// BUSY : Occupe (Tous les fils d'execution sont occupes.)
 	// IDLE : En attente d'eutanasie (S'il ne fout rien pendant X temps.)
-	private enum Status {
-		NEW, FREE, BUSY, IDLE
-	}
-
 	private Status status;
 
 	// Nombre de requete traites par la VM
@@ -98,6 +96,9 @@ public class VirtualMachine extends AbstractComponent {
 		PortI p = new VMInboudPort(port, this);
 		this.addPort(p);
 		p.localPublishPort();
+		
+		VMMessages m = new VMMessages(getMvID(), status);
+		//notifyRR(m);
 	}
 
 	/**
@@ -232,38 +233,33 @@ public class VirtualMachine extends AbstractComponent {
 	public void requestArrivalEvent(Request r) throws Exception {
 		assert r != null;
 		long t = System.currentTimeMillis();
-		// Toutes les files d'execution sont occupees.
-		if (this.hasAvailableCore()) {
+		// La requete est directement placee dans la file d'attente.
+		this.queue.add(r);
+		System.out.println("Accepting request       " + r + " at "
+				+ TimeProcessing.toString(t) + " --- Application number : "
+				+ r.getAppId());
+		r.setArrivalTime(t);
+		// Aucun thread n'est disponible pour traiter la requete courante.
+		if (!this.hasAvailableCore()) {
 			status = Status.BUSY;
-			System.out.println("Rejected request       " + r + " at "
-					+ TimeProcessing.toString(t) + " --- VirtualMachine number : "
-					+ this.mvID);
-		}
-		// Au moins une file d'execution est libre.
-		else {
-			this.queue.add(r);
-			System.out.println("Accepting request       " + r + " at "
-					+ TimeProcessing.toString(t) + " --- Application number : "
-					+ r.getAppId());
-			r.setArrivalTime(t);
-			// Aucun thread n'est disponible pour traiter la requete courante.
-			if (!this.hasAvailableCore()) {
-				status = Status.BUSY;
-				System.out.println("Queueing request " + r);
-			} else {
-				status = Status.FREE;
-				// Parcours la liste de fils d'execution
-				for (compteurCyclique = (compteurCyclique + 1) % getNbCores();
-						compteurCyclique < nbCores;
-						compteurCyclique = (compteurCyclique + 1) % getNbCores()) {
-					// Verifie la disponibilite des fils d'execution pour les
-					// requetes suivantes.
-					if (getNbCoresUsed() == nbCores - 1)
-						status = Status.BUSY;
-					if (threads.get(compteurCyclique).isWaiting()) {
-						threads.get(compteurCyclique).process();
-						break;
-					}
+			System.out.println("Queueing request " + r);
+			VMMessages m = new VMMessages(getMvID(), status);
+			//notifyRR(m);
+		} else {
+			// Parcours la liste de fils d'execution
+			for (compteurCyclique = (compteurCyclique + 1) % getNbCores();
+					compteurCyclique < nbCores;
+					compteurCyclique = (compteurCyclique + 1) % getNbCores()) {
+				// Verifie la disponibilite des fils d'execution pour les
+				// requetes suivantes.
+				if (getNbCoresUsed() == nbCores - 1) {
+					status = Status.BUSY;
+					VMMessages m = new VMMessages(getMvID(), status);
+					//notifyRR(m);
+				}
+				if (threads.get(compteurCyclique).isWaiting()) {
+					threads.get(compteurCyclique).process();
+					break;
 				}
 			}
 		}
@@ -412,6 +408,10 @@ public class VirtualMachine extends AbstractComponent {
 			} else {
 				this.process();
 			}
+			status = Status.FREE;
+			VMMessages m = new VMMessages(getMvID(), getStatus(),
+					servicing.toString(), st);
+			//notifyRR(m);
 		}
 
 	}

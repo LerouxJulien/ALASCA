@@ -1,6 +1,7 @@
 package fr.upmc.alasca.repartiteur.ports;
 
 import fr.upmc.alasca.computer.interfaces.VMProviderI;
+import fr.upmc.alasca.computer.objects.VMMessages;
 import fr.upmc.alasca.requestgen.objects.Request;
 import fr.upmc.components.ComponentI;
 import fr.upmc.components.ports.AbstractOutboundPort;
@@ -17,6 +18,11 @@ public class RepartiteurOutboundPort extends AbstractOutboundPort implements
 	@Override
 	public void processRequest(Request r) throws Exception {
 		((VMProviderI) this.connector).processRequest(r);
+	}
+	
+	@Override
+	public void notifyRR(VMMessages m) throws Exception {
+		((VMProviderI) this.connector).notifyRR(m);
 	}
 
 }

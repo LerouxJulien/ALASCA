@@ -3,6 +3,7 @@ package fr.upmc.alasca.computer.connectors;
 import java.io.Serializable;
 
 import fr.upmc.alasca.computer.interfaces.VMProviderI;
+import fr.upmc.alasca.computer.objects.VMMessages;
 import fr.upmc.alasca.requestgen.objects.Request;
 import fr.upmc.components.connectors.AbstractConnector;
 
@@ -20,4 +21,9 @@ public class VMConnector extends AbstractConnector implements VMProviderI,
 		((VMProviderI) this.offering).processRequest(r);
 	}
 
+	@Override
+	public void notifyRR(VMMessages m) throws Exception {
+		((VMProviderI) this.offering).notifyRR(m);
+	}
+	
 }

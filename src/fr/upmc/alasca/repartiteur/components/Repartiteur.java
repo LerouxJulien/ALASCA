@@ -1,8 +1,13 @@
 package fr.upmc.alasca.repartiteur.components;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
+import fr.upmc.alasca.computer.enums.Status;
+import fr.upmc.alasca.computer.objects.VMMessages;
 import fr.upmc.alasca.repartiteur.ports.RepartiteurOutboundPort;
 import fr.upmc.alasca.requestgen.interfaces.RequestArrivalI;
 import fr.upmc.alasca.requestgen.objects.Request;
@@ -37,7 +42,13 @@ public class Repartiteur extends AbstractComponent implements
 	// uri du port permettant la connexion dynamique
 	protected String RepartiteurURIDCC;
 
-	protected List<RepartiteurOutboundPort> rbps = new ArrayList<RepartiteurOutboundPort>();
+	// Liste des ports des machines virtuelles
+	/* A virer */protected List<RepartiteurOutboundPort> rbps;
+	protected Map<RepartiteurOutboundPort, Status> robps;
+	
+	// Port courant de la VM traitant la derniere requete recues
+	protected Iterator<Map.Entry<RepartiteurOutboundPort, Status>> robpIt;
+	
 	/**
 	 * Constructeur du repartiteur
 	 * 
@@ -49,6 +60,9 @@ public class Repartiteur extends AbstractComponent implements
 
 		this.appId = appId;
 		this.RepartiteurURIDCC = outboundPortURI + "-dcc";
+		/* A virer */this.rbps = new ArrayList<RepartiteurOutboundPort>();
+		this.robps = new HashMap<RepartiteurOutboundPort, Status>();
+		this.robpIt = robps.entrySet().iterator();
 
 		this.addOfferedInterface(DynamicallyConnectableComponentI.class);
 		this.dccInboundPort = new DynamicallyConnectableComponentInboundPort(
@@ -60,24 +74,7 @@ public class Repartiteur extends AbstractComponent implements
 		}
 		this.addPort(dccInboundPort);
 	}
-
-	/**
-	 * Transmet la requete r a une machine virtuelle dont la queue n'est pas
-	 * pleine
-	 *
-	 * @param r requete a transmettre
-	 * @return false si toutes les machines virtuelle ont une queue pleine
-	 * @throws Exception
-	 */
-	public boolean processRequest(Request r) throws Exception {
-		for (RepartiteurOutboundPort rbp : rbps) {
-			rbp.processRequest(r);
-			return true;
-		}
-		System.out.println("No available mv for the application number: " + r.getAppId());
-		return false;
-	}
-
+	
 	/**
 	 * Ajoute un nouveau port vers une machine virtuelle
 	 *
@@ -94,18 +91,10 @@ public class Repartiteur extends AbstractComponent implements
 				this);
 		this.addPort(rbp);
 		rbp.localPublishPort();
-		rbps.add(rbp);
+		/* A virer */rbps.add(rbp);
+		robps.put(rbp, null);
 
 		return URIused;
-	}
-
-	/**
-	 * 
-	 * 
-	 * @return uri du port permettant la connexion dynamique
-	 */
-	public String getRepartiteurURIDCC() {
-		return RepartiteurURIDCC;
 	}
 
 	@Override
@@ -128,4 +117,64 @@ public class Repartiteur extends AbstractComponent implements
 	public int getAppId() {
 		return appId;
 	}
+	
+	/**
+	 * 
+	 * 
+	 * @return uri du port permettant la connexion dynamique
+	 */
+	public String getRepartiteurURIDCC() {
+		return RepartiteurURIDCC;
+	}
+
+	/**
+	 * Notifie le repartiteur de requetes de l'etat d'une VM et/ou de la fin de
+	 * traitement d'une requete
+	 * 
+	 * @param m Notification de la VM au repartiteur de requetes
+	 * @throws Exception
+	 */
+	public void notifyRR(VMMessages m) throws Exception {
+		
+	}
+
+	/**
+	 * Transmet la requete r a une machine virtuelle
+	 * 
+	 * Les machines virtuelles recoivent tour a tour les requetes transmises par
+	 * le repartiteur de requetes (pour le moment).
+	 *
+	 * @param r requete a transmettre
+	 * @return false si aucune machine virtuelle ne peut traiter la requete
+	 * @throws Exception
+	 */
+	// TODO : Changer la methode d'attribution des requetes
+	/*public boolean processRequest(Request r) throws Exception {
+		for (RepartiteurOutboundPort rbp : rbps) {
+			rbp.processRequest(r);
+			return true;
+		}
+		System.out.println("No available mv for the application number: " + r.getAppId());
+		return false;
+	}*/
+	public boolean processRequest(Request r) throws Exception {
+		/*
+		Map.Entry<RepartiteurOutboundPort, Status> vm = null;
+		if (!robpIt.hasNext()) {
+			robpIt = robps.entrySet().iterator();
+			return false;
+		}
+		else {
+			vm = robpIt.next();
+			vm.getKey().processRequest(r);
+		}
+		*/
+		for (RepartiteurOutboundPort robp : robps.keySet()) {
+			robp.processRequest(r);
+			return true;
+		}
+		System.out.println("No available mv for the application number: " + r.getAppId());
+		return false;
+	}
+	
 }
