@@ -71,12 +71,8 @@ public class Repartiteur extends AbstractComponent implements
 	 */
 	public boolean processRequest(Request r) throws Exception {
 		for (RepartiteurOutboundPort rbp : rbps) {
-
-			if (!rbp.queueIsFull()) {
-
-				rbp.processRequest(r);
-				return true;
-			}
+			rbp.processRequest(r);
+			return true;
 		}
 		System.out.println("No available mv for the application number: " + r.getAppId());
 		return false;

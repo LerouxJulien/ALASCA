@@ -18,9 +18,4 @@ public interface VMProviderI extends OfferedI, RequiredI {
 	 */
 	public void processRequest(Request r) throws Exception;
 
-	/**
-	 * @return true si la queue de la VM est pleine
-	 * @throws Exception
-	 */
-	public boolean queueIsFull() throws Exception;
 }

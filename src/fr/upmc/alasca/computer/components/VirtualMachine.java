@@ -52,9 +52,6 @@ public class VirtualMachine extends AbstractComponent {
 
 	private Status status;
 
-	// Taille maximale de la file d'attente
-	private final int queueMax;
-
 	// Nombre de requete traites par la VM
 	private int nbRequest;
 
@@ -77,8 +74,6 @@ public class VirtualMachine extends AbstractComponent {
 	 * @param appID
 	 * @param frequencies
 	 *            Liste des frequences des coeurs de la machine virtuelle
-	 * @param queueMax
-	 *            Nombre maximum de requetes dans la queue
 	 * @throws Exception
 	 */
 	public VirtualMachine(String port, String mvID, Integer appID,
@@ -87,7 +82,6 @@ public class VirtualMachine extends AbstractComponent {
 		this.mvID = mvID;
 		this.appID = appID;
 		this.nbCores = frequencies.size();
-		this.queueMax = queueMax;
 		this.frequencies = new ArrayList<Double>(frequencies);
 		this.status = Status.NEW;
 		this.nbRequest = 0;
@@ -185,15 +179,6 @@ public class VirtualMachine extends AbstractComponent {
 	}
 
 	/**
-	 * Retourne la taille maximale de la file d'attente
-	 * 
-	 * @return queueMax
-	 */
-	public int getQueueMax() {
-		return queueMax;
-	}
-
-	/**
 	 * Retourne le nombre de requetes dans la file d'attente
 	 * 
 	 * @return size
@@ -247,8 +232,8 @@ public class VirtualMachine extends AbstractComponent {
 	public void requestArrivalEvent(Request r) throws Exception {
 		assert r != null;
 		long t = System.currentTimeMillis();
-		// La file d'attente est pleine.
-		if (this.queueIsFull()) {
+		// Toutes les files d'execution sont occupees.
+		if (this.hasAvailableCore()) {
 			status = Status.BUSY;
 			System.out.println("Rejected request       " + r + " at "
 					+ TimeProcessing.toString(t) + " --- VirtualMachine number : "
@@ -282,15 +267,6 @@ public class VirtualMachine extends AbstractComponent {
 				}
 			}
 		}
-	}
-
-	/**
-	 * Teste la taille de la file d'attente
-	 * 
-	 * @return boolean
-	 */
-	public boolean queueIsFull() {
-		return getQueueSize() >= queueMax;
 	}
 
 	/**

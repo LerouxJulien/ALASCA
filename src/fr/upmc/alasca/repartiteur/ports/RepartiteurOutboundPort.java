@@ -19,9 +19,4 @@ public class RepartiteurOutboundPort extends AbstractOutboundPort implements
 		((VMProviderI) this.connector).processRequest(r);
 	}
 
-	@Override
-	public boolean queueIsFull() throws Exception {
-		return ((VMProviderI) this.connector).queueIsFull();
-	}
-
 }

@@ -20,9 +20,4 @@ public class VMConnector extends AbstractConnector implements VMProviderI,
 		((VMProviderI) this.offering).processRequest(r);
 	}
 
-	@Override
-	public boolean queueIsFull() throws Exception {
-		return ((VMProviderI) this.offering).queueIsFull();
-	}
-
 }
