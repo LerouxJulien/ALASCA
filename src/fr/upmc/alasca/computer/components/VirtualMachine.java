@@ -14,6 +14,7 @@ import fr.upmc.alasca.computer.ports.VMInboudPort;
 import fr.upmc.alasca.requestgen.objects.Request;
 import fr.upmc.alasca.requestgen.utils.TimeProcessing;
 import fr.upmc.components.AbstractComponent;
+import fr.upmc.components.cvm.AbstractCVM;
 import fr.upmc.components.ports.PortI;
 
 /**
@@ -95,7 +96,11 @@ public class VirtualMachine extends AbstractComponent {
 		this.addOfferedInterface(VMProviderI.class);
 		PortI p = new VMInboudPort(port, this);
 		this.addPort(p);
-		p.localPublishPort();
+		if (AbstractCVM.isDistributed) {
+			p.publishPort() ;
+		} else {
+			p.localPublishPort() ;
+		}
 		
 		VMMessages m = new VMMessages(getMvID(), status);
 		//notifyRR(m);

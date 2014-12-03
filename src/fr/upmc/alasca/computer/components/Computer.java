@@ -188,7 +188,7 @@ public class Computer extends AbstractComponent implements ComputerProviderI {
 		newvm.localPublishPort();
 
 		this.addPort(newvm);
-		newvm.doConnection(""
+		newvm.doConnection("request_generator_jvm_uri" //TODO a changer
 				+ AbstractCVM.DYNAMIC_COMPONENT_CREATOR_INBOUNDPORT_URI,
 				DynamicComponentCreationConnector.class.getCanonicalName());
 
