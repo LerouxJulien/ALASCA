@@ -1,5 +1,7 @@
 package fr.upmc.alasca.controleur.ports;
 
+import fr.upmc.alasca.computer.exceptions.BadDestroyException;
+import fr.upmc.alasca.computer.exceptions.BadReinitialisationException;
 import fr.upmc.alasca.computer.interfaces.ComputerProviderI;
 import fr.upmc.components.ComponentI;
 import fr.upmc.components.ports.AbstractOutboundPort;
@@ -18,22 +20,19 @@ public class ControleurOutboundPort extends AbstractOutboundPort implements
 	}
 
 	@Override
-	public boolean deployVM(int nbCores, int app, String RepartiteurURI,
+	public void deployVM(int nbCores, int app, String RepartiteurURI,
 			String RepartiteurURIDCC) throws Exception {
-		return ((ComputerProviderI) this.connector).deployVM(nbCores, app,
-				RepartiteurURI, RepartiteurURIDCC);
+		((ComputerProviderI) this.connector).deployVM(nbCores, app, RepartiteurURI, RepartiteurURIDCC);
 	}
 
 	@Override
-	public boolean destroyVM(String mv) throws Exception {
-		// TODO Auto-generated method stub
-		return false;
+	public void destroyVM(String mv) throws BadDestroyException {
+		((ComputerProviderI) this.connector).destroyVM(mv);
 	}
 
 	@Override
-	public boolean reInit(String vm) throws Exception {
-		// TODO Auto-generated method stub
-		return false;
+	public void reInit(String vm) throws BadReinitialisationException {
+		((ComputerProviderI) this.connector).reInit(vm);
 	}
 
 	@Override

@@ -8,8 +8,9 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
 import fr.upmc.alasca.computer.enums.Status;
+import fr.upmc.alasca.computer.exceptions.BadAddRequestException;
 import fr.upmc.alasca.computer.interfaces.VMProviderI;
-import fr.upmc.alasca.computer.objects.VMMessages;
+//import fr.upmc.alasca.computer.objects.VMMessages;
 import fr.upmc.alasca.computer.ports.VMInboudPort;
 import fr.upmc.alasca.requestgen.objects.Request;
 import fr.upmc.alasca.requestgen.utils.TimeProcessing;
@@ -102,7 +103,7 @@ public class VirtualMachine extends AbstractComponent {
 			p.localPublishPort() ;
 		}
 		
-		VMMessages m = new VMMessages(getMvID(), status);
+		//VMMessages m = new VMMessages(getMvID(), status);
 		//notifyRR(m);
 	}
 
@@ -110,11 +111,13 @@ public class VirtualMachine extends AbstractComponent {
 	 * Ajoute une requete a la file
 	 * 
 	 * @param req
-	 * 
-	 * @return boolean
+	 * @throws BadAddRequestException 
 	 */
-	public boolean addRequest(Request req) {
-		return queue.add(req);
+	public void addRequest(Request req) throws BadAddRequestException {
+		if(!queue.add(req)) {
+			throw new BadAddRequestException("Impossible d'ajouter une requête "
+					+ "dans la file !");
+		}
 	}
 
 	/**
@@ -248,7 +251,7 @@ public class VirtualMachine extends AbstractComponent {
 		if (!this.hasAvailableCore()) {
 			status = Status.BUSY;
 			System.out.println("Queueing request " + r);
-			VMMessages m = new VMMessages(getMvID(), status);
+			//VMMessages m = new VMMessages(getMvID(), status);
 			//notifyRR(m);
 		} else {
 			// Parcours la liste de fils d'execution
@@ -259,7 +262,7 @@ public class VirtualMachine extends AbstractComponent {
 				// requetes suivantes.
 				if (getNbCoresUsed() == nbCores - 1) {
 					status = Status.BUSY;
-					VMMessages m = new VMMessages(getMvID(), status);
+					//VMMessages m = new VMMessages(getMvID(), status);
 					//notifyRR(m);
 				}
 				if (threads.get(compteurCyclique).isWaiting()) {
@@ -414,8 +417,8 @@ public class VirtualMachine extends AbstractComponent {
 				this.process();
 			}
 			status = Status.FREE;
-			VMMessages m = new VMMessages(getMvID(), getStatus(),
-					servicing.toString(), st);
+			//VMMessages m = new VMMessages(getMvID(), getStatus(),
+			//		servicing.toString(), st);
 			//notifyRR(m);
 		}
 

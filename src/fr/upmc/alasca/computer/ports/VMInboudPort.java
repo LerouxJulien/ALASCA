@@ -6,6 +6,7 @@ import fr.upmc.alasca.computer.objects.VMMessages;
 import fr.upmc.alasca.requestgen.objects.Request;
 import fr.upmc.components.ComponentI;
 import fr.upmc.components.ports.AbstractInboundPort;
+//import fr.upmc.components.ports.AbstractTwoWayPort;
 
 public class VMInboudPort extends AbstractInboundPort implements VMProviderI {
 

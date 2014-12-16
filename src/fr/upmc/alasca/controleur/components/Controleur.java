@@ -1,10 +1,11 @@
 package fr.upmc.alasca.controleur.components;
 
 import java.util.ArrayList;
-import java.util.List;
 import java.util.HashMap;
 
 import fr.upmc.alasca.computer.interfaces.VMProviderI;
+import fr.upmc.alasca.controleur.exceptions.BadDeploymentException;
+import fr.upmc.alasca.controleur.exceptions.NoRepartitorException;
 import fr.upmc.alasca.controleur.ports.ControleurInboundPort;
 import fr.upmc.alasca.controleur.ports.ControleurOutboundPort;
 import fr.upmc.alasca.repartiteur.components.Repartiteur;
@@ -65,8 +66,8 @@ public class Controleur extends AbstractComponent {
 	 * @return true si une vm a effectivement ete deployee
 	 * @throws Exception
 	 */
-	public boolean deployVM(Repartiteur r, String repartiteurURIFixe)
-			throws Exception {
+	public void deployVM(Repartiteur r, String repartiteurURIFixe)
+		throws Exception {
 		// TODO Modifier politique de deploiement
 		String uri;
 		for (ControleurOutboundPort cbop : portsToMachine) {
@@ -81,36 +82,41 @@ public class Controleur extends AbstractComponent {
 				else
 					cbop.deployVM(2, r.getAppId(), uri,
 							r.getRepartiteurURIDCC());
-				return true;
 			}
 		}
-		return false;
+		throw new BadDeploymentException("Erreur de déploiement de la VM ! " +
+		"URI du répartiteur : " + repartiteurURIFixe);
 	}
 
 	/**
 	 * Accepte une requete du generateur de requete
 	 *
 	 * @param r			Requete reçue par le Controleur
+	 * @throws NoRepartitorException 
 	 * @throws Exception
 	 */
-	public void acceptRequest(Request r) throws Exception {
+	public void acceptRequest(Request r) throws NoRepartitorException{
 		if(rbs.containsKey(r.getAppId())){
 
             Repartiteur rr = rbs.get(r.getAppId());
 
-            if (!rr.processRequest(r)) {
-                String URInewPortRepartiteur = repartiteurURIgenericName
-							+ rr.getAppId();
-                if (this.deployVM(rr, URInewPortRepartiteur))
-						rr.processRequest(r);
-                else
-						System.out
-								.println("Rejected request: all queues full and maximal number of mv reached");
+            try {
+            	rr.processRequest(r);
+            } catch (Exception e){
+            	String URInewPortRepartiteur = repartiteurURIgenericName + rr.getAppId();
+	            try {
+					deployVM(rr, URInewPortRepartiteur);
+					rr.processRequest(r);
+				} catch (BadDeploymentException e2) {
+					System.out.println("Rejected request: all queues full and maximal number of mv reached");
+				} catch (Exception e2) {
+					System.out.println("Echec de processRequest ! requête : " + r.toString());
+				}
             }
-            return;
-
+            throw new NoRepartitorException("Rejected request: no dispatcher dedicated to the application number: "
+					+ r.getAppId());
 		}else{
-		System.out
+			System.out
 				.println("Rejected request: no dispatcher dedicated to the application number: "
 						+ r.getAppId());
 		}
@@ -125,8 +131,10 @@ public class Controleur extends AbstractComponent {
 	 * @throws Exception
 	 */
 	public void acceptApplication(Integer appId) throws Exception {
-		rbs.put(appId,new Repartiteur(repartiteurURIgenericName + appId, appId));
-		System.out.println("New accepted application: " + appId);
+		if(!rbs.containsKey(appId)){
+			rbs.put(appId,new Repartiteur(repartiteurURIgenericName + appId, appId));
+			System.out.println("New accepted application: " + appId);
+		}
 	}
 
 	/**

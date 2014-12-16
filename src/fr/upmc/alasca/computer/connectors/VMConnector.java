@@ -6,6 +6,7 @@ import fr.upmc.alasca.computer.interfaces.VMProviderI;
 import fr.upmc.alasca.computer.objects.VMMessages;
 import fr.upmc.alasca.requestgen.objects.Request;
 import fr.upmc.components.connectors.AbstractConnector;
+//import fr.upmc.components.connectors.AbstractTwoWayConnector;
 
 /**
  * La classe VMConnector implemente un connecteur entre un Repartiteur et une

@@ -8,6 +8,7 @@ import java.util.Map;
 
 import fr.upmc.alasca.computer.enums.Status;
 import fr.upmc.alasca.computer.objects.VMMessages;
+import fr.upmc.alasca.computer.exceptions.NotEnoughCapacityVMException;
 import fr.upmc.alasca.repartiteur.ports.RepartiteurOutboundPort;
 import fr.upmc.alasca.requestgen.interfaces.RequestArrivalI;
 import fr.upmc.alasca.requestgen.objects.Request;
@@ -157,7 +158,7 @@ public class Repartiteur extends AbstractComponent implements
 		System.out.println("No available mv for the application number: " + r.getAppId());
 		return false;
 	}*/
-	public boolean processRequest(Request r) throws Exception {
+	public void processRequest(Request r) throws Exception {
 		/*
 		Map.Entry<RepartiteurOutboundPort, Status> vm = null;
 		if (!robpIt.hasNext()) {
@@ -171,10 +172,9 @@ public class Repartiteur extends AbstractComponent implements
 		*/
 		for (RepartiteurOutboundPort robp : robps.keySet()) {
 			robp.processRequest(r);
-			return true;
+			return;
 		}
-		System.out.println("No available mv for the application number: " + r.getAppId());
-		return false;
+		throw new NotEnoughCapacityVMException("No available mv for the application number: " + r.getAppId());
 	}
 	
 }

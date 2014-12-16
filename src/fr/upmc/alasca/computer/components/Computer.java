@@ -4,6 +4,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import fr.upmc.alasca.computer.connectors.VMConnector;
+import fr.upmc.alasca.computer.exceptions.BadDestroyException;
+import fr.upmc.alasca.computer.exceptions.BadReinitialisationException;
+import fr.upmc.alasca.computer.exceptions.NotEnoughCapacityVMException;
 import fr.upmc.alasca.computer.interfaces.ComputerProviderI;
 import fr.upmc.alasca.computer.ports.ComputerInboundPort;
 import fr.upmc.components.AbstractComponent;
@@ -119,7 +122,7 @@ public class Computer extends AbstractComponent implements ComputerProviderI {
 	}
 
 	/**
-	 * Retourne le nombre de coeurs utilis� par les machines virtuelles
+	 * Retourne le nombre de coeurs utilisï¿½ par les machines virtuelles
 	 * 
 	 * @return nbCoresUsed
 	 */
@@ -159,24 +162,23 @@ public class Computer extends AbstractComponent implements ComputerProviderI {
 	 * l'application
 	 * 
 	 * @param nbCores
-	 * 			  Nombre de coeurs attribues � la machine virtuelle
+	 * 			  Nombre de coeurs attribues ï¿½ la machine virtuelle
 	 * @param app
 	 *			  ID de l'application
 	 * @param URIRepartiteurFixe
 	 *            URI du port dans Repartiteur
 	 * @param URIRepartiteurDCC
 	 *            URI du dcc dans Repartiteur
-	 * @return boolean
+	 * @throws Exception 
 	 */
-	public boolean deployVM(int nbCores, int app, String URIRepartiteurFixe,
+	public void deployVM(int nbCores, int app, String URIRepartiteurFixe,
 			String URIRepartiteurDCC) throws Exception {
 		// On verifie que le Computer a assez de coeurs pour allouer la machine
 		// virtuelle.
 		int nbCoresTotal = nbCores + nbCoresUsed;
 		if (nbCoresTotal > getFrequencies().size()) {
-			System.out.println("No more capacity for deploying "
-					+ "a new virtual machine");
-			return false;
+			throw new NotEnoughCapacityVMException("No more capacity for " +
+		"deploying a new virtual machine");
 		}
 		String mvID = (machineID * 1000 + ((cptVM++) % 1000)) + "";
 		List<Double> coresFreq = new ArrayList<Double>(frequencies.subList(
@@ -211,31 +213,40 @@ public class Computer extends AbstractComponent implements ComputerProviderI {
 		p.doDisconnection();
 		nbCoresUsed += nbCores;
 		System.out.println("Virtual Machine deployed");
-		return true;
 	}
 
 	/**
 	 * Detruit une machine virtuelle via son URI
 	 * 
 	 * @param vm
-	 * @return boolean
+	 * @throws BadDestroyException 
 	 */
 	@Override
-	public boolean destroyVM(String vm) {
-		// TODO
-		return true;
+	public void destroyVM(String vm) throws BadDestroyException {
+		// TODO : Destruction a implementer
+		boolean m = true; 
+		if (m) {
+			System.out.println("On détruit la machine.");
+		} else {
+			throw new BadDestroyException("Impossible de supprimer la VM : " + vm);
+		}
 	}
 
 	/**
 	 * Reinitialise une machine virtuelle via son URI
 	 * 
 	 * @param vm
-	 * @return boolean
+	 * @throws BadReinitialisationException 
 	 */
 	@Override
-	public boolean reInit(String vm) {
-		// TODO
-		return true;
+	public void reInit(String vm) throws BadReinitialisationException {
+		// TODO : Reinitialisation a implementer
+		boolean m = true; 
+		if (m) {
+			System.out.println("On détruit la machine.");
+		} else {
+			throw new BadReinitialisationException("Impossible de r�initialiser la VM : " + vm);
+		}
 	}
 
 }

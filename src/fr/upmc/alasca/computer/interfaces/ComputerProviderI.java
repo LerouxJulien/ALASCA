@@ -1,5 +1,7 @@
 package fr.upmc.alasca.computer.interfaces;
 
+import fr.upmc.alasca.computer.exceptions.BadDestroyException;
+import fr.upmc.alasca.computer.exceptions.BadReinitialisationException;
 import fr.upmc.components.interfaces.OfferedI;
 
 /**
@@ -36,7 +38,7 @@ public interface ComputerProviderI extends OfferedI {
 	 *            URI du dcc dans Repartiteur
 	 * @return boolean
 	 */
-	public boolean deployVM(int nbCores, int app, String URIRepartiteurFixe,
+	public void deployVM(int nbCores, int app, String URIRepartiteurFixe,
 			String URIRepartiteurDCC) throws Exception;
 
 	/**
@@ -45,7 +47,7 @@ public interface ComputerProviderI extends OfferedI {
 	 * @param mv
 	 * @return boolean
 	 */
-	public boolean destroyVM(String mv) throws Exception;
+	public void destroyVM(String mv) throws BadDestroyException;
 
 	/**
 	 * Reinitialise une machine virtuelle via son URI
@@ -53,6 +55,6 @@ public interface ComputerProviderI extends OfferedI {
 	 * @param vm
 	 * @return boolean
 	 */
-	public boolean reInit(String vm) throws Exception;
+	public void reInit(String vm) throws BadReinitialisationException;
 
 }

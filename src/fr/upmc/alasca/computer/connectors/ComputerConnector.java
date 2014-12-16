@@ -1,5 +1,7 @@
 package fr.upmc.alasca.computer.connectors;
 
+import fr.upmc.alasca.computer.exceptions.BadDestroyException;
+import fr.upmc.alasca.computer.exceptions.BadReinitialisationException;
 import fr.upmc.alasca.computer.interfaces.ComputerProviderI;
 import fr.upmc.components.connectors.AbstractConnector;
 
@@ -11,22 +13,20 @@ public class ComputerConnector extends AbstractConnector implements
 		ComputerProviderI {
 
 	@Override
-	public boolean destroyVM(String mv) throws Exception {
-		// TODO Auto-generated method stub
-		return false;
+	public void destroyVM(String mv) throws BadDestroyException {
+		((ComputerProviderI) this.offering).destroyVM(mv);
 	}
 
 	@Override
-	public boolean deployVM(int nbCores, int app, String RepartiteurURI,
+	public void deployVM(int nbCores, int app, String RepartiteurURI,
 			String RepartiteurURIDCC) throws Exception {
-		return ((ComputerProviderI) this.offering).deployVM(nbCores, app,
+		((ComputerProviderI) this.offering).deployVM(nbCores, app,
 				RepartiteurURI, RepartiteurURIDCC);
 	}
 
 	@Override
-	public boolean reInit(String vm) throws Exception {
-		// TODO Auto-generated method stub
-		return false;
+	public void reInit(String vm) throws BadReinitialisationException {
+		((ComputerProviderI) this.offering).reInit(vm);
 	}
 
 	@Override
