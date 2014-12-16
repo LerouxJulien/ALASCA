@@ -1,7 +1,7 @@
 package fr.upmc.alasca.computer.connectors;
 
-import fr.upmc.alasca.computer.exceptions.BadDestroyException;
-import fr.upmc.alasca.computer.exceptions.BadReinitialisationException;
+//import fr.upmc.alasca.computer.exceptions.BadDestroyException;
+//import fr.upmc.alasca.computer.exceptions.BadReinitialisationException;
 import fr.upmc.alasca.computer.interfaces.ComputerProviderI;
 import fr.upmc.components.connectors.AbstractConnector;
 
@@ -13,7 +13,7 @@ public class ComputerConnector extends AbstractConnector implements
 		ComputerProviderI {
 
 	@Override
-	public void destroyVM(String mv) throws BadDestroyException {
+	public void destroyVM(String mv) throws Exception {
 		((ComputerProviderI) this.offering).destroyVM(mv);
 	}
 
@@ -25,7 +25,7 @@ public class ComputerConnector extends AbstractConnector implements
 	}
 
 	@Override
-	public void reInit(String vm) throws BadReinitialisationException {
+	public void reInit(String vm) throws Exception {
 		((ComputerProviderI) this.offering).reInit(vm);
 	}
 

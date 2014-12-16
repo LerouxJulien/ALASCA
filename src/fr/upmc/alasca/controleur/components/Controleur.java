@@ -102,23 +102,24 @@ public class Controleur extends AbstractComponent {
 
             try {
             	rr.processRequest(r);
-            } catch (Exception e){
+            } catch (Exception e) {
             	String URInewPortRepartiteur = repartiteurURIgenericName + rr.getAppId();
 	            try {
 					deployVM(rr, URInewPortRepartiteur);
 					rr.processRequest(r);
 				} catch (BadDeploymentException e2) {
-					System.out.println("Rejected request: all queues full and maximal number of mv reached");
+					System.out.println("Rejected request: all queues full and "
+							+ "maximal number of mv reached");
 				} catch (Exception e2) {
-					System.out.println("Echec de processRequest ! requête : " + r.toString());
+					System.out.println("Echec de processRequest ! requête : "
+							+ r.toString());
 				}
             }
-            throw new NoRepartitorException("Rejected request: no dispatcher dedicated to the application number: "
-					+ r.getAppId());
-		}else{
-			System.out
-				.println("Rejected request: no dispatcher dedicated to the application number: "
-						+ r.getAppId());
+            //throw new NoRepartitorException("Rejected request: no dispatcher "
+            //		+ "dedicated to the application number: " + r.getAppId());
+		} else {
+			System.out.println("Rejected request: no dispatcher dedicated to "
+						+ "the application number: " + r.getAppId());
 		}
 	}
 

@@ -224,12 +224,12 @@ public class Computer extends AbstractComponent implements ComputerProviderI {
 	@Override
 	public void destroyVM(String vm) throws BadDestroyException {
 		// TODO : Destruction a implementer
-		boolean m = true; 
+		/*boolean m = true; 
 		if (m) {
 			System.out.println("On détruit la machine.");
 		} else {
 			throw new BadDestroyException("Impossible de supprimer la VM : " + vm);
-		}
+		}*/
 	}
 
 	/**
@@ -241,12 +241,12 @@ public class Computer extends AbstractComponent implements ComputerProviderI {
 	@Override
 	public void reInit(String vm) throws BadReinitialisationException {
 		// TODO : Reinitialisation a implementer
-		boolean m = true; 
+		/*boolean m = true; 
 		if (m) {
 			System.out.println("On détruit la machine.");
 		} else {
 			throw new BadReinitialisationException("Impossible de r�initialiser la VM : " + vm);
-		}
+		}*/
 	}
 
 }

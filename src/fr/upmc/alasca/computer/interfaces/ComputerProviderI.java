@@ -45,16 +45,16 @@ public interface ComputerProviderI extends OfferedI {
 	 * Detruit une machine virtuelle via son URI
 	 * 
 	 * @param mv
-	 * @return boolean
+	 * @throws BadDestroyException
 	 */
-	public void destroyVM(String mv) throws BadDestroyException;
+	public void destroyVM(String mv) throws Exception;
 
 	/**
 	 * Reinitialise une machine virtuelle via son URI
 	 * 
 	 * @param vm
-	 * @return boolean
+	 * @throws BadReinitialisationException
 	 */
-	public void reInit(String vm) throws BadReinitialisationException;
+	public void reInit(String vm) throws Exception;
 
 }

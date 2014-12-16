@@ -1,9 +1,24 @@
 package fr.upmc.alasca.computer.exceptions;
 
-public class NotEnoughCapacityVMException extends Exception {
+import java.rmi.RemoteException;
+
+public class NotEnoughCapacityVMException extends RemoteException {
+	
 	private static final long serialVersionUID = 1190925171580256858L;
 
-	public NotEnoughCapacityVMException(String s){
-		super(s);
+	public NotEnoughCapacityVMException()
+	{
+		super();
 	}
+	
+	public NotEnoughCapacityVMException(String message)
+	{
+		super(message);
+	}
+	
+	public NotEnoughCapacityVMException(String message, Throwable cause)
+	{
+		super(message, cause);
+	}
+	
 }
