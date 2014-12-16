@@ -1,8 +1,6 @@
 package fr.upmc.alasca.computer.exceptions;
 
-import java.rmi.RemoteException;
-
-public class BadReinitialisationException extends RemoteException {
+public class BadReinitialisationException extends Exception {
 	
 	private static final long serialVersionUID = -8401861574612713618L;
 

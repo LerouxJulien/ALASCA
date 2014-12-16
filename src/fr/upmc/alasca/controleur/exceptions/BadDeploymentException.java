@@ -1,8 +1,6 @@
 package fr.upmc.alasca.controleur.exceptions;
 
-import java.rmi.RemoteException;
-
-public class BadDeploymentException extends RemoteException {
+public class BadDeploymentException extends Exception {
 	
 	private static final long serialVersionUID = -5083689331391719975L;
 

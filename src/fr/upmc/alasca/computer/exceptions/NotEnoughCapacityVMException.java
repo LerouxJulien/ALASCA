@@ -1,8 +1,6 @@
 package fr.upmc.alasca.computer.exceptions;
 
-import java.rmi.RemoteException;
-
-public class NotEnoughCapacityVMException extends RemoteException {
+public class NotEnoughCapacityVMException extends Exception {
 	
 	private static final long serialVersionUID = 1190925171580256858L;
 

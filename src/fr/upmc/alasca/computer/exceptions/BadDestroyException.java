@@ -1,8 +1,6 @@
 package fr.upmc.alasca.computer.exceptions;
 
-import java.rmi.RemoteException;
-
-public class BadDestroyException extends RemoteException {
+public class BadDestroyException extends Exception {
 	
 	private static final long serialVersionUID = 6350760457368543110L;
 
