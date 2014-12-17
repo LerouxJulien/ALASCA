@@ -3,6 +3,7 @@ package fr.upmc.alasca.computer.objects;
 import java.io.Serializable;
 
 import fr.upmc.alasca.computer.enums.Status;
+import fr.upmc.alasca.repartiteur.ports.RepartiteurOutboundPort;
 
 /**
  * La classe <code>VMMessages</code> definit le message de notification d'une
@@ -33,6 +34,8 @@ public class VMMessages implements Serializable {
 	
 	// Temps de traitement d'une requete lors de la notification
 	private long time;
+	
+	private RepartiteurOutboundPort myrepport;
 
 	/**
 	 * Cree un message de notification de la VM a son repartiteur de requetes
@@ -101,5 +104,13 @@ public class VMMessages implements Serializable {
 	public String getVmID() {
 		return vmID;
 	}
-
+	
+	public void setRepPort(RepartiteurOutboundPort port) {
+		this.myrepport = port;
+	}
+	
+	
+	public RepartiteurOutboundPort getRepPort() {	
+		return this.myrepport;	
+	}
 }

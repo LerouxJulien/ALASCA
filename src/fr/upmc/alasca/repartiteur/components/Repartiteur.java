@@ -6,7 +6,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import fr.upmc.alasca.computer.enums.Status;
 import fr.upmc.alasca.computer.objects.VMMessages;
 import fr.upmc.alasca.computer.exceptions.NotEnoughCapacityVMException;
 import fr.upmc.alasca.repartiteur.ports.RepartiteurOutboundPort;
@@ -45,10 +44,13 @@ public class Repartiteur extends AbstractComponent implements
 
 	// Liste des ports des machines virtuelles
 	/* A virer */protected List<RepartiteurOutboundPort> rbps;
-	protected Map<RepartiteurOutboundPort, Status> robps;
+	protected Map<RepartiteurOutboundPort, VMMessages> robps;
 	
 	// Port courant de la VM traitant la derniere requete recues
-	protected Iterator<Map.Entry<RepartiteurOutboundPort, Status>> robpIt;
+	protected Iterator<Map.Entry<RepartiteurOutboundPort, VMMessages>> robpIt;
+	
+	// Liste des requetes 
+	protected ArrayList<Request> listR;
 	
 	/**
 	 * Constructeur du repartiteur
@@ -58,11 +60,11 @@ public class Repartiteur extends AbstractComponent implements
 	 */
 	public Repartiteur(String outboundPortURI, Integer appId) throws Exception {
 		this.addRequiredInterface(RequestArrivalI.class);
-
+		this.listR = new ArrayList<Request>();
 		this.appId = appId;
 		this.RepartiteurURIDCC = outboundPortURI + "-dcc";
 		/* A virer */this.rbps = new ArrayList<RepartiteurOutboundPort>();
-		this.robps = new HashMap<RepartiteurOutboundPort, Status>();
+		this.robps = new HashMap<RepartiteurOutboundPort, VMMessages>();
 		this.robpIt = robps.entrySet().iterator();
 
 		this.addOfferedInterface(DynamicallyConnectableComponentI.class);
@@ -136,7 +138,7 @@ public class Repartiteur extends AbstractComponent implements
 	 * @throws Exception
 	 */
 	public void notifyRR(VMMessages m) throws Exception {
-		
+		robps.put(m.getRepPort(), m);
 	}
 
 	/**

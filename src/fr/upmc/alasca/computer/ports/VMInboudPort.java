@@ -5,10 +5,9 @@ import fr.upmc.alasca.computer.interfaces.VMProviderI;
 import fr.upmc.alasca.computer.objects.VMMessages;
 import fr.upmc.alasca.requestgen.objects.Request;
 import fr.upmc.components.ComponentI;
-import fr.upmc.components.ports.AbstractInboundPort;
-//import fr.upmc.components.ports.AbstractTwoWayPort;
+import fr.upmc.components.ports.AbstractTwoWayPort;
 
-public class VMInboudPort extends AbstractInboundPort implements VMProviderI {
+public class VMInboudPort extends AbstractTwoWayPort implements VMProviderI {
 
 	private static final long serialVersionUID = 5983071151387825406L;
 
@@ -24,7 +23,7 @@ public class VMInboudPort extends AbstractInboundPort implements VMProviderI {
 	
 	@Override
 	public void notifyRR(VMMessages m) throws Exception {
-		// TODO : Je te dois faire un truc la mais quoi ????
+		((VMProviderI) this.connector).notifyRR(m);
 	}
 
 }

@@ -2,17 +2,22 @@ package fr.upmc.alasca.repartiteur.ports;
 
 import fr.upmc.alasca.computer.interfaces.VMProviderI;
 import fr.upmc.alasca.computer.objects.VMMessages;
+import fr.upmc.alasca.repartiteur.components.Repartiteur;
 import fr.upmc.alasca.requestgen.objects.Request;
 import fr.upmc.components.ComponentI;
-import fr.upmc.components.ports.AbstractOutboundPort;
+import fr.upmc.components.ports.AbstractTwoWayPort;
 
-public class RepartiteurOutboundPort extends AbstractOutboundPort implements
+public class RepartiteurOutboundPort extends AbstractTwoWayPort implements
 		VMProviderI {
+
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -1307494045619019507L;
 
 	public RepartiteurOutboundPort(String uri, ComponentI owner)
 			throws Exception {
 		super(uri, VMProviderI.class, owner);
-		// TODO Auto-generated constructor stub
 	}
 
 	@Override
@@ -22,7 +27,9 @@ public class RepartiteurOutboundPort extends AbstractOutboundPort implements
 	
 	@Override
 	public void notifyRR(VMMessages m) throws Exception {
-		((VMProviderI) this.connector).notifyRR(m);
+		m.setRepPort(this);
+		Repartiteur rep = (Repartiteur) this.owner;
+		rep.notifyRR(m);
 	}
 
 }
