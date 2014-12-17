@@ -137,7 +137,7 @@ public class Repartiteur extends AbstractComponent implements
 	 * @param m Notification de la VM au repartiteur de requetes
 	 * @throws Exception
 	 */
-	public void notifyRR(VMMessages m) throws Exception {
+	public void notifyStatus(VMMessages m) throws Exception {
 		robps.put(m.getRepPort(), m);
 	}
 
@@ -176,7 +176,8 @@ public class Repartiteur extends AbstractComponent implements
 			robp.processRequest(r);
 			return;
 		}
-		throw new NotEnoughCapacityVMException("No available mv for the application number: " + r.getAppId());
+		throw new NotEnoughCapacityVMException("No available mv for the " +
+		"application number: " + r.getAppId());
 	}
 	
 }

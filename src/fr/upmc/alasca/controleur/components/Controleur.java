@@ -84,8 +84,8 @@ public class Controleur extends AbstractComponent {
 							r.getRepartiteurURIDCC());
 			}
 		}
-		throw new BadDeploymentException("Erreur de déploiement de la VM ! " +
-		"URI du répartiteur : " + repartiteurURIFixe);
+		//throw new BadDeploymentException("Erreur de déploiement de la VM ! " +
+		//"URI du répartiteur : " + repartiteurURIFixe);
 	}
 
 	/**
