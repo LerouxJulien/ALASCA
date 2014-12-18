@@ -6,7 +6,9 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import fr.upmc.alasca.computer.objects.VMCarac;
 import fr.upmc.alasca.computer.objects.VMMessages;
+import fr.upmc.alasca.computer.enums.Status;
 import fr.upmc.alasca.computer.exceptions.NotEnoughCapacityVMException;
 import fr.upmc.alasca.repartiteur.ports.RepartiteurInboundPort;
 import fr.upmc.alasca.repartiteur.ports.RepartiteurOutboundPort;
@@ -47,10 +49,11 @@ public class Repartiteur extends AbstractComponent implements
 	protected Map<RepartiteurInboundPort,RepartiteurOutboundPort> rbps;
 	protected Map<RepartiteurInboundPort, VMMessages> robps;
 	
-	
-	
 	// Liste des requetes 
 	protected ArrayList<Request> listR;
+	
+	// Liste des caractéristiques des VM
+	protected HashMap<Integer,VMCarac> listCarac;
 	
 	/**
 	 * Constructeur du repartiteur
@@ -153,6 +156,24 @@ public class Repartiteur extends AbstractComponent implements
 	 */
 	public void notifyStatus(VMMessages m) throws Exception {
 		robps.put(m.getRepPort(), m);
+		
+		if (m.getStatus()== Status.NEW || m.getStatus() == Status.FREE){
+			
+			RepartiteurOutboundPort po = rbps.get(m.getRepPort());
+			
+			sendNextRequest(po);
+			
+		}
+			
+			
+	}
+		
+		
+	
+
+	private void sendNextRequest(RepartiteurOutboundPort po) throws Exception {
+		po.processRequest(this.listR.remove(0));
+		
 	}
 
 	/**
@@ -192,6 +213,17 @@ public class Repartiteur extends AbstractComponent implements
 		}
 		throw new NotEnoughCapacityVMException("No available mv for the " +
 		"application number: " + r.getAppId());*/
+		
+		this.listR.add(r);
+		
+	}
+	
+	
+	public void setVMCarac (int VMid,VMCarac carac){
+		
+		this.listCarac.put(VMid, carac);
+		
+		
 	}
 	
 }
