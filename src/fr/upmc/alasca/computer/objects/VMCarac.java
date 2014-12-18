@@ -44,5 +44,25 @@ public class VMCarac {
 		this.mediumtime = mediumtime;
 	}
 	
+	/**
+	 * 
+	 * ajoute un temps de traitement et recalcule la moyenne
+	 * 
+	 * @param l
+	 */
+	public void addTime(long l){
+		
+		this.timetable.add((int) l);
+		
+		int total=0; 
+		
+		for(Integer i : timetable){
+			
+			total += i;
+			
+		}
+		
+		this.mediumtime = total/timetable.size();
+	}
 	
 }

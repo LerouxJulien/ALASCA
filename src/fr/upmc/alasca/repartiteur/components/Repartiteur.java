@@ -157,6 +157,8 @@ public class Repartiteur extends AbstractComponent implements
 	public void notifyStatus(VMMessages m) throws Exception {
 		robps.put(m.getRepPort(), m);
 		
+		
+		
 		if (m.getStatus()== Status.NEW || m.getStatus() == Status.FREE){
 			
 			RepartiteurOutboundPort po = rbps.get(m.getRepPort());
@@ -166,6 +168,13 @@ public class Repartiteur extends AbstractComponent implements
 		}
 			
 			
+		if (m.getTime()!=0){
+			
+			
+			this.listCarac.get(m.getVmID()).addTime(m.getTime());
+			
+			
+		}
 	}
 		
 		
