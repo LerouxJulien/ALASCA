@@ -1,5 +1,6 @@
 package fr.upmc.alasca.computer.objects;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class VMCarac {
@@ -11,6 +12,20 @@ public class VMCarac {
 	private List<Integer> timetable;
 	
 	private int mediumtime;
+	
+	public VMCarac(int id,ArrayList<Double> frequencies){
+		
+		this.VMid=id;
+		
+		this.frequencies=frequencies;
+		
+		timetable = new ArrayList<Integer>();
+		
+		mediumtime = 0;
+		
+	}
+	
+	
 
 	public int getVMid() {
 		return VMid;

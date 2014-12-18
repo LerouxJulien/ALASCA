@@ -68,7 +68,7 @@ public class Repartiteur extends AbstractComponent implements
 		this.RepartiteurURIDCC = outboundPortURI + "-dcc";
 		this.rbps = new HashMap<RepartiteurInboundPort, RepartiteurOutboundPort>();
 		this.robps = new HashMap<RepartiteurInboundPort, VMMessages>();
-		
+		this.listCarac = new HashMap<Integer,VMCarac>();
 
 		this.addOfferedInterface(DynamicallyConnectableComponentI.class);
 		this.dccInboundPort = new DynamicallyConnectableComponentInboundPort(
