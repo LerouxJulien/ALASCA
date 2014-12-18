@@ -20,7 +20,7 @@ public class ComputerInboundPort extends AbstractInboundPort implements
 	}
 
 	@Override
-	public void deployVM(int nbCores, int app, String RepartiteurURI,
+	public void deployVM(int nbCores, int app, String[] RepartiteurURI,
 			String RepariteurURIDCC) throws Exception {
 		final Computer comp = (Computer) this.owner;
 		comp.deployVM(nbCores, app, RepartiteurURI, RepariteurURIDCC);

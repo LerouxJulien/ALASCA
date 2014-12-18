@@ -18,7 +18,7 @@ implements VMProviderI {
 
 	@Override
 	public void notifyStatus(VMMessages m) throws Exception {
-		//m.setRepPort(this);
+		m.setRepPort(this);
 		Repartiteur rep = (Repartiteur) this.owner;
 		rep.notifyStatus(m);
 	}

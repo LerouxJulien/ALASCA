@@ -16,6 +16,7 @@ import fr.upmc.components.cvm.pre.dcc.DynamicComponentCreationI;
 import fr.upmc.components.cvm.pre.dcc.DynamicComponentCreationOutboundPort;
 import fr.upmc.components.cvm.pre.dcc.DynamicallyConnectableComponentConnector;
 import fr.upmc.components.cvm.pre.dcc.DynamicallyConnectableComponentI;
+import fr.upmc.components.cvm.pre.dcc.DynamicallyConnectableComponentInboundPort;
 import fr.upmc.components.cvm.pre.dcc.DynamicallyConnectableComponentOutboundPort;
 import fr.upmc.components.ports.PortI;
 
@@ -171,7 +172,7 @@ public class Computer extends AbstractComponent implements ComputerProviderI {
 	 *            URI du dcc dans Repartiteur
 	 * @throws Exception 
 	 */
-	public void deployVM(int nbCores, int app, String URIRepartiteurFixe,
+	public void deployVM(int nbCores, int app, String[] URIRepartiteurFixe,
 			String URIRepartiteurDCC) throws Exception {
 		// On verifie que le Computer a assez de coeurs pour allouer la machine
 		// virtuelle.
@@ -207,10 +208,23 @@ public class Computer extends AbstractComponent implements ComputerProviderI {
 		p.doConnection(URIRepartiteurDCC,
 				DynamicallyConnectableComponentConnector.class
 						.getCanonicalName());
-		p.connectWith(randomString, URIRepartiteurFixe
+		p.connectWith(randomString, URIRepartiteurFixe[0]
 				+ "-RepartiteurOutboundPort",
 				VMConnector.class.getCanonicalName());
 		p.doDisconnection();
+		
+		DynamicallyConnectableComponentInboundPort pi = new DynamicallyConnectableComponentInboundPort(
+				this);
+		this.addPort(pi);
+		pi.localPublishPort();
+		pi.doConnection(URIRepartiteurDCC,
+				DynamicallyConnectableComponentConnector.class
+						.getCanonicalName());
+		pi.connectWith(randomString, URIRepartiteurFixe[1]
+				+ "-RepartiteurOutboundPort",
+				VMConnector.class.getCanonicalName());
+		pi.doDisconnection();
+		
 		nbCoresUsed += nbCores;
 		System.out.println("Virtual Machine deployed");
 	}

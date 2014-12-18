@@ -69,10 +69,10 @@ public class Controleur extends AbstractComponent {
 	public void deployVM(Repartiteur r, String repartiteurURIFixe)
 		throws Exception {
 		// TODO Modifier politique de deploiement
-		String uri;
+		String[] uri;
 		for (ControleurOutboundPort cbop : portsToMachine) {
 			if (cbop.availableCores() >= 2) {
-				uri = r.addNewPort(repartiteurURIFixe);
+				uri = r.addNewPorts(repartiteurURIFixe);
 				System.out.println("deployvm passed parameters : appid = " + r.getAppId()
 						+ " urifixe = " + uri + " uridcc = "
 						+ r.getRepartiteurURIDCC());

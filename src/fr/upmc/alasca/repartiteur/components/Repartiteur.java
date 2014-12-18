@@ -8,6 +8,7 @@ import java.util.Map;
 
 import fr.upmc.alasca.computer.objects.VMMessages;
 import fr.upmc.alasca.computer.exceptions.NotEnoughCapacityVMException;
+import fr.upmc.alasca.repartiteur.ports.RepartiteurInboundPort;
 import fr.upmc.alasca.repartiteur.ports.RepartiteurOutboundPort;
 import fr.upmc.alasca.requestgen.interfaces.RequestArrivalI;
 import fr.upmc.alasca.requestgen.objects.Request;
@@ -43,11 +44,10 @@ public class Repartiteur extends AbstractComponent implements
 	protected String RepartiteurURIDCC;
 
 	// Liste des ports des machines virtuelles
-	/* A virer */protected List<RepartiteurOutboundPort> rbps;
-	protected Map<RepartiteurOutboundPort, VMMessages> robps;
+	protected Map<RepartiteurInboundPort,RepartiteurOutboundPort> rbps;
+	protected Map<RepartiteurInboundPort, VMMessages> robps;
 	
-	// Port courant de la VM traitant la derniere requete recues
-	protected Iterator<Map.Entry<RepartiteurOutboundPort, VMMessages>> robpIt;
+	
 	
 	// Liste des requetes 
 	protected ArrayList<Request> listR;
@@ -63,9 +63,9 @@ public class Repartiteur extends AbstractComponent implements
 		this.listR = new ArrayList<Request>();
 		this.appId = appId;
 		this.RepartiteurURIDCC = outboundPortURI + "-dcc";
-		/* A virer */this.rbps = new ArrayList<RepartiteurOutboundPort>();
-		this.robps = new HashMap<RepartiteurOutboundPort, VMMessages>();
-		this.robpIt = robps.entrySet().iterator();
+		this.rbps = new HashMap<RepartiteurInboundPort, RepartiteurOutboundPort>();
+		this.robps = new HashMap<RepartiteurInboundPort, VMMessages>();
+		
 
 		this.addOfferedInterface(DynamicallyConnectableComponentI.class);
 		this.dccInboundPort = new DynamicallyConnectableComponentInboundPort(
@@ -86,18 +86,32 @@ public class Repartiteur extends AbstractComponent implements
 	 * @return uri actuellement utilisee pour le port cree
 	 * @throws Exception
 	 */
-	public String addNewPort(String portURI) throws Exception {
+	public String[] addNewPorts(String portURI) throws Exception {
+		
+		String[] uritab = new String[2];
+		
 		RepartiteurOutboundPort rbp;
 		String URIused = portURI + (compteurPort++);
-
+		uritab[0] = URIused;
+		
 		rbp = new RepartiteurOutboundPort(URIused + "-RepartiteurOutboundPort",
 				this);
 		this.addPort(rbp);
 		rbp.localPublishPort();
-		/* A virer */rbps.add(rbp);
-		robps.put(rbp, null);
+		
+		RepartiteurInboundPort rip;
+		String URIusedi = portURI + (compteurPort++);
+		uritab[1] = URIusedi;
+		
+		rip = new RepartiteurInboundPort(URIusedi + "-RepartiteurInboundPort",
+				this);
+		this.addPort(rip);
+		rip.localPublishPort();
+		
+		rbps.put(rip,rbp);
+		robps.put(rip, null);
 
-		return URIused;
+		return uritab;
 	}
 
 	@Override
@@ -172,12 +186,12 @@ public class Repartiteur extends AbstractComponent implements
 			vm.getKey().processRequest(r);
 		}
 		*/
-		for (RepartiteurOutboundPort robp : robps.keySet()) {
+		/*for (RepartiteurOutboundPort robp : robps.keySet()) {
 			robp.processRequest(r);
 			return;
 		}
 		throw new NotEnoughCapacityVMException("No available mv for the " +
-		"application number: " + r.getAppId());
+		"application number: " + r.getAppId());*/
 	}
 	
 }

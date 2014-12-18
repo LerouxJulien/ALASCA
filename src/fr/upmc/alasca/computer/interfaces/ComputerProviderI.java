@@ -38,7 +38,7 @@ public interface ComputerProviderI extends OfferedI {
 	 *            URI du dcc dans Repartiteur
 	 * @return boolean
 	 */
-	public void deployVM(int nbCores, int app, String URIRepartiteurFixe,
+	public void deployVM(int nbCores, int app, String[] URIRepartiteurFixe,
 			String URIRepartiteurDCC) throws Exception;
 
 	/**

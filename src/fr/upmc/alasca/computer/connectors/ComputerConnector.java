@@ -18,7 +18,7 @@ public class ComputerConnector extends AbstractConnector implements
 	}
 
 	@Override
-	public void deployVM(int nbCores, int app, String RepartiteurURI,
+	public void deployVM(int nbCores, int app, String[] RepartiteurURI,
 			String RepartiteurURIDCC) throws Exception {
 		((ComputerProviderI) this.offering).deployVM(nbCores, app,
 				RepartiteurURI, RepartiteurURIDCC);

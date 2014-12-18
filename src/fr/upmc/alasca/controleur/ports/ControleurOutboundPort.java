@@ -20,10 +20,10 @@ public class ControleurOutboundPort extends AbstractOutboundPort implements
 	}
 
 	@Override
-	public void deployVM(int nbCores, int app, String RepartiteurURI,
+	public void deployVM(int nbCores, int app, String[] uri,
 			String RepartiteurURIDCC) throws Exception {
 		((ComputerProviderI) this.connector).deployVM(nbCores, app,
-				RepartiteurURI, RepartiteurURIDCC);
+				uri, RepartiteurURIDCC);
 	}
 
 	@Override
