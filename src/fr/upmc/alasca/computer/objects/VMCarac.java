@@ -5,7 +5,7 @@ import java.util.List;
 
 public class VMCarac {
 
-	private int VMid;
+	private String VMid;
 	
 	private  List<Double> frequencies;
 	
@@ -13,11 +13,11 @@ public class VMCarac {
 	
 	private int mediumtime;
 	
-	public VMCarac(int id,ArrayList<Double> frequencies){
+	public VMCarac(String string,List<Double> list){
 		
-		this.VMid=id;
+		this.VMid=string;
 		
-		this.frequencies=frequencies;
+		this.frequencies=list;
 		
 		timetable = new ArrayList<Integer>();
 		
@@ -27,11 +27,11 @@ public class VMCarac {
 	
 	
 
-	public int getVMid() {
+	public String getVMid() {
 		return VMid;
 	}
 
-	public void setVMid(int vMid) {
+	public void setVMid(String vMid) {
 		VMid = vMid;
 	}
 

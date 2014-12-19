@@ -1,16 +1,17 @@
 package fr.upmc.alasca.repartiteur.ports;
 
 import fr.upmc.alasca.computer.interfaces.VMConsumerI;
+import fr.upmc.alasca.repartiteur.interfaces.RepartiteurProviderI;
 import fr.upmc.alasca.requestgen.objects.Request;
 import fr.upmc.components.ComponentI;
 import fr.upmc.components.ports.AbstractOutboundPort;
 
 public class RepartiteurOutboundPort extends AbstractOutboundPort
-implements VMConsumerI {
+implements RepartiteurProviderI {
 
 	public RepartiteurOutboundPort(String uri, ComponentI owner)
 			throws Exception {
-		super(uri, VMConsumerI.class, owner);
+		super(uri, RepartiteurProviderI.class, owner);
 	}
 
 	@Override

@@ -74,7 +74,7 @@ public class Controleur extends AbstractComponent {
 			if (cbop.availableCores() >= 2) {
 				uri = r.addNewPorts(repartiteurURIFixe);
 				System.out.println("deployvm passed parameters : appid = " + r.getAppId()
-						+ " urifixe = " + uri + " uridcc = "
+						+ " urifixe = " + uri[0] + " and " + uri[1] + " uridcc = "
 						+ r.getRepartiteurURIDCC());
 				if (cbop.availableCores() >= 4)
 					cbop.deployVM(4, r.getAppId(), uri,

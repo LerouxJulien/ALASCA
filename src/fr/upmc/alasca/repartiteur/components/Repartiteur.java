@@ -10,6 +10,8 @@ import fr.upmc.alasca.computer.objects.VMCarac;
 import fr.upmc.alasca.computer.objects.VMMessages;
 import fr.upmc.alasca.computer.enums.Status;
 import fr.upmc.alasca.computer.exceptions.NotEnoughCapacityVMException;
+import fr.upmc.alasca.repartiteur.interfaces.RepartiteurConsumerI;
+import fr.upmc.alasca.repartiteur.interfaces.RepartiteurProviderI;
 import fr.upmc.alasca.repartiteur.ports.RepartiteurInboundPort;
 import fr.upmc.alasca.repartiteur.ports.RepartiteurOutboundPort;
 import fr.upmc.alasca.requestgen.interfaces.RequestArrivalI;
@@ -30,7 +32,7 @@ import fr.upmc.components.ports.PortI;
  *
  */
 public class Repartiteur extends AbstractComponent implements
-		DynamicallyConnectableI {
+		RepartiteurConsumerI,RepartiteurProviderI,DynamicallyConnectableComponentI {
 
 	// utilise pour la connexion dynamique aux VM
 	protected DynamicallyConnectableComponentInboundPort dccInboundPort;
@@ -53,7 +55,7 @@ public class Repartiteur extends AbstractComponent implements
 	protected ArrayList<Request> listR;
 	
 	// Liste des caractéristiques des VM
-	protected HashMap<Integer,VMCarac> listCarac;
+	protected HashMap<String,VMCarac> listCarac;
 	
 	/**
 	 * Constructeur du repartiteur
@@ -68,9 +70,10 @@ public class Repartiteur extends AbstractComponent implements
 		this.RepartiteurURIDCC = outboundPortURI + "-dcc";
 		this.rbps = new HashMap<RepartiteurInboundPort, RepartiteurOutboundPort>();
 		this.robps = new HashMap<RepartiteurInboundPort, VMMessages>();
-		this.listCarac = new HashMap<Integer,VMCarac>();
+		this.listCarac = new HashMap<String,VMCarac>();
 
-		this.addOfferedInterface(DynamicallyConnectableComponentI.class);
+		this.addOfferedInterface(RepartiteurProviderI.class);
+		this.addRequiredInterface(RepartiteurConsumerI.class);
 		this.dccInboundPort = new DynamicallyConnectableComponentInboundPort(
 				RepartiteurURIDCC, this);
 		if (AbstractCVM.isDistributed) {
@@ -102,13 +105,18 @@ public class Repartiteur extends AbstractComponent implements
 		this.addPort(rbp);
 		rbp.localPublishPort();
 		
-		RepartiteurInboundPort rip;
+		RepartiteurInboundPort rip = null;
 		String URIusedi = portURI + (compteurPort++);
 		uritab[1] = URIusedi;
+		try{
+		rip = new RepartiteurInboundPort(URIusedi + "-RepartiteurInboundPort", this);
+		}catch(Exception e){
+			System.out.println("Probleme new " );e.printStackTrace();
+			
+		}
 		
-		rip = new RepartiteurInboundPort(URIusedi + "-RepartiteurInboundPort",
-				this);
 		this.addPort(rip);
+		
 		rip.localPublishPort();
 		
 		rbps.put(rip,rbp);
@@ -155,6 +163,7 @@ public class Repartiteur extends AbstractComponent implements
 	 * @throws Exception
 	 */
 	public void notifyStatus(VMMessages m) throws Exception {
+		System.out.println("Received status from "+ m.getVmID());
 		robps.put(m.getRepPort(), m);
 		
 		
@@ -172,7 +181,7 @@ public class Repartiteur extends AbstractComponent implements
 			
 			
 			this.listCarac.get(m.getVmID()).addTime(m.getTime());
-			
+			System.out.println("Temps moyen de traitement pour la vm"+this.listCarac.get(m.getVmID()).getMediumtime());
 			
 		}
 	}
@@ -222,16 +231,22 @@ public class Repartiteur extends AbstractComponent implements
 		}
 		throw new NotEnoughCapacityVMException("No available mv for the " +
 		"application number: " + r.getAppId());*/
-		
+		if(this.rbps.isEmpty()){
+			
+			throw new NotEnoughCapacityVMException("No available mv for the " +
+					"application number: " + r.getAppId());
+			
+		}
 		this.listR.add(r);
+		System.out.println("Stockage de requette "+ r.getAppId()+ " - " + listR.size());
 		
 	}
 	
 	
-	public void setVMCarac (int VMid,VMCarac carac){
-		
-		this.listCarac.put(VMid, carac);
-		
+	
+
+	public void notifyCarac(String id, VMCarac c) {
+		this.listCarac.put(id, c);
 		
 	}
 	

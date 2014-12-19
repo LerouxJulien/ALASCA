@@ -1,10 +1,11 @@
-package fr.upmc.alasca.computer.interfaces;
+package fr.upmc.alasca.repartiteur.interfaces;
 
 import fr.upmc.alasca.computer.objects.VMCarac;
 import fr.upmc.alasca.computer.objects.VMMessages;
 import fr.upmc.components.interfaces.OfferedI;
+import fr.upmc.components.interfaces.RequiredI;
 
-public interface VMProviderI extends OfferedI {
+public interface RepartiteurConsumerI extends RequiredI {
 
 	/**
 	 * Notifie le repartiteur de requetes de l'etat d'une VM et/ou de la fin de

@@ -141,9 +141,10 @@ public class VMThread extends AbstractComponent {
 			this.process();
 		}
 		owner.setStatus(Status.FREE);
-		//VMMessages m = new VMMessages(getMvID(), getStatus(),
-		//		servicing.toString(), st);
-		//notifyRR(m);
+		VMMessages m = new VMMessages(owner.getMvID(), owner.getStatus(),
+				servicing.toString(), st);
+		owner.getVMoport().notifyStatus(m);
+		
 	}
 
 }

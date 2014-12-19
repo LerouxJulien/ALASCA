@@ -3,13 +3,18 @@ package fr.upmc.alasca.computer.components;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.Future;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.TimeUnit;
+
 import fr.upmc.alasca.computer.enums.Status;
-import fr.upmc.alasca.computer.exceptions.BadAddRequestException;
+import fr.upmc.alasca.computer.interfaces.VMConsumerI;
 import fr.upmc.alasca.computer.interfaces.VMProviderI;
+import fr.upmc.alasca.computer.objects.VMCarac;
+import fr.upmc.alasca.computer.objects.VMMessages;
 import fr.upmc.alasca.computer.objects.VMThread;
-//import fr.upmc.alasca.computer.objects.VMMessages;
 import fr.upmc.alasca.computer.ports.VMInboundPort;
+import fr.upmc.alasca.computer.ports.VMOutboundPort;
 import fr.upmc.alasca.requestgen.objects.Request;
 import fr.upmc.alasca.requestgen.utils.TimeProcessing;
 import fr.upmc.components.AbstractComponent;
@@ -62,6 +67,18 @@ public class VirtualMachine extends AbstractComponent {
 	// Compteur pour alterner entre les differents coeurs
 	protected int compteurCyclique = 0;
 
+	VMInboundPort VMport;
+	protected VMOutboundPort VMoport;
+	
+	/**
+	 * @return the vMoport
+	 */
+	public VMOutboundPort getVMoport() {
+		return VMoport;
+	}
+
+	
+
 	/**
 	 * Alloue une machine virtuelle.
 	 * 
@@ -93,29 +110,39 @@ public class VirtualMachine extends AbstractComponent {
 		}
 
 		this.addOfferedInterface(VMProviderI.class);
-		PortI p = new VMInboundPort(port, this);
-		this.addPort(p);
+		this.addRequiredInterface(VMConsumerI.class);
+		
+		VMport = new VMInboundPort(port+"inbound", this);
+		this.addPort(VMport);
 		if (AbstractCVM.isDistributed) {
-			p.publishPort() ;
+			VMport.publishPort() ;
 		} else {
-			p.localPublishPort() ;
+			VMport.localPublishPort() ;
 		}
 		
-		//VMMessages m = new VMMessages(getMvID(), status);
-		//notifyStatus(m);
+		VMoport = new VMOutboundPort(port+"outbound", this);
+		this.addPort(VMoport);
+		if (AbstractCVM.isDistributed) {
+			VMoport.publishPort() ;
+		} else {
+			VMoport.localPublishPort() ;
+		}
+		
+		VMMessages m = new VMMessages(getMvID(), status);
+		VMCarac c = new VMCarac(this.getMvID(), this.getFrequencies());
+		VMoport.notifyStatus(m);
+		VMoport.notifyCarac(this.getMvID(),c);
 	}
 
 	/**
 	 * Ajoute une requete a la file
 	 * 
 	 * @param req
-	 * @throws BadAddRequestException 
+	 * 
+	 * @return boolean
 	 */
-	public void addRequest(Request req) throws BadAddRequestException {
-		if(!queue.add(req)) {
-			throw new BadAddRequestException("Impossible d'ajouter une requête "
-					+ "dans la file !");
-		}
+	public boolean addRequest(Request req) {
+		return queue.add(req);
 	}
 
 	/**
@@ -249,8 +276,8 @@ public class VirtualMachine extends AbstractComponent {
 		if (!this.hasAvailableCore()) {
 			status = Status.BUSY;
 			System.out.println("Queueing request " + r);
-			//VMMessages m = new VMMessages(getMvID(), status);
-			//notifyStatus(m);
+			VMMessages m = new VMMessages(getMvID(), status);
+			VMoport.notifyStatus(m);
 		} else {
 			// Parcours la liste de fils d'execution
 			for (compteurCyclique = (compteurCyclique + 1) % getNbCores();
@@ -260,8 +287,8 @@ public class VirtualMachine extends AbstractComponent {
 				// requetes suivantes.
 				if (getNbCoresUsed() == nbCores - 1) {
 					status = Status.BUSY;
-					//VMMessages m = new VMMessages(getMvID(), status);
-					//notifyStatus(m);
+					VMMessages m = new VMMessages(getMvID(), status);
+					VMoport.notifyStatus(m);
 				}
 				if (threads.get(compteurCyclique).isWaiting()) {
 					threads.get(compteurCyclique).process();
@@ -269,20 +296,6 @@ public class VirtualMachine extends AbstractComponent {
 				}
 			}
 		}
-	}
-	
-	/**
-	 * Modifie le statut de la VM
-	 * NEW  : VM venant d'etre deployee (Aucune requete n'est traitee.)
-	 * FREE : Libre (Au moins un fil d'execution est libre.)
-	 * BUSY : Occupe (Tous les fils d'execution sont occupes.)
-	 * IDLE : En attente d'eutanasie (S'il ne fout rien pendant X temps.)
-	 * 
-	 * @param status
-	 * @return 
-	 */
-	public void setStatus(Status status) {
-		this.status = status;
 	}
 
 	/**
@@ -297,4 +310,9 @@ public class VirtualMachine extends AbstractComponent {
 				+ ", status=" + status + ", queue=" + queue + "]";
 	}
 
+	public void setStatus(Status free) {
+		this.status=free;	
+	}
 }
+
+	

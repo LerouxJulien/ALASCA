@@ -4,6 +4,7 @@ import java.io.Serializable;
 
 import fr.upmc.alasca.computer.interfaces.VMConsumerI;
 import fr.upmc.alasca.computer.interfaces.VMProviderI;
+import fr.upmc.alasca.computer.objects.VMCarac;
 import fr.upmc.alasca.computer.objects.VMMessages;
 import fr.upmc.alasca.computer.ports.VMInboundPort;
 import fr.upmc.alasca.repartiteur.ports.RepartiteurInboundPort;
@@ -27,6 +28,12 @@ VMConsumerI, Serializable {
 	@Override
 	public void notifyStatus(VMMessages m) throws Exception {
 		((RepartiteurInboundPort) this.requiring).notifyStatus(m);
+	}
+
+	@Override
+	public void notifyCarac(String id, VMCarac c) {
+		((RepartiteurInboundPort) this.requiring).notifyCarac(id, c);
+		
 	}
 	
 }
