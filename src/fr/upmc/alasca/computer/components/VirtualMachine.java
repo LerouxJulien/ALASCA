@@ -112,7 +112,7 @@ public class VirtualMachine extends AbstractComponent {
 		this.addOfferedInterface(VMProviderI.class);
 		this.addRequiredInterface(VMConsumerI.class);
 		
-		VMport = new VMInboundPort(port+"inbound", this);
+		VMport = new VMInboundPort(port, this);
 		this.addPort(VMport);
 		if (AbstractCVM.isDistributed) {
 			VMport.publishPort() ;
@@ -128,10 +128,10 @@ public class VirtualMachine extends AbstractComponent {
 			VMoport.localPublishPort() ;
 		}
 		
-		VMMessages m = new VMMessages(getMvID(), status);
+		/*VMMessages m = new VMMessages(getMvID(), status);
 		VMCarac c = new VMCarac(this.getMvID(), this.getFrequencies());
 		VMoport.notifyStatus(m);
-		VMoport.notifyCarac(this.getMvID(),c);
+		VMoport.notifyCarac(this.getMvID(),c);*/
 	}
 
 	/**

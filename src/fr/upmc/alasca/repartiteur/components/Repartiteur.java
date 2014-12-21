@@ -32,7 +32,7 @@ import fr.upmc.components.ports.PortI;
  *
  */
 public class Repartiteur extends AbstractComponent implements
-		RepartiteurConsumerI,RepartiteurProviderI,DynamicallyConnectableComponentI {
+		DynamicallyConnectableComponentI,DynamicallyConnectableI {
 
 	// utilise pour la connexion dynamique aux VM
 	protected DynamicallyConnectableComponentInboundPort dccInboundPort;
@@ -74,6 +74,7 @@ public class Repartiteur extends AbstractComponent implements
 
 		this.addOfferedInterface(RepartiteurProviderI.class);
 		this.addRequiredInterface(RepartiteurConsumerI.class);
+		
 		this.dccInboundPort = new DynamicallyConnectableComponentInboundPort(
 				RepartiteurURIDCC, this);
 		if (AbstractCVM.isDistributed) {
