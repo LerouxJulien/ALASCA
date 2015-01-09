@@ -6,10 +6,10 @@ import fr.upmc.alasca.requestgen.objects.Request;
 import fr.upmc.components.ComponentI;
 import fr.upmc.components.ports.AbstractOutboundPort;
 
-public class RepartiteurOutboundPort extends AbstractOutboundPort
+public class RepartiteurToVMOutboundPort extends AbstractOutboundPort
 implements RepartiteurProviderI {
 
-	public RepartiteurOutboundPort(String uri, ComponentI owner)
+	public RepartiteurToVMOutboundPort(String uri, ComponentI owner)
 			throws Exception {
 		super(uri, RepartiteurProviderI.class, owner);
 	}

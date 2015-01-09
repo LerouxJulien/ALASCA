@@ -16,7 +16,6 @@ import fr.upmc.components.cvm.pre.dcc.DynamicComponentCreationI;
 import fr.upmc.components.cvm.pre.dcc.DynamicComponentCreationOutboundPort;
 import fr.upmc.components.cvm.pre.dcc.DynamicallyConnectableComponentConnector;
 import fr.upmc.components.cvm.pre.dcc.DynamicallyConnectableComponentI;
-import fr.upmc.components.cvm.pre.dcc.DynamicallyConnectableComponentInboundPort;
 import fr.upmc.components.cvm.pre.dcc.DynamicallyConnectableComponentOutboundPort;
 import fr.upmc.components.ports.PortI;
 
@@ -172,6 +171,7 @@ public class Computer extends AbstractComponent implements ComputerProviderI {
 	 *            URI du dcc dans Repartiteur
 	 * @throws Exception 
 	 */
+	@Override
 	public void deployVM(int nbCores, int app, String[] URIRepartiteurFixe,
 			String URIRepartiteurDCC) throws Exception {
 		// On verifie que le Computer a assez de coeurs pour allouer la machine

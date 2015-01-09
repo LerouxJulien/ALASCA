@@ -63,7 +63,7 @@ public class Request implements Serializable {
 	 * @param application
 	 *            application number
 	 */
-	public Request(int uri, long instructions, int application) {
+	public Request(int uri, long instructions, int application){
 		super();
 
 		assert instructions > 0;

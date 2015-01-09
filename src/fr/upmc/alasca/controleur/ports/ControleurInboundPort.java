@@ -1,6 +1,7 @@
 package fr.upmc.alasca.controleur.ports;
 
 import fr.upmc.alasca.controleur.components.Controleur;
+import fr.upmc.alasca.controleur.interfaces.AppRequestI;
 import fr.upmc.alasca.requestgen.interfaces.RequestArrivalI;
 import fr.upmc.alasca.requestgen.objects.Request;
 import fr.upmc.components.ComponentI;
@@ -11,7 +12,7 @@ import fr.upmc.components.ports.AbstractInboundPort;
  *
  */
 public class ControleurInboundPort extends AbstractInboundPort implements
-		RequestArrivalI {
+AppRequestI  {
 	
 	private static final long serialVersionUID = 1L;
 
@@ -23,8 +24,9 @@ public class ControleurInboundPort extends AbstractInboundPort implements
 	}
 
 	@Override
-	public void acceptRequest(Request r) throws Exception {
+	public void acceptApplication(Integer application,
+			String uri_new_requestGenerator) throws Exception {
 		Controleur c = (Controleur) this.owner;
-		c.acceptRequest(r);
+		c.acceptApplication(application, uri_new_requestGenerator);
 	}
 }

@@ -12,8 +12,14 @@ import fr.upmc.alasca.requestgen.objects.Request;
 import fr.upmc.alasca.requestgen.ports.RequestGeneratorOutboundPort;
 import fr.upmc.alasca.requestgen.utils.TimeProcessing;
 import fr.upmc.components.AbstractComponent;
+import fr.upmc.components.cvm.AbstractCVM;
+import fr.upmc.components.cvm.pre.dcc.DynamicComponentCreationI;
+import fr.upmc.components.cvm.pre.dcc.DynamicallyConnectableComponentI;
+import fr.upmc.components.cvm.pre.dcc.DynamicallyConnectableComponentInboundPort;
+import fr.upmc.components.cvm.pre.dcc.DynamicallyConnectableI;
 import fr.upmc.components.exceptions.ComponentShutdownException;
 import fr.upmc.components.exceptions.ComponentStartException;
+import fr.upmc.components.ports.PortI;
 
 /**
  * The class <code>RequestGenerator</code> implements a component that generates
@@ -49,7 +55,7 @@ import fr.upmc.components.exceptions.ComponentStartException;
  * 
  * @author <a href="mailto:Jacques.Malenfant@lip6.fr">Jacques Malenfant</a>
  */
-public class RequestGenerator extends AbstractComponent {
+public class RequestGenerator extends AbstractComponent implements	DynamicallyConnectableI{
 	// -------------------------------------------------------------------------
 	// Constructors and instance variables
 	// -------------------------------------------------------------------------
@@ -63,9 +69,6 @@ public class RequestGenerator extends AbstractComponent {
 	/** the mean processing time of requests in ms. */
 	protected double meanProcessingTime;
 
-	/** numero des applications lancees */
-	protected List<Integer> numberAppLaunched;
-
 	protected RandomDataGenerator rng;
 
 	protected int meanNumberInstructions;
@@ -75,6 +78,10 @@ public class RequestGenerator extends AbstractComponent {
 	/** a future pointing to the next request generation task. */
 	protected Future<?> nextRequestTaskFuture;
 
+	protected Integer appId;
+	
+	protected DynamicallyConnectableComponentInboundPort dccInboundPort;
+	
 	/**
 	 * create a request generator component.
 	 * 
@@ -97,9 +104,10 @@ public class RequestGenerator extends AbstractComponent {
 	 *            numeros des applications lancees
 	 * @throws Exception
 	 */
-	public RequestGenerator(double meanInterArrivalTime,
-			int meanNumberInstructions, int standardDeviation,
-			List<Integer> numberAppLaunched, String outboundPortURI)
+	public RequestGenerator(Double meanInterArrivalTime,
+			Integer meanNumberInstructions, Integer standardDeviation,
+			Integer appId,
+			String outboundPortURI)
 			throws Exception {
 		super(true, true);
 
@@ -110,16 +118,32 @@ public class RequestGenerator extends AbstractComponent {
 		this.meanInterArrivalTime = meanInterArrivalTime;
 		this.nd = new NormalDistribution(meanNumberInstructions,
 				standardDeviation);
-		this.numberAppLaunched = numberAppLaunched;
 		this.rng = new RandomDataGenerator();
 		this.rng.reSeed();
 		this.nextRequestTaskFuture = null;
+		this.appId = appId;
+		
+		this.dccInboundPort = new DynamicallyConnectableComponentInboundPort(
+				outboundPortURI + "-dcc", this);
+		if (AbstractCVM.isDistributed) {
+			this.dccInboundPort.publishPort();
+		} else {
+			this.dccInboundPort.localPublishPort();
+		}
+		this.addPort(dccInboundPort);
 
 		// Component management
 		this.addRequiredInterface(RequestArrivalI.class);
 		this.rgop = new RequestGeneratorOutboundPort(outboundPortURI, this);
 		this.addPort(this.rgop);
-		this.rgop.localPublishPort();
+		if (AbstractCVM.isDistributed) {
+			this.rgop.publishPort();
+		} else {
+			this.rgop.localPublishPort();
+		}
+		
+		this.addRequiredInterface(DynamicComponentCreationI.class);
+		this.addRequiredInterface(DynamicallyConnectableComponentI.class);
 
 		assert nd != null && counter >= 0;
 		assert meanInterArrivalTime > 0.0;
@@ -178,8 +202,7 @@ public class RequestGenerator extends AbstractComponent {
 	public void generateNextRequest() throws Exception {
 		long instructions = (long) nd.sample();
 		this.rgop.acceptRequest(new Request(this.counter++, instructions,
-				numberAppLaunched.get(rng.nextInt(0,
-						numberAppLaunched.size() - 1))));
+				appId));
 		final RequestGenerator cg = this;
 		long interArrivalDelay = (long) this.rng
 				.nextExponential(this.meanInterArrivalTime);
@@ -214,5 +237,19 @@ public class RequestGenerator extends AbstractComponent {
 				}
 			}
 		}, 1000, TimeUnit.MILLISECONDS);
+	}
+
+	@Override
+	public void connectWith(String serverPortURI, String clientPortURI,
+			String ccname) throws Exception {
+		PortI uriConsumerPort = this.findPortFromURI(clientPortURI) ;
+		uriConsumerPort.doConnection(serverPortURI, ccname) ;
+	}
+
+	@Override
+	public void disconnectWith(String serverPortURI, String clientPortURI)
+			throws Exception {
+		PortI uriConsumerPort = this.findPortFromURI(clientPortURI) ;
+		uriConsumerPort.doDisconnection() ;
 	}
 }
