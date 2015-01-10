@@ -18,22 +18,20 @@ public class ControleurOutboundPort extends AbstractOutboundPort implements
 	}
 
 	@Override
-	public boolean deployVM(int nbCores, int app, String RepartiteurURI,
-			String RepartiteurURIDCC) throws Exception {
-		return ((ComputerProviderI) this.connector).deployVM(nbCores, app,
-				RepartiteurURI, RepartiteurURIDCC);
+	public void deployVM(int nbCores, int app, String[] URIRepartiteurFixe,
+			String URIRepartiteurDCC) throws Exception {
+		((ComputerProviderI) this.connector).deployVM(nbCores, app,
+				URIRepartiteurFixe, URIRepartiteurDCC);
 	}
 
 	@Override
-	public boolean destroyVM(String mv) throws Exception {
+	public void destroyVM(String mv) throws Exception {
 		// TODO Auto-generated method stub
-		return false;
 	}
 
 	@Override
-	public boolean reInit(String vm) throws Exception {
+	public void reInit(String vm) throws Exception {
 		// TODO Auto-generated method stub
-		return false;
 	}
 
 	@Override

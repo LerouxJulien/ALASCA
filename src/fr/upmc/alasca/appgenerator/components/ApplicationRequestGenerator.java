@@ -8,16 +8,32 @@ import org.apache.commons.math3.random.RandomDataGenerator;
 import fr.upmc.alasca.appgenerator.ports.AppGeneratorOutboundPort;
 import fr.upmc.alasca.controleur.interfaces.AppRequestI;
 import fr.upmc.alasca.requestgen.components.RequestGenerator;
-import fr.upmc.alasca.requestgen.main.ClientArrivalConnector;
 import fr.upmc.components.AbstractComponent;
 import fr.upmc.components.cvm.AbstractCVM;
 import fr.upmc.components.cvm.pre.dcc.DynamicComponentCreationConnector;
 import fr.upmc.components.cvm.pre.dcc.DynamicComponentCreationI;
 import fr.upmc.components.cvm.pre.dcc.DynamicComponentCreationOutboundPort;
-import fr.upmc.components.cvm.pre.dcc.DynamicallyConnectableComponentConnector;
 import fr.upmc.components.cvm.pre.dcc.DynamicallyConnectableComponentI;
-import fr.upmc.components.cvm.pre.dcc.DynamicallyConnectableComponentOutboundPort;
 
+/**
+ * Classe <code>ApplicationRequestGenerator</code>
+ *
+ * <p>
+ * <strong>Description</strong>
+ * </p>
+ * 
+ * La classe <code>ApplicationRequestGenerator</code> permet d'envoyer la liste 
+ * des applications à faire tourner par le centre de calcul et de générer les
+ * <code>RequestGenerator</code> ou générateurs de requêtes correspondants.
+ * 
+ * <p>
+ * Created on : 23 dec. 2014
+ * </p>
+ * 
+ * @author <a href="mailto:Nicolas.Mounier@etu.upmc.fr">Nicolas Mounier/a>
+ *         <a href="mailto:Henri.Ng@etu.upmc.fr">Henri Ng/a>
+ * @version $Name$ -- $Revision$ -- $Date$
+ */
 public class ApplicationRequestGenerator extends AbstractComponent {
 
 	List<Integer> appsToLaunch;

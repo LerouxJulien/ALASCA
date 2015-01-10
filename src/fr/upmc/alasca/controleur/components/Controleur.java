@@ -1,11 +1,12 @@
 package fr.upmc.alasca.controleur.components;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.concurrent.BlockingQueue;
 
 import fr.upmc.alasca.computer.interfaces.VMProviderI;
+import fr.upmc.alasca.controleur.exceptions.BadDeploymentException;
+import fr.upmc.alasca.controleur.exceptions.NoRepartitorException;
 import fr.upmc.alasca.controleur.interfaces.AppRequestI;
 import fr.upmc.alasca.controleur.ports.ControleurInboundPort;
 import fr.upmc.alasca.controleur.ports.ControleurOutboundPort;
@@ -23,19 +24,13 @@ import fr.upmc.components.cvm.pre.dcc.DynamicallyConnectableComponentOutboundPor
 
 /**
  * Le Controleur est connecte au RequestGenerator et aux Computers.
- * Il re�oit les requetes du generateur de requetes.
+ * Il reçoit les requetes du generateur de requetes.
  * Il fait des demandes de deploiement de VirtualMachine aupres des Computer
  * si necessaire: c'est-a-dire en ce moment si les queues de toutes
  * les VM dediees a une application sont  pleines.
  *
  */
 public class Controleur extends AbstractComponent {
-
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = 1L;
-
 
 	// ports par lesquels sont faites les demandes de deploiement de vm aux
 	// Computers
@@ -87,15 +82,15 @@ public class Controleur extends AbstractComponent {
 	 * @return true si une vm a effectivement ete deployee
 	 * @throws Exception
 	 */
-	public boolean deployVM(Repartiteur r, String repartiteurURIFixe)
+	public void deployVM(Repartiteur r, String repartiteurURIFixe)
 			throws Exception {
 		// TODO Modifier politique de deploiement
-		String uri;
+		String[] uri;
 		for (ControleurOutboundPort cbop : portsToMachine) {
 			if (cbop.availableCores() >= 2) {
-				uri = r.addNewPort();
+                uri = r.addNewPorts(repartiteurURIFixe);
 				System.out.println("deployvm passed parameters : appid = " + r.getAppId()
-						+ " urifixe = " + uri + " uridcc = "
+						+ " urifixe = " + uri[0] + " and " + uri[1] + " uridcc = "
 						+ r.getRepartiteurURIDCC());
 				if (cbop.availableCores() >= 4)
 					cbop.deployVM(4, r.getAppId(), uri,
@@ -103,41 +98,45 @@ public class Controleur extends AbstractComponent {
 				else
 					cbop.deployVM(2, r.getAppId(), uri,
 							r.getRepartiteurURIDCC());
-				return true;
 			}
 		}
-		return false;
+        //throw new BadDeploymentException("Erreur de déploiement de la VM ! " +
+        //"URI du répartiteur : " + repartiteurURIFixe);
 	}
 
 	/**
 	 * Accepte une requete du generateur de requete
 	 *
-	 * @param r			Requete re�ue par le Controleur
+	 * @param r			Requete reçue par le Controleur
+	 * @throws NoRepartitorException 
 	 * @throws Exception
 	 */
 	/*
 	public void acceptRequest(Request r) throws Exception {
-		if(rbs.containsKey(r.getAppId())){
-
+        if(rbs.containsKey(r.getAppId())){
             Repartiteur rr = rbs.get(r.getAppId());
-
-            if (!rr.processRequest(r)) {
-                String URInewPortRepartiteur = repartiteurURIgenericName
-							+ rr.getAppId();
-                if (this.deployVM(rr, URInewPortRepartiteur))
-						rr.processRequest(r);
-                else
-						System.out
-								.println("Rejected request: all queues full and maximal number of mv reached");
+            try {
+                rr.processRequest(r);
+            } catch (Exception e) {
+                String URInewPortRepartiteur = repartiteurURIgenericName + rr.getAppId();
+                try {
+                    deployVM(rr, URInewPortRepartiteur);
+                    rr.processRequest(r);
+                } catch (BadDeploymentException e2) {
+                    System.out.println("Rejected request: all queues full and "
+                            + "maximal number of mv reached");
+                } catch (Exception e2) {
+                    System.out.println("Echec de processRequest ! requ�te : "
+                            + r.toString());
+                }
             }
-            return;
-
-		}else{
-		System.out
-				.println("Rejected request: no dispatcher dedicated to the application number: "
-						+ r.getAppId());
-		}
-	}*/
+            //throw new NoRepartitorException("Rejected request: no dispatcher "
+            //        + "dedicated to the application number: " + r.getAppId());
+        } else {
+            System.out.println("Rejected request: no dispatcher dedicated to "
+                        + "the application number: " + r.getAppId());
+        }
+    }*/
 
 	/**
 	 * Cree un repartiteur de requete dedie a l'application dont l'id est passe

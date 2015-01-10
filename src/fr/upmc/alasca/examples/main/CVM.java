@@ -3,7 +3,7 @@ package fr.upmc.alasca.examples.main;
 import java.util.ArrayList;
 import java.util.List;
 
-import fr.upmc.alasca.appgen.components.ApplicationGenerator;
+import fr.upmc.alasca.appgenerator.components.ApplicationRequestGenerator;
 import fr.upmc.alasca.computer.components.Computer;
 import fr.upmc.alasca.controleur.components.Controleur;
 import fr.upmc.alasca.requestgen.components.RequestGenerator;
@@ -38,7 +38,7 @@ public class CVM extends AbstractCVM {
 	protected static final String REQGEN_OUTBOUNDPORT_URI    = "reqgen_o";
 
 	protected Controleur cont;
-	protected ApplicationGenerator ag;
+	protected ApplicationRequestGenerator ag;
 	protected static List<Integer> appIDLaunched = new ArrayList<>();
 	protected static List<RequestGenerator> rgs  = new ArrayList<>();
 
@@ -53,18 +53,9 @@ public class CVM extends AbstractCVM {
 		appIDLaunched.add(13);
 		
 		// Déploiement du générateur d'applications
-		ag = new ApplicationGenerator(appIDLaunched, 
-				APPGEN_OUTBOUNDPORT_URI, false, this);
+		ag = new ApplicationRequestGenerator(appIDLaunched, 500.0, 50000000,
+				20000000, APPGEN_OUTBOUNDPORT_URI);
 		this.deployedComponents.add(ag);
-
-		// Déploiement des générateurs de requêtes
-		for (int i = 0; i < appIDLaunched.size(); i++) {
-			RequestGenerator rg = new RequestGenerator(500.0, 50000000,
-					20000000, appIDLaunched.subList(i, i + 1),
-					REQGEN_OUTBOUNDPORT_URI + appIDLaunched.get(i));
-			this.deployedComponents.add(rg);
-			CVM.rgs.add(rg);
-		}
 		
 		/*************** Déploiement des composants côté serveur **************/
 
@@ -90,16 +81,8 @@ public class CVM extends AbstractCVM {
 		// Connexion du générateur d'applications au contrôleur
 		PortI agport = ag.findPortFromURI(APPGEN_OUTBOUNDPORT_URI);
 		agport.doConnection(CONTROLER_INBOUNDPORT_URI,
-				"fr.upmc.alasca.appgen.connectors." +
-				"ApplicationGeneratorConnector");
-		
-		// Connexion des générateurs de requêtes au contrôleur
-//		for (int i = 0; i < numberAppLaunched.size(); i++) {
-//			PortI rgport = rgs.get(i).findPortFromURI(REQGEN_OUTBOUNDPORT_URI +
-//					numberAppLaunched.get(i));
-//			rgport.doConnection(CONTROLER_INBOUNDPORT_URI,
-//					"fr.upmc.alasca.requestgen.main.ClientArrivalConnector");
-//		}
+				"fr.upmc.alasca.controleur.connectors." +
+				"ApplicationRequestConnector");
 
 		// Connexion des machines au contrôleur
 		for (int i = 0; i < NB_COMPUTERS; i++) {
@@ -119,13 +102,6 @@ public class CVM extends AbstractCVM {
 		PortI agport = this.ag.findPortFromURI(APPGEN_OUTBOUNDPORT_URI);
 		agport.doDisconnection();
 		ag.shutdown();
-
-		// Déconnexion des générateurs de requêtes
-		PortI rgport;
-		for (RequestGenerator rg : this.rgs) {
-			rgport = rg.findPortFromURI(REQGEN_OUTBOUNDPORT_URI);
-			rgport.doDisconnection();
-		}
 		
 		// Déconnexion des machines
 		PortI mport;
@@ -148,32 +124,21 @@ public class CVM extends AbstractCVM {
 			cvm.deploy();
 			System.out.println("starting...");
 			cvm.start();
-			final Controleur controleur = cvm.cont;
-
-			// Création des répartiteurs dédiés à l'application
-			// dont l'id leur est passée en paramètre
-			for (Integer appID : appIDLaunched) {
-				String URIReqGen = REQGEN_OUTBOUNDPORT_URI + appID;
-				controleur.connectRequestGenerator(appID, URIReqGen,
-						URIReqGen + "-dcc");
-				//controleur.acceptApplication(appID);
-			}
 
 			System.out.println("Scheduling request at "
 					+ TimeProcessing.toString(System.currentTimeMillis()));
 
-			for (final RequestGenerator rg : rgs) {
-				rg.runTask(new ComponentTask() {
-					@Override
-					public void run() {
-						try {
-							rg.generateNextRequest();
-						} catch (Exception e) {
-							e.printStackTrace();
-						}
+			final ApplicationRequestGenerator fcg = cvm.ag;
+			fcg.runTask(new ComponentTask() {
+				@Override
+				public void run() {
+					try {
+						fcg.generateNextRequest();
+					} catch (Exception e) {
+						e.printStackTrace();
 					}
-				});
-			}
+				}
+			});
 			Thread.sleep(20000L);
 			cvm.shutdown();
 			System.out.println("ending...");
