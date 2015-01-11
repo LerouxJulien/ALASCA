@@ -94,8 +94,9 @@ public class VMThread extends AbstractComponent {
 	 * Retire une requete de la file d'attente de VM et la traite
 	 * 
 	 * @return time
+	 * @throws Exception 
 	 */
-	public long process() {
+	public long process() throws Exception {
 		this.servicing = owner.getQueue().remove();
 		System.out.println("Begin servicing request " + this.servicing
 				+ " at "
@@ -117,6 +118,10 @@ public class VMThread extends AbstractComponent {
 						}
 					}
 				}, processingTime, TimeUnit.SECONDS);
+		
+		owner.setStatus(Status.FREE);
+		VMMessages m = new VMMessages(owner.getMvID(), owner.getStatus());
+		owner.getVMoport().notifyStatus(m);
 		return processingTime;
 	}
 

@@ -114,4 +114,8 @@ public class VMMessages implements Serializable {
 	public RepartiteurToVMInboundPort getRepPort() {	
 		return this.myrepport;	
 	}
+	
+	public void setTime(long time) {
+		this.time = time;
+	}
 }

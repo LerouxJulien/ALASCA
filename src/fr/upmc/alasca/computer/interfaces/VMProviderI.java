@@ -2,19 +2,21 @@ package fr.upmc.alasca.computer.interfaces;
 
 import fr.upmc.alasca.computer.objects.VMCarac;
 import fr.upmc.alasca.computer.objects.VMMessages;
+import fr.upmc.alasca.requestgen.objects.Request;
 import fr.upmc.components.interfaces.OfferedI;
 
 public interface VMProviderI extends OfferedI {
 
 	/**
-	 * Notifie le repartiteur de requetes de l'etat d'une VM et/ou de la fin de
-	 * traitement d'une requete
+	 * Transmet la requete a la VM
 	 * 
-	 * @param m Notification de la VM au repartiteur de requetes
+	 * @param r Requete transmise a la VM
 	 * @throws Exception
 	 */
-	public void notifyStatus(VMMessages m) throws Exception;
+	public void processRequest(Request r) throws Exception;
 
-	public void notifyCarac(String id, VMCarac c);
+	public String getVMURI() throws Exception;
+
+	public void startNotification() throws Exception;
 	
 }

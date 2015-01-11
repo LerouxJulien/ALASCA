@@ -1,25 +1,28 @@
 package fr.upmc.alasca.computer.ports;
 
+import fr.upmc.alasca.computer.interfaces.VMConsumerI;
 import fr.upmc.alasca.computer.interfaces.VMProviderI;
 import fr.upmc.alasca.computer.objects.VMCarac;
 import fr.upmc.alasca.computer.objects.VMMessages;
+import fr.upmc.alasca.repartiteur.interfaces.RepartiteurProviderI;
 import fr.upmc.components.ComponentI;
 import fr.upmc.components.ports.AbstractOutboundPort;
 
 public class VMOutboundPort extends AbstractOutboundPort
-implements VMProviderI {
+implements VMConsumerI {
 
 	public VMOutboundPort(String uri, ComponentI owner) throws Exception {
-		super(uri, VMProviderI.class, owner);
+		super(uri, VMConsumerI.class, owner);
 	}
 	
 	@Override
 	public void notifyStatus(VMMessages m) throws Exception {
-		((VMProviderI) this.connector).notifyStatus(m);
+		
+		((RepartiteurProviderI) this.connector).notifyStatus(m);
 	}
 
-	public void notifyCarac(String id, VMCarac c) {
-		((VMProviderI) this.connector).notifyCarac(id,c);
+	public void notifyCarac(String id, VMCarac c) throws Exception {
+		( (RepartiteurProviderI) this.connector).notifyCarac(id,c);
 	}
 	
 }

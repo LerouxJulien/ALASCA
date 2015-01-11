@@ -19,6 +19,8 @@ import fr.upmc.alasca.requestgen.objects.Request;
 import fr.upmc.alasca.requestgen.utils.TimeProcessing;
 import fr.upmc.components.AbstractComponent;
 import fr.upmc.components.cvm.AbstractCVM;
+import fr.upmc.components.cvm.pre.dcc.DynamicallyConnectableComponentInboundPort;
+import fr.upmc.components.cvm.pre.dcc.DynamicallyConnectableI;
 import fr.upmc.components.ports.PortI;
 
 /**
@@ -34,7 +36,7 @@ import fr.upmc.components.ports.PortI;
  * @author <a href="mailto:henri.ng@etu.upmc.fr">Henri NG</a>
  * @version $Name$ -- $Revision$ -- $Date$
  */
-public class VirtualMachine extends AbstractComponent {
+public class VirtualMachine extends AbstractComponent implements DynamicallyConnectableI{
 
 	// ID de la VM
 	private final String mvID;
@@ -67,7 +69,7 @@ public class VirtualMachine extends AbstractComponent {
 	// Compteur pour alterner entre les differents coeurs
 	protected int compteurCyclique = 0;
 
-	VMInboundPort VMport;
+	protected VMInboundPort VMiport;
 	protected VMOutboundPort VMoport;
 	
 	/**
@@ -112,12 +114,12 @@ public class VirtualMachine extends AbstractComponent {
 		this.addOfferedInterface(VMProviderI.class);
 		this.addRequiredInterface(VMConsumerI.class);
 		
-		VMport = new VMInboundPort(port, this);
-		this.addPort(VMport);
+		VMiport = new VMInboundPort(port, this);
+		this.addPort(VMiport);
 		if (AbstractCVM.isDistributed) {
-			VMport.publishPort() ;
+			VMiport.publishPort() ;
 		} else {
-			VMport.localPublishPort() ;
+			VMiport.localPublishPort() ;
 		}
 		
 		VMoport = new VMOutboundPort(port+"outbound", this);
@@ -128,10 +130,16 @@ public class VirtualMachine extends AbstractComponent {
 			VMoport.localPublishPort() ;
 		}
 		
-		/*VMMessages m = new VMMessages(getMvID(), status);
-		VMCarac c = new VMCarac(this.getMvID(), this.getFrequencies());
-		VMoport.notifyStatus(m);
-		VMoport.notifyCarac(this.getMvID(),c);*/
+		// Creation de l'inbound DCC port pour le répartiteur.
+		System.out.println("Setting vm inbound DCC");
+		DynamicallyConnectableComponentInboundPort dccInboundPort = new DynamicallyConnectableComponentInboundPort(
+				port+"inbound"+"-dcc", this);
+		if (AbstractCVM.isDistributed) {
+			dccInboundPort.publishPort();
+		} else {
+			dccInboundPort.localPublishPort();
+		}
+		this.addPort(dccInboundPort);
 	}
 
 	/**
@@ -264,7 +272,10 @@ public class VirtualMachine extends AbstractComponent {
 	 * @throws Exception
 	 */
 	public void requestArrivalEvent(Request r) throws Exception {
+		if(this.status==Status.NEW)
+			this.status = Status.FREE;
 		assert r != null;
+		long time = 0;
 		long t = System.currentTimeMillis();
 		// La requete est directement placee dans la file d'attente.
 		this.queue.add(r);
@@ -276,8 +287,8 @@ public class VirtualMachine extends AbstractComponent {
 		if (!this.hasAvailableCore()) {
 			status = Status.BUSY;
 			System.out.println("Queueing request " + r);
-			VMMessages m = new VMMessages(getMvID(), status);
-			VMoport.notifyStatus(m);
+			
+			
 		} else {
 			// Parcours la liste de fils d'execution
 			for (compteurCyclique = (compteurCyclique + 1) % getNbCores();
@@ -287,15 +298,18 @@ public class VirtualMachine extends AbstractComponent {
 				// requetes suivantes.
 				if (getNbCoresUsed() == nbCores - 1) {
 					status = Status.BUSY;
-					VMMessages m = new VMMessages(getMvID(), status);
-					VMoport.notifyStatus(m);
+					
 				}
 				if (threads.get(compteurCyclique).isWaiting()) {
-					threads.get(compteurCyclique).process();
+					time = threads.get(compteurCyclique).process();
+					
 					break;
 				}
 			}
 		}
+		VMMessages m = new VMMessages(getMvID(), status);
+		m.setTime(time);
+		VMoport.notifyStatus(m);
 	}
 
 	/**
@@ -312,6 +326,42 @@ public class VirtualMachine extends AbstractComponent {
 
 	public void setStatus(Status free) {
 		this.status=free;	
+	}
+	public void startNotification() throws Exception {
+		if(this.getStatus()==Status.NEW){
+		VMMessages m = new VMMessages(getMvID(), status);
+		VMCarac c = new VMCarac(this.getMvID(), this.getFrequencies());
+		VMoport.notifyCarac(this.getMvID(),c);
+		VMoport.notifyStatus(m);
+		}
+		if(this.getStatus()==Status.FREE){
+			VMMessages m = new VMMessages(getMvID(), status);
+			
+			
+			VMoport.notifyStatus(m);
+		}
+			
+		
+		
+		
+	}
+
+
+
+	@Override
+	public void connectWith(String serverPortURI, String clientPortURI,
+			String ccname) throws Exception {
+		PortI uriConsumerPort = this.findPortFromURI(clientPortURI);
+		System.out.println(" client " + clientPortURI + " serv " + serverPortURI + " connector " + ccname);
+		uriConsumerPort.doConnection(serverPortURI, ccname);
+		System.out.println("connected");
+	}
+
+	@Override
+	public void disconnectWith(String serverPortURI, String clientPortURI)
+			throws Exception {
+		PortI uriConsumerPort = this.findPortFromURI(clientPortURI);
+		uriConsumerPort.doDisconnection();
 	}
 }
 

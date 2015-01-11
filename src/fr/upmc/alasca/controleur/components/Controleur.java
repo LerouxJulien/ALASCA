@@ -1,15 +1,19 @@
 package fr.upmc.alasca.controleur.components;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.concurrent.BlockingQueue;
 
+import fr.upmc.alasca.computer.connectors.VMConnector;
 import fr.upmc.alasca.computer.interfaces.VMProviderI;
+import fr.upmc.alasca.controleur.connectors.RepartiteurControleurConnector;
 import fr.upmc.alasca.controleur.exceptions.BadDeploymentException;
 import fr.upmc.alasca.controleur.exceptions.NoRepartitorException;
 import fr.upmc.alasca.controleur.interfaces.AppRequestI;
 import fr.upmc.alasca.controleur.ports.ControleurInboundPort;
 import fr.upmc.alasca.controleur.ports.ControleurOutboundPort;
+import fr.upmc.alasca.controleur.ports.ControleurToRepartiteurInboundPort;
 import fr.upmc.alasca.repartiteur.components.Repartiteur;
 import fr.upmc.alasca.requestgen.main.ClientArrivalConnector;
 import fr.upmc.alasca.requestgen.objects.Request;
@@ -47,7 +51,7 @@ public class Controleur extends AbstractComponent {
 	protected BlockingQueue<Request> queue;
 
 	// les repartiteurs de requetes du controleur
-	protected HashMap<Integer,Repartiteur> rbs = new HashMap<Integer,Repartiteur>();
+	protected HashMap<Integer,ControleurToRepartiteurInboundPort> rbs = new HashMap<Integer,ControleurToRepartiteurInboundPort>();
 
 	public Controleur(String controleur_uri_outboundport,
 			String controleur_uri_inboundport, Integer nb_computers)
@@ -82,26 +86,26 @@ public class Controleur extends AbstractComponent {
 	 * @return true si une vm a effectivement ete deployee
 	 * @throws Exception
 	 */
-	public void deployVM(Repartiteur r, String repartiteurURIFixe)
+	public void deployVM(int appid, String[] uri,String RepartiteurURIDCC)
 			throws Exception {
 		// TODO Modifier politique de deploiement
-		String[] uri;
-		for (ControleurOutboundPort cbop : portsToMachine) {
-			if (cbop.availableCores() >= 2) {
-                uri = r.addNewPorts(repartiteurURIFixe);
-				System.out.println("deployvm passed parameters : appid = " + r.getAppId()
-						+ " urifixe = " + uri[0] + " and " + uri[1] + " uridcc = "
-						+ r.getRepartiteurURIDCC());
-				if (cbop.availableCores() >= 4)
-					cbop.deployVM(4, r.getAppId(), uri,
-							r.getRepartiteurURIDCC());
-				else
-					cbop.deployVM(2, r.getAppId(), uri,
-							r.getRepartiteurURIDCC());
-			}
-		}
-        //throw new BadDeploymentException("Erreur de déploiement de la VM ! " +
-        //"URI du répartiteur : " + repartiteurURIFixe);
+				
+				for (ControleurOutboundPort cbop : portsToMachine) {
+					if (cbop.availableCores() >= 2) {
+						
+						System.out.println("deployvm passed parameters : appid = " + appid
+								+ " urifixe = " + uri[0] + " and " + uri[1] + " uridcc = "
+								+ RepartiteurURIDCC);
+						if (cbop.availableCores() >= 4)
+							cbop.deployVM(4, appid, uri,
+									RepartiteurURIDCC);
+						else
+							cbop.deployVM(2, appid, uri,
+									RepartiteurURIDCC);
+						break;
+					}
+				}
+				
 	}
 
 	/**
@@ -156,22 +160,41 @@ public class Controleur extends AbstractComponent {
 				+ AbstractCVM.DYNAMIC_COMPONENT_CREATOR_INBOUNDPORT_URI,
 				DynamicComponentCreationConnector.class.getCanonicalName());
 
+		//création du répartiteur
 		String newNameURI = repartiteurURIgenericName + appId;
 		dcco.createComponent(Repartiteur.class.getCanonicalName(),
 				new Object[] { newNameURI,
 			appId});
 		
 		
-		/*rbs.put(appId,new Repartiteur(repartiteurURIgenericName + appId, appId));
-		Repartiteur r = rbs.get(appId);
-		String uriNewPort = r.addNewPort();*/
+		//connexion entre le répartiteur et le controleur
+		ControleurToRepartiteurInboundPort pcr = new ControleurToRepartiteurInboundPort("controlTOrep"+appId, this);
+		rbs.put(appId,pcr);
+		this.addPort(pcr);
+		if (AbstractCVM.isDistributed) {
+			pcr.publishPort() ;
+		} else {
+			pcr.localPublishPort() ;
+		}
+				
+		DynamicallyConnectableComponentOutboundPort pr = new DynamicallyConnectableComponentOutboundPort(
+				this);
+		this.addPort(pr);
+		pr.localPublishPort();
 		
-
+		pr.doConnection(newNameURI+"-dcc",
+				DynamicallyConnectableComponentConnector.class
+						.getCanonicalName());
+		pr.connectWith(pcr.getPortURI(),"repartiteurTOcontroleur"+appId,RepartiteurControleurConnector.class.getCanonicalName());
+		pr.doDisconnection();
 		
+		
+		//Lien entre le requestgen et le répartiteur
 		DynamicallyConnectableComponentOutboundPort p = new DynamicallyConnectableComponentOutboundPort(
 				this);
 		this.addPort(p);
 		p.publishPort();
+		
 		p.doConnection(uri_new_rg + "-dcc",
 				DynamicallyConnectableComponentConnector.class
 						.getCanonicalName());

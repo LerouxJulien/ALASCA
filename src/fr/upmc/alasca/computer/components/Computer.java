@@ -221,16 +221,7 @@ public class Computer extends AbstractComponent implements ComputerProviderI {
 						+ "-RepartiteurOutboundPort",
 						VMConnector.class.getCanonicalName());
 				p.doDisconnection();
-				
-				
-				
-				
-				/*DynamicallyConnectableComponentInboundPort pi = new DynamicallyConnectableComponentInboundPort(
-						this);
-				this.addPort(pi);
-				pi.localPublishPort();
-				pi.publishPort();
-				pi.doDisconnection();*/
+			
 				}catch(Exception e){
 					
 					e.printStackTrace();

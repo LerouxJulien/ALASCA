@@ -1,9 +1,10 @@
 package fr.upmc.alasca.computer.objects;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-public class VMCarac {
+public class VMCarac implements Serializable{
 
 	private String VMid;
 	

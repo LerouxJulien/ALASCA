@@ -5,17 +5,21 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import fr.upmc.alasca.computer.objects.VMCarac;
 import fr.upmc.alasca.computer.objects.VMMessages;
 import fr.upmc.alasca.computer.enums.Status;
 import fr.upmc.alasca.computer.exceptions.NotEnoughCapacityVMException;
+import fr.upmc.alasca.repartiteur.connectors.RepartiteurConnector;
 import fr.upmc.alasca.repartiteur.interfaces.RepartiteurConsumerI;
 import fr.upmc.alasca.repartiteur.interfaces.RepartiteurProviderI;
 import fr.upmc.alasca.computer.interfaces.VMProviderI;
 import fr.upmc.alasca.computer.objects.VMMessages;
 import fr.upmc.alasca.controleur.components.Controleur;
+import fr.upmc.alasca.controleur.exceptions.BadDeploymentException;
 import fr.upmc.alasca.repartiteur.ports.RepartiteurInboundPort;
+import fr.upmc.alasca.repartiteur.ports.RepartiteurToControleurOutboundPort;
 import fr.upmc.alasca.repartiteur.ports.RepartiteurToVMInboundPort;
 import fr.upmc.alasca.repartiteur.ports.RepartiteurToVMOutboundPort;
 import fr.upmc.alasca.requestgen.interfaces.RequestArrivalI;
@@ -24,8 +28,10 @@ import fr.upmc.alasca.requestgen.ports.RequestGeneratorOutboundPort;
 import fr.upmc.components.AbstractComponent;
 import fr.upmc.components.cvm.AbstractCVM;
 import fr.upmc.components.cvm.pre.dcc.DynamicComponentCreationI;
+import fr.upmc.components.cvm.pre.dcc.DynamicallyConnectableComponentConnector;
 import fr.upmc.components.cvm.pre.dcc.DynamicallyConnectableComponentI;
 import fr.upmc.components.cvm.pre.dcc.DynamicallyConnectableComponentInboundPort;
+import fr.upmc.components.cvm.pre.dcc.DynamicallyConnectableComponentOutboundPort;
 import fr.upmc.components.cvm.pre.dcc.DynamicallyConnectableI;
 import fr.upmc.components.ports.PortI;
 
@@ -74,6 +80,9 @@ public class Repartiteur extends AbstractComponent implements
 	// Port courant de la VM traitant la derniere requete recues
 	protected Iterator<Map.Entry<RepartiteurToVMOutboundPort, Status>> robpIt;
 	
+	protected RepartiteurToControleurOutboundPort control; 
+	
+	
 	/**
 	 * Constructeur du repartiteur
 	 * 
@@ -114,6 +123,16 @@ public class Repartiteur extends AbstractComponent implements
 		
 		this.addRequiredInterface(DynamicComponentCreationI.class);
 		this.addRequiredInterface(DynamicallyConnectableComponentI.class);
+		
+		control = new RepartiteurToControleurOutboundPort("repartiteurTOcontroleur"+this.getAppId(),
+				this);
+		this.addPort(control);
+        
+        if (AbstractCVM.isDistributed) {
+            control.publishPort();
+        } else {
+            control.localPublishPort();
+        }
 	}
 	
 	/**
@@ -152,8 +171,11 @@ public class Repartiteur extends AbstractComponent implements
         }
 
         this.addPort(rip);
-        
-        rip.localPublishPort();
+		if (AbstractCVM.isDistributed) {
+			rip.publishPort() ;
+		} else {
+			rip.localPublishPort() ;
+		}
         
         rbps.put(rip,rbp);
         robps.put(rip, null);
@@ -163,6 +185,46 @@ public class Repartiteur extends AbstractComponent implements
 
 	}
 
+    
+    public void SetVMConnection(String URIRep) throws Exception{
+    	
+    	
+		System.out.println("Setting up connection from "+ URIRep);
+		
+		RepartiteurToVMOutboundPort portout = null;
+		
+		for(Entry<RepartiteurToVMInboundPort,RepartiteurToVMOutboundPort> entry : rbps.entrySet()){
+			System.out.println(entry.getKey().getPortURI());
+			if(entry.getKey().getPortURI().equals(URIRep)){
+				System.out.println("port found");
+				portout = entry.getValue();
+			}
+				
+			
+		}
+		
+		
+		System.out.println("outbound = "+portout.getPortURI());
+		
+		String VMUri = portout.getVMURI();
+		System.out.println("Connecting "+ URIRep+" to " + VMUri);
+		
+		
+		DynamicallyConnectableComponentOutboundPort p= new DynamicallyConnectableComponentOutboundPort(this);
+		this.addPort(p);
+		p.localPublishPort();
+		String in = VMUri.replace("outbound", "inbound");
+		System.out.println("DCC IN = "+in);
+		p.doConnection(in+"-dcc",DynamicallyConnectableComponentConnector.class.getCanonicalName());			
+		p.connectWith(URIRep,VMUri,RepartiteurConnector.class.getCanonicalName());			
+		p.doDisconnection();
+		portout.startNotification();
+		
+	}
+    
+    
+    
+    
 	@Override
 	public void connectWith(String serverPortURI, String clientPortURI,
 			String ccname) throws Exception {
@@ -202,44 +264,57 @@ public class Repartiteur extends AbstractComponent implements
      * @throws Exception
      */
     public void notifyStatus(VMMessages m) throws Exception {
-        System.out.println("Received status from "+ m.getVmID());
-        robps.put(m.getRepPort(), m);
-        if (m.getStatus()== Status.NEW || m.getStatus() == Status.FREE){
-            RepartiteurToVMOutboundPort po = rbps.get(m.getRepPort());
-            sendNextRequest(po);
-        }
-        if (m.getTime()!=0){
-            this.listCarac.get(m.getVmID()).addTime(m.getTime());
-            System.out.println("Temps moyen de traitement pour la vm"+this.listCarac.get(m.getVmID()).getMediumtime());
-        }
-    }
+    	System.out.println("Repartitor "+ this.getAppId() +" Received status "+m.getStatus() +" from "+ m.getVmID() + " in time " + m.getTime());
+		robps.put(m.getRepPort(), m);
+		
+		
+		
+		if (m.getStatus()== Status.NEW || m.getStatus() == Status.FREE){
+			
+			RepartiteurToVMOutboundPort po = rbps.get(m.getRepPort());
+			System.out.println("got port "+ po.getPortURI());
+			sendNextRequest(po);
+			
+		}
+			
+			
+		if (m.getTime()!=0){
+			
+			
+			this.listCarac.get(m.getVmID()).addTime(m.getTime());
+			System.out.println("Temps moyen de traitement pour la vm "+this.listCarac.get(m.getVmID()).getMediumtime());
+			
+		}
+	}
         
     private void sendNextRequest(RepartiteurToVMOutboundPort po) throws Exception {
-        po.processRequest(this.listR.remove(0));
+    	if(!this.listR.isEmpty()){
+    		System.out.println("Envoir de la requette " + this.listR.get(0));
+    		po.processRequest(this.listR.remove(0));}
     }
 	
-	public void acceptRequest(Request r) throws Exception {
-		this.processRequest(r);
-		/*if(rbs.containsKey(r.getAppId())){
+	public void acceptRequest(Request r) throws Exception { 
 
-            Repartiteur rr = rbs.get(r.getAppId());
-
-            if (!rr.processRequest(r)) {
-                String URInewPortRepartiteur = repartiteurURIgenericName
-							+ rr.getAppId();
-                if (this.deployVM(rr, URInewPortRepartiteur))
-						rr.processRequest(r);
-                else
-						System.out
-								.println("Rejected request: all queues full and maximal number of mv reached");
-            }
-            return;
-
-		}else{
-		System.out
-				.println("Rejected request: no dispatcher dedicated to the application number: "
-						+ r.getAppId());
-		}*/
+		try {
+        	processRequest(r);
+        } catch (Exception e) {
+        	String URInewPortRepartiteur = "repartiteur" + this.getAppId();
+            try {
+            	String[] uri=addNewPorts(URInewPortRepartiteur);
+				control.deployVM(this.getAppId(), uri,this.repartiteurURIDCC);
+				SetVMConnection(uri[1]+"-RepartiteurInboundPort");
+				
+			} catch (BadDeploymentException e2) {
+				System.out.println("Rejected request: all queues full and "
+						+ "maximal number of mv reached");
+			} catch (Exception e2) {
+				/*System.out.println("Echec de processRequest ! requête : "
+						+ r.toString());*/e2.printStackTrace();
+			}
+        }
+        //throw new NoRepartitorException("Rejected request: no dispatcher "
+        //		+ "dedicated to the application number: " + r.getAppId());
+	
 	}
 
 	/**
@@ -262,35 +337,29 @@ public class Repartiteur extends AbstractComponent implements
         return false;
     }*/
     public void processRequest(Request r) throws Exception {
-        /*
-        Map.Entry<RepartiteurOutboundPort, Status> vm = null;
-        if (!robpIt.hasNext()) {
-            robpIt = robps.entrySet().iterator();
-            return false;
-        }
-        else {
-            vm = robpIt.next();
-            vm.getKey().processRequest(r);
-        }
-        */
-        /*for (RepartiteurOutboundPort robp : robps.keySet()) {
-            robp.processRequest(r);
-            return;
-        }
-        if(this.rbps.isEmpty()){
-            
-            throw new NotEnoughCapacityVMException("No available mv for the " +
-                    "application number: " + r.getAppId());
-            
-        }*/
         
-        this.listR.add(r);
-        System.out.println("Stockage de requette "+ r.getAppId()+ " - " + listR.size());
         
+    	if(this.rbps.isEmpty()){
+			this.listR.add(r);
+			System.out.println("Stockage de requette "+ r.getAppId()+ " - " + listR.size() + " mais pas de VM dispo");
+			throw new NotEnoughCapacityVMException("No available mv for the " +
+					"application number: " + r.getAppId());
+			
+		}
+		this.listR.add(r);
+		System.out.println("Stockage de requette "+ r.getAppId()+ " - " + listR.size());
+		System.out.println("Repartitor "+this.getAppId()+ " request stack size is "+ rbps.size());
+		for(Entry<RepartiteurToVMInboundPort,RepartiteurToVMOutboundPort> entry :rbps.entrySet()){
+			
+			entry.getValue().startNotification();
+			
+		}
     }
     
     public void notifyCarac(String id, VMCarac c) {
-        this.listCarac.put(id, c);
+    	System.out.println("Repartitor "+ this.getAppId() +" Received carac change from "+ c.getVMid());
+		if(!listCarac.containsKey(id))
+		this.listCarac.put(id, c);
         
     }
     
