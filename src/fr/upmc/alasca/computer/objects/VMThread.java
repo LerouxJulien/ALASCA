@@ -118,8 +118,10 @@ public class VMThread extends AbstractComponent {
 						}
 					}
 				}, processingTime, TimeUnit.SECONDS);
-		
-		owner.setStatus(Status.FREE);
+		if(owner.getQueueSize()!=1){
+		owner.setStatus(Status.FREE);}else{
+			owner.setStatus(Status.BUSY);
+		}
 		VMMessages m = new VMMessages(owner.getMvID(), owner.getStatus());
 		owner.getVMoport().notifyStatus(m);
 		return processingTime;
