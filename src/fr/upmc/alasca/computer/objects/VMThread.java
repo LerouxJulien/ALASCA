@@ -118,12 +118,7 @@ public class VMThread extends AbstractComponent {
 						}
 					}
 				}, processingTime, TimeUnit.SECONDS);
-		if(owner.getQueueSize()!=1){
-		owner.setStatus(Status.FREE);}else{
-			owner.setStatus(Status.BUSY);
-		}
-		VMMessages m = new VMMessages(owner.getMvID(), owner.getStatus());
-		owner.getVMoport().notifyStatus(m);
+		
 		return processingTime;
 	}
 
@@ -141,16 +136,23 @@ public class VMThread extends AbstractComponent {
 				+ this.owner.getMvID() + " --- Size queue : "
 				+ this.owner.getQueue().size());
 		if (owner.getQueue().isEmpty()) {
+			owner.setStatus(Status.FREE);
+			VMMessages m = new VMMessages(owner.getMvID(), owner.getStatus(),
+					servicing.toString(), st);
+			owner.getVMoport().notifyStatus(m);
 			this.servicing = null;
 			this.isWaiting = true;
 			this.nextEndServicingTaskFuture = null;
 		} else {
+			owner.setStatus(Status.BUSY);
+			VMMessages m = new VMMessages(owner.getMvID(), owner.getStatus(),
+					servicing.toString(), st);
+			owner.getVMoport().notifyStatus(m);
 			this.process();
 		}
-		owner.setStatus(Status.FREE);
-		VMMessages m = new VMMessages(owner.getMvID(), owner.getStatus(),
-				servicing.toString(), st);
-		owner.getVMoport().notifyStatus(m);
+
+
+		
 		
 	}
 

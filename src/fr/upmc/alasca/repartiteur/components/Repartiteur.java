@@ -82,6 +82,8 @@ public class Repartiteur extends AbstractComponent implements
 
 	protected RepartiteurToControleurOutboundPort control;
 
+	protected double s1,s2;
+	
 
 	/**
 	 * Constructeur du repartiteur
@@ -89,7 +91,7 @@ public class Repartiteur extends AbstractComponent implements
 	 * @param outboundPortURI port de sortie du repartiteur
 	 * @param appId id de l'application liée au repartiteur
 	 */
-    public Repartiteur(String portURI, Integer appId) throws Exception {
+    public Repartiteur(String portURI, Integer appId/*,double seuil1,double seuil2*/) throws Exception {
         this.addRequiredInterface(RequestArrivalI.class);
 
         this.addOfferedInterface(RepartiteurProviderI.class);
@@ -104,6 +106,9 @@ public class Repartiteur extends AbstractComponent implements
         this.listCarac = new HashMap<String,VMCarac>();
 		PortI p = this.rgToRepartiteurInboundPort;
 
+		s1 = 0.1;
+		s2 = 0.2;
+		
 		this.addOfferedInterface(RequestArrivalI.class);
 		p = new RepartiteurInboundPort(portURI, this);
 
@@ -189,14 +194,14 @@ public class Repartiteur extends AbstractComponent implements
     public void SetVMConnection(String URIRep) throws Exception{
 
 
-		System.out.println("Setting up connection from "+ URIRep);
+		//System.out.println("Setting up connection from "+ URIRep);
 
 		RepartiteurToVMOutboundPort portout = null;
 
 		for(Entry<RepartiteurToVMInboundPort,RepartiteurToVMOutboundPort> entry : rbps.entrySet()){
-			System.out.println(entry.getKey().getPortURI());
+			//System.out.println(entry.getKey().getPortURI());
 			if(entry.getKey().getPortURI().equals(URIRep)){
-				System.out.println("port found");
+				//System.out.println("port found");
 				portout = entry.getValue();
 			}
 
@@ -204,7 +209,7 @@ public class Repartiteur extends AbstractComponent implements
 		}
 
 
-		System.out.println("outbound = "+portout.getPortURI());
+		//System.out.println("outbound = "+portout.getPortURI());
 
 		String VMUri = portout.getVMURI();
 		System.out.println("Connecting "+ URIRep+" to " + VMUri);
@@ -214,7 +219,7 @@ public class Repartiteur extends AbstractComponent implements
 		this.addPort(p);
 		p.localPublishPort();
 		String in = VMUri.replace("outbound", "inbound");
-		System.out.println("DCC IN = "+in);
+		//System.out.println("DCC IN = "+in);
 		p.doConnection(in+"-dcc",DynamicallyConnectableComponentConnector.class.getCanonicalName());
 		p.connectWith(URIRep,VMUri,RepartiteurConnector.class.getCanonicalName());
 		p.doDisconnection();
@@ -272,7 +277,7 @@ public class Repartiteur extends AbstractComponent implements
 		if (m.getStatus()== Status.NEW || m.getStatus() == Status.FREE){
 
 			RepartiteurToVMOutboundPort po = rbps.get(m.getRepPort());
-			System.out.println("got port "+ po.getPortURI());
+			
 			sendNextRequest(po);
 
 		}
@@ -280,16 +285,33 @@ public class Repartiteur extends AbstractComponent implements
 
 		if (m.getTime()!=0){
 
-
-			this.listCarac.get(m.getVmID()).addTime(m.getTime());
+			VMCarac car = this.listCarac.get(m.getVmID());
+			car.addTime(m.getTime());
 			System.out.println("Temps moyen de traitement pour la vm "+this.listCarac.get(m.getVmID()).getMediumtime());
 
+			// time > seuil 2 => nouvelle VM
+			if((car.getMediumtime()*this.s2 + car.getMediumtime())<m.getTime()){
+				System.out.println("******************************************************************************************************************");
+				System.out.println("CREATION DUNE NOUVELLE VM");
+				String[] uri=addNewPorts("repartiteur"+this.getAppId());
+				control.deployVM(this.getAppId(), uri,this.repartiteurURIDCC);
+				SetVMConnection(uri[1]+"-RepartiteurInboundPort");
+				System.out.println("******************************************************************************************************************");
+
+			}else{
+			// time > seuil 1 => augmentation de fréquence
+			if((car.getMediumtime()*this.s1 + car.getMediumtime())<m.getTime()){
+				
+				System.out.println("MODIFIER LA FREQUENCE DE LA VM");
+				
+			}
+			}
 		}
 	}
 
     private void sendNextRequest(RepartiteurToVMOutboundPort po) throws Exception {
     	if(!this.listR.isEmpty()){
-    		System.out.println("Envoir de la requette " + this.listR.get(0));
+    		System.out.println("Envoi de la requette "+ listR.get(0).toString() + "par le répartiteur "+ this.getAppId());
     		po.processRequest(this.listR.remove(0));}
     }
 
@@ -346,14 +368,14 @@ public class Repartiteur extends AbstractComponent implements
 					"application number: " + r.getAppId());
 
 		}
-		this.listR.add(r);
-		System.out.println("Stockage de requette "+ r.getAppId()+ " - " + listR.size());
+    	this.listR.add(r);
+    	System.out.println("Stockage de requette "+ r.getAppId()+ " - " + listR.size());
 
-		for(Entry<RepartiteurToVMInboundPort,RepartiteurToVMOutboundPort> entry :rbps.entrySet()){
+		/*for(Entry<RepartiteurToVMInboundPort,RepartiteurToVMOutboundPort> entry :rbps.entrySet()){
 
 			entry.getValue().startNotification();
 
-		}
+		}*/
     }
 
     public void notifyCarac(String id, VMCarac c) {

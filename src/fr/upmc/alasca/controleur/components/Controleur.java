@@ -164,7 +164,7 @@ public class Controleur extends AbstractComponent {
 		String newNameURI = repartiteurURIgenericName + appId;
 		dcco.createComponent(Repartiteur.class.getCanonicalName(),
 				new Object[] { newNameURI,
-			appId});
+			appId/*,0.5,1.0*/});
 		
 		
 		//connexion entre le répartiteur et le controleur

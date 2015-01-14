@@ -307,9 +307,7 @@ public class VirtualMachine extends AbstractComponent implements DynamicallyConn
 				}
 			}
 		}
-		VMMessages m = new VMMessages(getMvID(), status);
-		m.setTime(time);
-		VMoport.notifyStatus(m);
+		
 	}
 
 	/**
@@ -329,21 +327,23 @@ public class VirtualMachine extends AbstractComponent implements DynamicallyConn
 	}
 	public void startNotification() throws Exception {
 		if(this.getStatus()==Status.NEW){
+			
 		VMMessages m = new VMMessages(getMvID(), status);
 		VMCarac c = new VMCarac(this.getMvID(), this.getFrequencies());
 		VMoport.notifyCarac(this.getMvID(),c);
 		VMoport.notifyStatus(m);
+		
 		}
-		if(this.getStatus()==Status.FREE){
-			VMMessages m = new VMMessages(getMvID(), status);
-			
-			
-			VMoport.notifyStatus(m);
+		
+		if(this.getQueueSize()>0){
+			this.setStatus(Status.FREE);
+		}else{
+			this.setStatus(Status.BUSY);
 		}
+		
+		VMMessages m = new VMMessages(getMvID(), status);
+		VMoport.notifyStatus(m);
 			
-		
-		
-		
 	}
 
 

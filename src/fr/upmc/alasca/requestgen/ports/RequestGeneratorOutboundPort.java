@@ -72,7 +72,7 @@ public class RequestGeneratorOutboundPort extends AbstractOutboundPort
 	 */
 	@Override
 	public void acceptRequest(Request r) throws Exception {
-		System.out.println(this.connector);
+		
 		((RequestArrivalI) this.connector).acceptRequest(r);
 	}
 }
