@@ -1,19 +1,21 @@
 package fr.upmc.alasca.controleur.components;
 
 import java.io.Serializable;
+import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.concurrent.BlockingQueue;
 
 import fr.upmc.alasca.computer.connectors.VMConnector;
+import fr.upmc.alasca.computer.exceptions.BadDestroyException;
 import fr.upmc.alasca.computer.interfaces.VMProviderI;
 import fr.upmc.alasca.controleur.connectors.RepartiteurControleurConnector;
 import fr.upmc.alasca.controleur.exceptions.BadDeploymentException;
 import fr.upmc.alasca.controleur.exceptions.NoRepartitorException;
 import fr.upmc.alasca.controleur.interfaces.AppRequestI;
+import fr.upmc.alasca.controleur.ports.ControleurFromRepartiteurInboundPort;
 import fr.upmc.alasca.controleur.ports.ControleurInboundPort;
 import fr.upmc.alasca.controleur.ports.ControleurOutboundPort;
-import fr.upmc.alasca.controleur.ports.ControleurToRepartiteurInboundPort;
 import fr.upmc.alasca.repartiteur.components.Repartiteur;
 import fr.upmc.alasca.requestgen.main.ClientArrivalConnector;
 import fr.upmc.alasca.requestgen.objects.Request;
@@ -51,7 +53,7 @@ public class Controleur extends AbstractComponent {
 	protected BlockingQueue<Request> queue;
 
 	// les repartiteurs de requetes du controleur
-	protected HashMap<Integer,ControleurToRepartiteurInboundPort> rbs = new HashMap<Integer,ControleurToRepartiteurInboundPort>();
+	protected HashMap<Integer,ControleurFromRepartiteurInboundPort> rbs = new HashMap<Integer,ControleurFromRepartiteurInboundPort>();
 
 	public Controleur(String controleur_uri_outboundport,
 			String controleur_uri_inboundport, Integer nb_computers)
@@ -107,6 +109,12 @@ public class Controleur extends AbstractComponent {
 				}
 				
 	}
+	
+	public void destroyVM(String uriComputerParent, String mv) throws Exception{
+		ControleurOutboundPort p = (ControleurOutboundPort) this.findPortFromURI(uriComputerParent);
+		p.destroyVM(mv);
+	}
+	
 
 	/**
 	 * Accepte une requete du generateur de requete
@@ -168,7 +176,7 @@ public class Controleur extends AbstractComponent {
 		
 		
 		//connexion entre le répartiteur et le controleur
-		ControleurToRepartiteurInboundPort pcr = new ControleurToRepartiteurInboundPort("controlTOrep"+appId, this);
+		ControleurFromRepartiteurInboundPort pcr = new ControleurFromRepartiteurInboundPort("controlTOrep"+appId, this);
 		rbs.put(appId,pcr);
 		this.addPort(pcr);
 		if (AbstractCVM.isDistributed) {

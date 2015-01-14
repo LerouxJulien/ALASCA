@@ -1,5 +1,9 @@
 package fr.upmc.alasca.controleur.ports;
 
+import java.rmi.RemoteException;
+
+import fr.upmc.alasca.computer.exceptions.BadDestroyException;
+import fr.upmc.alasca.computer.exceptions.BadReinitialisationException;
 import fr.upmc.alasca.computer.interfaces.ComputerProviderI;
 import fr.upmc.components.ComponentI;
 import fr.upmc.components.ports.AbstractOutboundPort;
@@ -24,14 +28,16 @@ public class ControleurOutboundPort extends AbstractOutboundPort implements
 				URIRepartiteurFixe, URIRepartiteurDCC);
 	}
 
+	
 	@Override
 	public void destroyVM(String mv) throws Exception {
-		// TODO Auto-generated method stub
+		((ComputerProviderI) this.connector).destroyVM(mv);
 	}
 
+	
 	@Override
-	public void reInit(String vm) throws Exception {
-		// TODO Auto-generated method stub
+	public void reInit(String vm) throws BadReinitialisationException, RemoteException {
+		((ComputerProviderI) this.connector).reInit(vm);
 	}
 
 	@Override

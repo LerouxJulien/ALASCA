@@ -20,4 +20,6 @@ public interface RepartiteurConsumerI extends RequiredI {
 	
 	public void startNotification() throws Exception;
 	
+	public String getUriComputerParent()throws Exception;
+	
 }

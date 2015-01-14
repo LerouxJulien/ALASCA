@@ -6,6 +6,8 @@ import java.util.List;
 
 public class VMCarac implements Serializable{
 
+	private static final long serialVersionUID = 6460133008609177901L;
+	
 	private String VMid;
 	
 	private  List<Double> frequencies;

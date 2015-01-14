@@ -11,6 +11,7 @@ import fr.upmc.alasca.repartiteur.interfaces.RepartiteurProviderI;
 import fr.upmc.alasca.repartiteur.ports.RepartiteurToVMInboundPort;
 import fr.upmc.alasca.requestgen.objects.Request;
 import fr.upmc.components.connectors.AbstractConnector;
+import fr.upmc.components.exceptions.ComponentShutdownException;
 
 /**
  * La classe VMConnector implemente un connecteur entre un Repartiteur et une
@@ -47,6 +48,26 @@ VMConsumerI, Serializable {
 		((RepartiteurProviderI) this.requiring).notifyCarac(id, c);
 		
 	}
+	
+	
+	
+	@Override
+	public String getUriComputerParent() throws Exception{
+		return ((VMProviderI) this.offering).getUriComputerParent();
+	}
+
+	
+	@Override
+	public int getNbCores() throws Exception{
+		return ((VMProviderI) this.offering).getNbCores();
+	}
+
+	
+	@Override
+	public void shutdown() throws Exception {
+		((VMProviderI) this.offering).shutdown();
+	}
+
 
 	
 }

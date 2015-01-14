@@ -1,5 +1,6 @@
 package fr.upmc.alasca.repartiteur.components;
 
+import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -10,6 +11,7 @@ import java.util.Map.Entry;
 import fr.upmc.alasca.computer.objects.VMCarac;
 import fr.upmc.alasca.computer.objects.VMMessages;
 import fr.upmc.alasca.computer.enums.Status;
+import fr.upmc.alasca.computer.exceptions.BadDestroyException;
 import fr.upmc.alasca.computer.exceptions.NotEnoughCapacityVMException;
 import fr.upmc.alasca.repartiteur.connectors.RepartiteurConnector;
 import fr.upmc.alasca.repartiteur.interfaces.RepartiteurConsumerI;
@@ -106,8 +108,8 @@ public class Repartiteur extends AbstractComponent implements
         this.listCarac = new HashMap<String,VMCarac>();
 		PortI p = this.rgToRepartiteurInboundPort;
 
-		s1 = 0.1;
-		s2 = 0.2;
+		s1 = 0.01;
+		s2 = 0.02;
 		
 		this.addOfferedInterface(RequestArrivalI.class);
 		p = new RepartiteurInboundPort(portURI, this);
@@ -383,6 +385,13 @@ public class Repartiteur extends AbstractComponent implements
 		if(!listCarac.containsKey(id))
 		this.listCarac.put(id, c);
 
+    }
+    
+    private void destroyVM(String vm) throws Exception{
+    	RepartiteurToVMOutboundPort p = (RepartiteurToVMOutboundPort) this.findPortFromURI(vm);
+    	String uriComputerParent = p.getUriComputerParent();
+    	
+    	this.control.destroyVM(uriComputerParent, vm);
     }
 
 }

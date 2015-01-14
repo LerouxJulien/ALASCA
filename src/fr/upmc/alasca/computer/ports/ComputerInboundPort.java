@@ -27,7 +27,7 @@ public class ComputerInboundPort extends AbstractInboundPort implements
 	}
 
 	@Override
-	public void destroyVM(String mv) throws BadDestroyException {
+	public void destroyVM(String mv) throws Exception {
 		final Computer comp = (Computer) this.owner;
 		comp.destroyVM(mv);
 	}

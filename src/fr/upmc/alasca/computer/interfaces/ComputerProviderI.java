@@ -1,5 +1,7 @@
 package fr.upmc.alasca.computer.interfaces;
 
+import java.rmi.RemoteException;
+
 import fr.upmc.alasca.computer.exceptions.BadDestroyException;
 import fr.upmc.alasca.computer.exceptions.BadReinitialisationException;
 import fr.upmc.components.interfaces.OfferedI;
@@ -41,20 +43,21 @@ public interface ComputerProviderI extends OfferedI {
 	public void deployVM(int nbCores, int app, String[] URIRepartiteurFixe,
 			String URIRepartiteurDCC) throws Exception;
 
-	/**
-	 * Detruit une machine virtuelle via son URI
-	 * 
-	 * @param mv
-	 * @throws BadDestroyException
-	 */
-	public void destroyVM(String mv) throws Exception;
+	
+	
+	
+	public void destroyVM(String mv) throws BadDestroyException, RemoteException, Exception;
 
 	/**
 	 * Reinitialise une machine virtuelle via son URI
 	 * 
 	 * @param vm
 	 * @throws BadReinitialisationException
+	 * @throws Exception 
 	 */
-	public void reInit(String vm) throws Exception;
+	
+	public void reInit(String vm) throws BadReinitialisationException, RemoteException;
 
+	
+	
 }

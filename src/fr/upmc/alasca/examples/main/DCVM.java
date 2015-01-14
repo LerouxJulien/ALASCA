@@ -184,7 +184,7 @@ public class DCVM extends		AbstractDistributedCVM{
 					}
 				});
 			}
-			Thread.sleep(130000L);
+			Thread.sleep(13000L);
 			a.shutdown();
 			System.out.println("ending...");
 			System.exit(0);

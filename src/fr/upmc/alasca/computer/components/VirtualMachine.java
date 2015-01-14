@@ -71,6 +71,8 @@ public class VirtualMachine extends AbstractComponent implements DynamicallyConn
 
 	protected VMInboundPort VMiport;
 	protected VMOutboundPort VMoport;
+
+	private String uriComputerParent;
 	
 	/**
 	 * @return the vMoport
@@ -93,7 +95,7 @@ public class VirtualMachine extends AbstractComponent implements DynamicallyConn
 	 *            Liste des frequences des coeurs de la machine virtuelle
 	 * @throws Exception
 	 */
-	public VirtualMachine(String port, String mvID, Integer appID,
+	public VirtualMachine(String uriComputerParent,String port, String mvID, Integer appID,
 			Integer queueMax, ArrayList<Double> frequencies) throws Exception {
 		super();
 		this.mvID = mvID;
@@ -102,6 +104,7 @@ public class VirtualMachine extends AbstractComponent implements DynamicallyConn
 		this.frequencies = new ArrayList<Double>(frequencies);
 		this.status = Status.NEW;
 		this.nbRequest = 0;
+		this.uriComputerParent = uriComputerParent;
 		queue = new LinkedBlockingQueue<Request>();
 
 		// Initialise les VMThread de la VM
@@ -362,6 +365,10 @@ public class VirtualMachine extends AbstractComponent implements DynamicallyConn
 			throws Exception {
 		PortI uriConsumerPort = this.findPortFromURI(clientPortURI);
 		uriConsumerPort.doDisconnection();
+	}
+	
+	public String getUriComputerParent(){
+		return this.uriComputerParent;
 	}
 }
 

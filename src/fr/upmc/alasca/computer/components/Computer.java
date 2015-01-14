@@ -9,6 +9,7 @@ import fr.upmc.alasca.computer.exceptions.BadReinitialisationException;
 import fr.upmc.alasca.computer.exceptions.NotEnoughCapacityVMException;
 import fr.upmc.alasca.computer.interfaces.ComputerProviderI;
 import fr.upmc.alasca.computer.ports.ComputerInboundPort;
+import fr.upmc.alasca.computer.ports.VMInboundPort;
 import fr.upmc.components.AbstractComponent;
 import fr.upmc.components.cvm.AbstractCVM;
 import fr.upmc.components.cvm.pre.dcc.DynamicComponentCreationConnector;
@@ -50,7 +51,7 @@ public class Computer extends AbstractComponent implements ComputerProviderI {
 	private Integer cptVM;
 
 	protected AbstractCVM cvm;
-
+	private String uriInboundComputer;
 	/**
 	 * Demarre une machine.
 	 *
@@ -71,7 +72,9 @@ public class Computer extends AbstractComponent implements ComputerProviderI {
 		this.difference = difference;
 		this.cptVM = 0;
 		this.nbCoresUsed = 0;
-
+		this.uriInboundComputer = port;
+		
+		
 		this.addOfferedInterface(ComputerProviderI.class);
 		PortI p = new ComputerInboundPort(port, this);
 		this.addPort(p);
@@ -199,9 +202,9 @@ public class Computer extends AbstractComponent implements ComputerProviderI {
 						+ java.util.UUID.randomUUID().toString();
 				Integer appi = app;
 				Integer num = 5;
-				
+				String uriCPU = this.uriInboundComputer;
 				newvm.createComponent(VirtualMachine.class.getCanonicalName(),
-						new Object[] { randomString, mvID,  appi,num, coresFreq });
+						new Object[] {uriCPU, randomString, mvID,  appi,num, coresFreq });
 				
 				
 				
@@ -235,17 +238,21 @@ public class Computer extends AbstractComponent implements ComputerProviderI {
 	 * Detruit une machine virtuelle via son URI
 	 * 
 	 * @param vm
-	 * @throws BadDestroyException 
+	 * @throws Exception 
 	 */
 	@Override
-	public void destroyVM(String vm) throws BadDestroyException {
-		// TODO : Destruction a implementer
-		/*boolean m = true; 
-		if (m) {
-			System.out.println("On détruit la machine.");
-		} else {
+	public void destroyVM(String vm) throws Exception {
+		VMInboundPort portVM = (VMInboundPort) this.findPortFromURI(vm);
+		int nbCoreALiberer = portVM.getNbCores();
+		
+		try {
+			portVM.shutdown();
+			portVM.doDisconnection();
+			portVM.unpublishPort();
+			this.nbCoresUsed -= nbCoreALiberer;
+		} catch (Exception e) {
 			throw new BadDestroyException("Impossible de supprimer la VM : " + vm);
-		}*/
+		}
 	}
 
 	/**

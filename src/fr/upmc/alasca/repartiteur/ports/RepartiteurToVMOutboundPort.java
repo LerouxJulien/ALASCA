@@ -34,4 +34,8 @@ implements RepartiteurConsumerI {
 		
 	}
 
+	
+	public String getUriComputerParent() throws Exception{
+		return ((VMProviderI) this.connector).getUriComputerParent();
+	}
 }

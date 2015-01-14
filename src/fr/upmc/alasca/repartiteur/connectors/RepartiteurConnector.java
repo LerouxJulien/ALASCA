@@ -42,5 +42,10 @@ RepartiteurConsumerI, Serializable {
 		((RepartiteurProviderI) this.offering).notifyCarac(id, c);
 		
 	}
+	
+	@Override
+	public String getUriComputerParent() throws Exception{
+		return ((RepartiteurConsumerI) this.offering).getUriComputerParent();
+	}
 
 }
