@@ -34,6 +34,11 @@ implements RepartiteurConsumerI {
 		
 	}
 
+	public int getNbCore() throws Exception {
+		
+		return ((VMProviderI) this.connector).getNbCores();
+		
+	}
 	
 	public String getUriComputerParent() throws Exception{
 		return ((VMProviderI) this.connector).getUriComputerParent();

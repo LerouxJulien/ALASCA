@@ -338,7 +338,7 @@ public class VirtualMachine extends AbstractComponent implements DynamicallyConn
 		
 		}
 		
-		if(this.getQueueSize()>0){
+		if(this.getQueueSize()<=0){
 			this.setStatus(Status.FREE);
 		}else{
 			this.setStatus(Status.BUSY);

@@ -108,8 +108,8 @@ public class Repartiteur extends AbstractComponent implements
         this.listCarac = new HashMap<String,VMCarac>();
 		PortI p = this.rgToRepartiteurInboundPort;
 
-		s1 = 0.01;
-		s2 = 0.02;
+		s1 = 0.025;
+		s2 = 0.05;
 		
 		this.addOfferedInterface(RequestArrivalI.class);
 		p = new RepartiteurInboundPort(portURI, this);
@@ -276,14 +276,23 @@ public class Repartiteur extends AbstractComponent implements
 
 
 
-		if (m.getStatus()== Status.NEW || m.getStatus() == Status.FREE){
+		if (m.getStatus()== Status.NEW  ){
 
 			RepartiteurToVMOutboundPort po = rbps.get(m.getRepPort());
-			
+			int nb = po.getNbCore();
+			while(nb!=0){
 			sendNextRequest(po);
+			nb--;
+			
+			}
 
 		}
-
+		if (m.getStatus() == Status.FREE){
+			
+			RepartiteurToVMOutboundPort po = rbps.get(m.getRepPort());
+			sendNextRequest(po);
+			
+		}
 
 		if (m.getTime()!=0){
 
@@ -372,12 +381,16 @@ public class Repartiteur extends AbstractComponent implements
 		}
     	this.listR.add(r);
     	System.out.println("Stockage de requette "+ r.getAppId()+ " - " + listR.size());
-
-		/*for(Entry<RepartiteurToVMInboundPort,RepartiteurToVMOutboundPort> entry :rbps.entrySet()){
+    	System.out.println("-------------------------------------------------------------------------------------");
+    	System.out.println("Demande de notification du repartiteur "+ this.getAppId() + " a ses VM");
+    	for(Entry<RepartiteurToVMInboundPort,RepartiteurToVMOutboundPort> entry :rbps.entrySet()){
 
 			entry.getValue().startNotification();
 
-		}*/
+		}
+    	
+    	System.out.println("-------------------------------------------------------------------------------------");
+
     }
 
     public void notifyCarac(String id, VMCarac c) {
