@@ -68,8 +68,8 @@
 
 	<p>Le projet à proprement parlé est divisé en deux parties :
 	<ul>
-		<li>le client qui est composé d'un composant, le <b>générateur
-				de requêtes</b> (qui gère aussi la demande d'application); ce client
+		<li>le client qui est composé de deux composants, le <b>générateur de demande 
+				d'applications</b> qui gère la demande d'application et le <b>generateur de requête</b> créé dynamiquement lié a une application. Ce client
 			servira de test pour la demande d'application et l'envoi de requêtes
 			vers le centre de calcul.
 		<li>le centre de calcul qui est composé des entités suivantes :
@@ -77,8 +77,8 @@
 				<li>le <b>contrôleur d'admission</b> qui gère essentiellement
 					la demande de deploiement et/ou de destruction de machines
 					virtuelles par le dispatcher;
-				<li>le <b>dispatcher</b> qui gère la liste des <b>répartiteurs
-						de requêtes</b>;
+				<li>un <b>répartiteur
+						de requêtes</b> créé pour chaque applications;
 				<li>la <b>machine</b> qui s'occupe de la création et
 					destruction des <b>machines virtuelles</b>;
 				<li>la <b>machine virtuelle</b> qui traite les requêtes.

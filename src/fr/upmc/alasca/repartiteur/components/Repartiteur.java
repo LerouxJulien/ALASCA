@@ -350,7 +350,7 @@ public class Repartiteur extends AbstractComponent implements
 			// Augmentation de la fréquence des coeurs si dépassement du seuil thFreqMax
 			//} else if ((car.getMediumtime()*this.thFreqMax + car.getMediumtime())<m.getTime()) {
 			} else if (car.getMediumtime() > this.meanTimeProcess * (1 + this.thFreqMax)) {
-				// TODO
+				//control.incFrequency(this.getAppId());
 				System.out.println("MODIFIER LA FREQUENCE DE LA VM");
 			} else {
 				System.out.println("POUETTE !");
@@ -433,7 +433,7 @@ public class Repartiteur extends AbstractComponent implements
     	System.out.println("-------------------------------------------------------------------------------------");
     	System.out.println("Demande de notification du répartiteur " + 
     	this.getAppId() + " à ses VM");
-    	if(r.getUri()%20==0 && r.getUri()<=60){
+    	/*if(r.getUri()%20==0 && r.getUri()<=60){
     		
     		System.out.println(" Trop de requettes en stock, deploiement d'une nouvelle VM ");
     		String[] uri = addNewPorts("repartiteur"+this.getAppId());
@@ -441,12 +441,12 @@ public class Repartiteur extends AbstractComponent implements
 			SetVMConnection(uri[1] + "-RepartiteurInboundPort");
     		
     		
-    	}else{
+    	}else{*/
     	for (Entry<RepartiteurToVMInboundPort, RepartiteurToVMOutboundPort> 
     		entry : rbps.entrySet()) {
 			entry.getValue().startNotification();
-		}
-    	}
+		}/*
+    	}*/
     	System.out.println("-------------------------------------------------------------------------------------");
     }
 

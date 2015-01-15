@@ -3,12 +3,14 @@ package fr.upmc.alasca.computer.components;
 import java.util.ArrayList;
 import java.util.List;
 
+import fr.upmc.alasca.computer.connectors.CompVMConnector;
 import fr.upmc.alasca.computer.connectors.VMConnector;
 import fr.upmc.alasca.computer.exceptions.BadDestroyException;
 import fr.upmc.alasca.computer.exceptions.BadReinitialisationException;
 import fr.upmc.alasca.computer.exceptions.NotEnoughCapacityVMException;
 import fr.upmc.alasca.computer.interfaces.ComputerProviderI;
 import fr.upmc.alasca.computer.ports.ComputerInboundPort;
+import fr.upmc.alasca.computer.ports.ComputerToVMOutboundPort;
 import fr.upmc.alasca.computer.ports.VMInboundPort;
 import fr.upmc.components.AbstractComponent;
 import fr.upmc.components.cvm.AbstractCVM;
@@ -17,7 +19,9 @@ import fr.upmc.components.cvm.pre.dcc.DynamicComponentCreationI;
 import fr.upmc.components.cvm.pre.dcc.DynamicComponentCreationOutboundPort;
 import fr.upmc.components.cvm.pre.dcc.DynamicallyConnectableComponentConnector;
 import fr.upmc.components.cvm.pre.dcc.DynamicallyConnectableComponentI;
+import fr.upmc.components.cvm.pre.dcc.DynamicallyConnectableComponentInboundPort;
 import fr.upmc.components.cvm.pre.dcc.DynamicallyConnectableComponentOutboundPort;
+import fr.upmc.components.cvm.pre.dcc.DynamicallyConnectableI;
 import fr.upmc.components.ports.PortI;
 
 /**
@@ -32,42 +36,44 @@ import fr.upmc.components.ports.PortI;
  * @author <a href="mailto:henri.ng@etu.upmc.fr">Henri NG</a>
  * @version $Name$ -- $Revision$ -- $Date$
  */
-public class Computer extends AbstractComponent implements ComputerProviderI {
+public class Computer extends AbstractComponent implements DynamicallyConnectableI {
 
 	// ID de la machine
 	private final int machineID;
 
 	// Frequence des coeurs
 	private final ArrayList<Double> frequencies;
+	
+	protected ArrayList<ComputerToVMOutboundPort> listeVM = new ArrayList<ComputerToVMOutboundPort>();
 
+	protected DynamicallyConnectableComponentInboundPort dccInboundPort;
+	
 	// Ecart de frequence maximal entre les differents coeurs
 	private final double difference;
 
 	// Nombre de coeurs monopolises par les machines virtuelles
 	private int nbCoresUsed;
+	
+	private final Double freqMax;
 
 	// Compteur utilise pour differencier les identifiants des machines
 	// virtuelles (ne depasse pas 1000)
 	private Integer cptVM;
 
-	// CVM de notre centre de calcul
 	protected AbstractCVM cvm;
-	
-	// URI du Computer, a utiliser lors de la création des VM
-	private String uriInboundComputer;
-	
+	private final String URIBaseComputer;
 	/**
 	 * Demarre une machine.
 	 *
-	 * @param port l'URI de l'InboundPort du Computer
-	 * @param machineID l'ID du Computer
-	 * @param frequencies la liste des fréquences des coeurs physiques
-	 * @param difference la difference maximale entre les coeurs
-	 * @param isDistributed indique si l'on se trouve en mode distribué ou non
-	 * @param cvm la cvm du centre de calcul
+	 * @param machineID
+	 * @param frequencies
+	 *            Liste des coeurs physiques
+	 * @param difference
+	 *            Difference maximale entre les coeurs
+	 * @param cvm
 	 */
 	public Computer(String port, int machineID, ArrayList<Double> frequencies,
-			double difference, boolean isDistributed, AbstractCVM cvm)
+			double difference, double freqMax, boolean isDistributed, AbstractCVM cvm)
 			throws Exception {
 		super(true);
 		this.cvm = cvm;
@@ -76,7 +82,9 @@ public class Computer extends AbstractComponent implements ComputerProviderI {
 		this.difference = difference;
 		this.cptVM = 0;
 		this.nbCoresUsed = 0;
-		this.uriInboundComputer = port;
+		this.URIBaseComputer = port;
+		this.freqMax = freqMax;
+		
 		
 		
 		this.addOfferedInterface(ComputerProviderI.class);
@@ -87,9 +95,23 @@ public class Computer extends AbstractComponent implements ComputerProviderI {
 		} else {
 			p.localPublishPort();
 		}
+		
+		this.addOfferedInterface(DynamicallyConnectableComponentI.class);
+		this.dccInboundPort = new DynamicallyConnectableComponentInboundPort(
+				port + "-dcc", this);
+		if (AbstractCVM.isDistributed) {
+			this.dccInboundPort.publishPort();
+		} else {
+			this.dccInboundPort.localPublishPort();
+		}
+		this.addPort(dccInboundPort);
 
 		this.addRequiredInterface(DynamicComponentCreationI.class);
 		this.addRequiredInterface(DynamicallyConnectableComponentI.class);
+	}
+
+	public Double getFreqMax() {
+		return freqMax;
 	}
 
 	/**
@@ -129,7 +151,7 @@ public class Computer extends AbstractComponent implements ComputerProviderI {
 	}
 
 	/**
-	 * Retourne le nombre de coeurs utilisï¿½ par les machines virtuelles
+	 * Retourne le nombre de coeurs utilisÃ¯Â¿Â½ par les machines virtuelles
 	 * 
 	 * @return nbCoresUsed
 	 */
@@ -140,7 +162,7 @@ public class Computer extends AbstractComponent implements ComputerProviderI {
 	/**
 	 * Retourne la description de la machine en l'etat
 	 * 
-	 * @return String
+	 * @return string
 	 */
 	@Override
 	public String toString() {
@@ -159,7 +181,6 @@ public class Computer extends AbstractComponent implements ComputerProviderI {
 	 * @return nbCoreFree
 	 * @throws Exception
 	 */
-	@Override
 	public Integer availableCores() throws Exception {
 		return getNbCores() - getNbCoresUsed();
 	}
@@ -168,13 +189,16 @@ public class Computer extends AbstractComponent implements ComputerProviderI {
 	 * Deploie une machine virtuelle et la connecte au repartiteur de requete de
 	 * l'application
 	 * 
-	 * @param nbCores le nombre de coeurs attribues ï¿½ la machine virtuelle
-	 * @param app l'ID de l'application
-	 * @param URIRepartiteurFixe URI du port dans Repartiteur
-	 * @param URIRepartiteurDCC URI du dcc dans Repartiteur
+	 * @param nbCores
+	 * 			  Nombre de coeurs attribues Ã¯Â¿Â½ la machine virtuelle
+	 * @param app
+	 *			  ID de l'application
+	 * @param URIRepartiteurFixe
+	 *            URI du port dans Repartiteur
+	 * @param URIRepartiteurDCC
+	 *            URI du dcc dans Repartiteur
 	 * @throws Exception 
 	 */
-	@Override
 	public void deployVM(int nbCores, int app, String[] URIRepartiteurFixe,
 			String URIRepartiteurDCC) throws Exception {
 		// On verifie que le Computer a assez de coeurs pour allouer la machine
@@ -194,21 +218,15 @@ public class Computer extends AbstractComponent implements ComputerProviderI {
 		newvm.localPublishPort();
 
 		this.addPort(newvm);
-		if(AbstractCVM.isDistributed){
-		newvm.doConnection("request_generator_jvm_uri"
+		newvm.doConnection("request_generator_jvm_uri" //TODO a changer
 				+ AbstractCVM.DYNAMIC_COMPONENT_CREATOR_INBOUNDPORT_URI,
 				DynamicComponentCreationConnector.class.getCanonicalName());
-		}
-		else {
-			newvm.doConnection("" //TODO a changer
-					+ AbstractCVM.DYNAMIC_COMPONENT_CREATOR_INBOUNDPORT_URI,
-					DynamicComponentCreationConnector.class.getCanonicalName());
-		}
+
 		String randomString = this.getMachineID()
 				+ java.util.UUID.randomUUID().toString();
 		Integer appi = app;
 		Integer num = 5;
-		String uriCPU = this.uriInboundComputer;
+		String uriCPU = this.URIBaseComputer;
 		newvm.createComponent(VirtualMachine.class.getCanonicalName(),
 				new Object[] {uriCPU, randomString, mvID,  appi,num, coresFreq });
 		
@@ -230,6 +248,26 @@ public class Computer extends AbstractComponent implements ComputerProviderI {
 				+ "-RepartiteurOutboundPort",
 				VMConnector.class.getCanonicalName());
 		p.doDisconnection();
+		
+		ComputerToVMOutboundPort port_to_vm = new ComputerToVMOutboundPort(URIBaseComputer
+				+ "-" + app
+				+ "-ComputerToVMOutboundPort", this);
+		this.addPort(port_to_vm);
+		if (AbstractCVM.isDistributed) {
+			port_to_vm.publishPort() ;
+		} else {
+			port_to_vm.localPublishPort() ;
+		}
+		listeVM.add(port_to_vm);
+		
+		p.doConnection(URIBaseComputer + "-dcc",
+				DynamicallyConnectableComponentConnector.class
+						.getCanonicalName());
+		p.connectWith(randomString + "-ComputerToVMInboundPort", URIBaseComputer
+				+ "-" + app
+				+ "-ComputerToVMOutboundPort",
+				CompVMConnector.class.getCanonicalName());
+		p.doDisconnection();
 	
 		}catch(Exception e){
 			
@@ -246,7 +284,6 @@ public class Computer extends AbstractComponent implements ComputerProviderI {
 	 * @param vm
 	 * @throws Exception 
 	 */
-	@Override
 	public void destroyVM(String vm) throws Exception {
 		VMInboundPort portVM = (VMInboundPort) this.findPortFromURI(vm);
 		int nbCoreALiberer = portVM.getNbCores();
@@ -267,15 +304,56 @@ public class Computer extends AbstractComponent implements ComputerProviderI {
 	 * @param vm
 	 * @throws BadReinitialisationException 
 	 */
-	@Override
 	public void reInit(String vm) throws BadReinitialisationException {
 		// TODO : Reinitialisation a implementer
 		/*boolean m = true; 
 		if (m) {
-			System.out.println("On détruit la machine.");
+			System.out.println("On dÃ©truit la machine.");
 		} else {
-			throw new BadReinitialisationException("Impossible de r�initialiser la VM : " + vm);
+			throw new BadReinitialisationException("Impossible de rï¿½initialiser la VM : " + vm);
 		}*/
 	}
+	
+	public boolean isMaxed(int appid){
+		/*if(this.mapVM.isEmpty()){
+			return false;
+		}
+		ArrayList<ComputerToVMOutboundPort> l = this.mapVM.get(appid);
+		for(ComputerToVMOutboundPort p : l){
+			if
+		}*/
+		for(Double d: frequencies){
+			if(d < freqMax) return false;
+		}
+		return true;
+	}
+	
+	public void incFrequency(int appid) throws Exception{
+		System.out.println("Modification coeurs physiques");
+		for(int i = 0 ; i < frequencies.size(); ++i){
+			frequencies.set(i, frequencies.get(i) + 0.5);
+			if(frequencies.get(i) > freqMax){
+				frequencies.set(i, freqMax);
+			}
+		}
+		for(ComputerToVMOutboundPort p : this.listeVM){
+			p.refreshVM(this.frequencies.get(0));
+		}
+	}
+
+	@Override
+	public void connectWith(String serverPortURI, String clientPortURI,
+			String ccname) throws Exception {
+		PortI uriConsumerPort = this.findPortFromURI(clientPortURI);
+		uriConsumerPort.doConnection(serverPortURI, ccname);
+	}
+
+	@Override
+	public void disconnectWith(String serverPortURI, String clientPortURI)
+			throws Exception {
+		PortI uriConsumerPort = this.findPortFromURI(clientPortURI);
+		uriConsumerPort.doDisconnection();
+	}
+	
 
 }

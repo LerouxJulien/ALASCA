@@ -33,12 +33,15 @@ public class DCVM extends AbstractDistributedCVM {
 	/** Général **/
 	
 	// Temps d'exécution DCVM (ms)
-	protected static final long processingTime = 60000L;
+	protected static final long processingTime = 45000L;
 	
 	/** Machine **/
 	
 	// Nombre de machines du centre de calcul
 	protected static final Integer NB_COMPUTERS = 8;
+	
+	// Fréquence maximum des coeurs des machines
+		protected static final double FREQ_MAX = 4.0;
 	
 	// Nombre de coeurs des machines
 	protected static final int nbCore = 8;
@@ -174,7 +177,7 @@ public class DCVM extends AbstractDistributedCVM {
 			// deploiement des pc sur la meme jvm que le controleur
 			for (int i = 1; i <= NB_COMPUTERS; ++i) {
 				Computer comp = new Computer(COMPUTER_INBOUNDPORT_URI + i,
-						i, core, 0.5, true, this);
+						i, core, 0.5,FREQ_MAX, true, this);
 				this.deployedComponents.add(comp);
 			}
 			

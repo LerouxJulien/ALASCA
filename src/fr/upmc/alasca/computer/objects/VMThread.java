@@ -32,7 +32,7 @@ public class VMThread extends AbstractComponent {
 	private final String VMThreadID;
 
 	// Frequence du coeur associe
-	private final double frequence;
+	private double frequence;
 
 	// Etat du thread
 	private boolean isWaiting;
@@ -154,6 +154,35 @@ public class VMThread extends AbstractComponent {
 
 		
 		
+	}
+	
+	public void refresh(double freq){
+		System.out.println("Modification VMThread Frequence : " + freq);
+		double oldFreq = this.frequence;
+		this.frequence = freq;
+		if(this.nextEndServicingTaskFuture != null &&
+				!(this.nextEndServicingTaskFuture.isCancelled() ||
+						  this.nextEndServicingTaskFuture.isDone())){
+			long t = System.currentTimeMillis();
+			long st = t - this.servicing.getArrivalTime();
+			double executedInstructions = (double) st * (double) (oldFreq * 1000000);
+			double remainingInstructions = this.servicing.getInstructions() - executedInstructions;
+			this.nextEndServicingTaskFuture.cancel(true);
+			final VMThread vmt = (VMThread) this;
+			long processingTime = (long) ((double) remainingInstructions
+					/ ((double) frequence * 1000000));
+			this.nextEndServicingTaskFuture = this.scheduleTask(
+					new ComponentTask() {
+						@Override
+						public void run() {
+							try {
+								vmt.endServicingEvent();
+							} catch (Exception e) {
+								e.printStackTrace();
+							}
+						}
+					}, processingTime, TimeUnit.SECONDS);
+		}
 	}
 
 }

@@ -404,6 +404,13 @@ public class VirtualMachine extends AbstractComponent implements DynamicallyConn
 	public String getUriComputerParent(){
 		return this.uriComputerParent;
 	}
+	
+	public void refreshFrequencyVM(double freq) {
+		System.out.println("Modification frequence coeurs virtuelle : freq = " + freq);
+		for(VMThread t : threads){
+			t.refresh(freq);
+		}
+	}
 }
 
 	

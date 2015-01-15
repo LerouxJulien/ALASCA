@@ -47,4 +47,10 @@ implements ControleurFromRepartiteurProviderI{
 		c.destroyVM(uriComputerParent, vm);
 	}
 	
+	@Override
+	public void incFrequency(int app) throws Exception {
+		final Controleur c = (Controleur) this.owner;
+		c.incFrequency(app);
+	}
+	
 }

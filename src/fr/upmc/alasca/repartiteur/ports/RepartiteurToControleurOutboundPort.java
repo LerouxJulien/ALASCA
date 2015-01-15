@@ -40,4 +40,9 @@ implements RepartiteurToControleurConsumerI {
 		((ControleurFromRepartiteurProviderI)this.connector).destroyVM(uriComputerParent, vm);
 	}
 
+	
+	@Override
+	public void incFrequency(int app) throws Exception {
+		((ControleurFromRepartiteurProviderI)this.connector).incFrequency(app);
+	}
 }

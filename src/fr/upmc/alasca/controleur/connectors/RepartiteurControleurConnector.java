@@ -41,4 +41,9 @@ ControleurFromRepartiteurProviderI, Serializable {
 		destroyVM(uriComputerParent, vm);
 	}
 	
+	
+	@Override
+	public void incFrequency(int app) throws Exception {
+		((ControleurFromRepartiteurProviderI)this.offering).incFrequency(app);
+	}
 }

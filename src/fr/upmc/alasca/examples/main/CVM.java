@@ -158,7 +158,7 @@ public class CVM extends AbstractCVM {
 		// Déploiement des machines
 		for (int i = 1; i <= NB_COMPUTERS; ++i) {
 			Computer comp = new Computer(COMPUTER_INBOUNDPORT_URI + i,
-					i, core, 0.5, true, this);
+					i, core, 0.5,4.0, true, this);
 			this.deployedComponents.add(comp);
 		}
 		

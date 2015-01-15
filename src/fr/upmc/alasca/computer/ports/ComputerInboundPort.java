@@ -77,5 +77,17 @@ public class ComputerInboundPort extends AbstractInboundPort implements
 		final Computer comp = (Computer) this.owner;
 		return comp.availableCores();
 	}
+	
+	@Override
+	public boolean isMaxed(int appid) throws Exception {
+		final Computer comp = (Computer) this.owner;
+		return comp.isMaxed(appid);
+	}
+
+	@Override
+	public void incFrequency(int appid) throws Exception {
+		final Computer comp = (Computer) this.owner;
+		comp.incFrequency(appid);
+	}
 
 }

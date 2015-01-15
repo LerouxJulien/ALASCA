@@ -12,4 +12,6 @@ public interface RepartiteurToControleurConsumerI extends RequiredI{
 	
 	public void destroyVM(String uriComputerParent, String vm) throws Exception;
 	
+	public void incFrequency(int app)throws Exception;
+	
 }

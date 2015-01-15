@@ -26,4 +26,6 @@ public interface ControleurFromRepartiteurProviderI extends OfferedI {
 	
 	public void destroyVM(String uriComputerParent, String vm) throws Exception;
 	
+	public void incFrequency(int app) throws Exception;
+	
 }

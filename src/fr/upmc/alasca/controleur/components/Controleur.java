@@ -2,6 +2,8 @@ package fr.upmc.alasca.controleur.components;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.BlockingQueue;
 
 import fr.upmc.alasca.computer.interfaces.VMProviderI;
@@ -51,6 +53,8 @@ public class Controleur extends AbstractComponent {
 	
 	// Préfixe de l'URI pour tous les répartiteurs
 	protected String repartiteurURIgenericName = "repartiteur";
+	
+	protected Map<Integer, ArrayList<ControleurOutboundPort>> mapVM = new HashMap<Integer, ArrayList<ControleurOutboundPort>>();
 
 	// Port par lequel sont reçues les requêtes du générateur de requêtes
 	protected ControleurInboundPort port_i;
@@ -218,4 +222,12 @@ public class Controleur extends AbstractComponent {
 		return portsToMachine;
 	}
 	
+	public void incFrequency(int appid) throws Exception {
+		System.out.println("incFrequency dans Controleur");
+		List<ControleurOutboundPort> l = this.mapVM.get(appid);
+		for(int i = 0 ; i < l.size(); ++i){
+			if(!l.get(i).isMaxed(appid))
+				l.get(i).incFrequency(appid);
+		}
+	}
 }

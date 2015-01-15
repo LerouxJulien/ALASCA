@@ -58,6 +58,8 @@ public interface ComputerProviderI extends OfferedI {
 	 */
 	public void reInit(String vm) throws BadReinitialisationException, RemoteException;
 
+	public boolean isMaxed(int appid) throws Exception;	
 	
+	public void incFrequency(int appid) throws Exception;
 	
 }

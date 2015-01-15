@@ -63,4 +63,14 @@ public class ComputerConnector extends AbstractConnector implements
 		return ((ComputerProviderI) this.offering).availableCores();
 	}
 
+	
+	@Override
+	public boolean isMaxed(int appid) throws Exception {
+		return ((ComputerProviderI) this.offering).isMaxed(appid);
+	}
+
+	@Override
+	public void incFrequency(int appid) throws Exception {
+		((ComputerProviderI) this.offering).incFrequency(appid);
+	}
 }

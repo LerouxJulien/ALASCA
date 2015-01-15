@@ -54,4 +54,14 @@ public class ControleurOutboundPort extends AbstractOutboundPort implements
 		return ((ComputerProviderI) this.connector).availableCores();
 	}
 
+	
+	@Override
+	public boolean isMaxed(int appid) throws Exception {
+		return ((ComputerProviderI) this.connector).isMaxed(appid);
+	}
+
+	@Override
+	public void incFrequency(int appid) throws Exception {
+		((ComputerProviderI) this.connector).incFrequency(appid);
+	}
 }
