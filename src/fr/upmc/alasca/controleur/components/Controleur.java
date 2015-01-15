@@ -113,9 +113,15 @@ public class Controleur extends AbstractComponent {
 //		dcco.doConnection("controleur_jvm_uri"
 //				+ AbstractCVM.DYNAMIC_COMPONENT_CREATOR_INBOUNDPORT_URI,
 //				DynamicComponentCreationConnector.class.getCanonicalName());
-		dcco.doConnection("request_generator_jvm_uri"
-				+ AbstractCVM.DYNAMIC_COMPONENT_CREATOR_INBOUNDPORT_URI,
-				DynamicComponentCreationConnector.class.getCanonicalName());
+		if(AbstractCVM.isDistributed){
+			dcco.doConnection("request_generator_jvm_uri"
+					+ AbstractCVM.DYNAMIC_COMPONENT_CREATOR_INBOUNDPORT_URI,
+					DynamicComponentCreationConnector.class.getCanonicalName());
+		}
+		else
+			dcco.doConnection(""
+					+ AbstractCVM.DYNAMIC_COMPONENT_CREATOR_INBOUNDPORT_URI,
+					DynamicComponentCreationConnector.class.getCanonicalName());
 
 		// Création du répartiteur
 		String newNameURI = repartiteurURIgenericName + appId;

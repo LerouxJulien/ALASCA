@@ -33,7 +33,7 @@ public class CVM extends AbstractCVM {
 	/** Général **/
 	
 	// Temps d'exécution des CVM (ms)
-	protected static final long processingTime = 60000L;
+	protected static final long processingTime = 45000L;
 	
 	/** Machine **/
 	

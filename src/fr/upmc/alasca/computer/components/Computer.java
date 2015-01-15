@@ -194,10 +194,16 @@ public class Computer extends AbstractComponent implements ComputerProviderI {
 		newvm.localPublishPort();
 
 		this.addPort(newvm);
-		newvm.doConnection("request_generator_jvm_uri" //TODO a changer
+		if(AbstractCVM.isDistributed){
+		newvm.doConnection("request_generator_jvm_uri"
 				+ AbstractCVM.DYNAMIC_COMPONENT_CREATOR_INBOUNDPORT_URI,
 				DynamicComponentCreationConnector.class.getCanonicalName());
-
+		}
+		else {
+			newvm.doConnection("" //TODO a changer
+					+ AbstractCVM.DYNAMIC_COMPONENT_CREATOR_INBOUNDPORT_URI,
+					DynamicComponentCreationConnector.class.getCanonicalName());
+		}
 		String randomString = this.getMachineID()
 				+ java.util.UUID.randomUUID().toString();
 		Integer appi = app;
