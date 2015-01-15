@@ -29,7 +29,12 @@ import fr.upmc.components.ports.PortI;
 public class CVM extends AbstractCVM {
 
 	/************************ Paramètres de contrôles *************************/
-
+	
+	/** Général **/
+	
+	// Temps d'exécution des CVM (ms)
+	protected static final long processingTime = 60000L;
+	
 	/** Machine **/
 	
 	// Nombre de machines du centre de calcul
@@ -221,7 +226,7 @@ public class CVM extends AbstractCVM {
 					}
 				}
 			});
-			Thread.sleep(30000L);
+			Thread.sleep(processingTime);
 			cvm.shutdown();
 			System.out.println("ending...");
 			System.exit(0);

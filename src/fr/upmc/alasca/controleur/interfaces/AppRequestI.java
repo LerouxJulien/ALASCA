@@ -4,16 +4,16 @@ import fr.upmc.components.interfaces.OfferedI;
 import fr.upmc.components.interfaces.RequiredI;
 
 /**
- * L'interface <code>AppRequestI</code> définit le protocol pour 
- * envoyer une demande d'exécution d'application au contrôleur du centre de 
- * calcul.
+ *  Interface <code>AppRequestI</code> 
  *
  * <p>
  * <strong>Description</strong>
  * </p>
  * 
+ * <p>L'interface <code>AppRequestI</code> définit le protocol pour envoyer une 
+ * demande d'exécution d'application au contrôleur du centre de calcul.
  * L'interface ne contient qu'une seule méthode, <code>acceptApplication</code> 
- * qui passe l'id d'une application en paramètre.
+ * qui passe l'id d'une application en paramètre.</p>
  * 
  * <p>
  * Created on : 23 dec. 2014
@@ -23,7 +23,7 @@ import fr.upmc.components.interfaces.RequiredI;
  *         <a href="mailto:Henri.Ng@etu.upmc.fr">Henri Ng/a>
  * @version $Name$ -- $Revision$ -- $Date$
  */
-public interface AppRequestI extends OfferedI, RequiredI{
+public interface AppRequestI extends OfferedI, RequiredI {
 	
 	public void acceptApplication(Integer application, String thresholds,
 			String uri_new_requestGenerator) throws Exception;

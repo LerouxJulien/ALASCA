@@ -21,7 +21,7 @@ import fr.upmc.components.connectors.AbstractConnector;
  * @version $Name$ -- $Revision$ -- $Date$
  */
 public class ApplicationRequestConnector extends AbstractConnector implements
-AppRequestI{
+AppRequestI {
 
 	@Override
 	public void acceptApplication(Integer application, String thresholds,

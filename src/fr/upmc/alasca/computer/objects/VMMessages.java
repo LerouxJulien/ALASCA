@@ -4,7 +4,6 @@ import java.io.Serializable;
 
 import fr.upmc.alasca.computer.enums.Status;
 import fr.upmc.alasca.repartiteur.ports.RepartiteurToVMInboundPort;
-import fr.upmc.alasca.repartiteur.ports.RepartiteurToVMOutboundPort;
 
 /**
  * La classe <code>VMMessages</code> definit le message de notification d'une
@@ -36,14 +35,14 @@ public class VMMessages implements Serializable {
 	// Temps de traitement d'une requete lors de la notification
 	private long time;
 	
+	// InboundPort du Repartiteur lié à la VM
 	private RepartiteurToVMInboundPort myrepport;
 
 	/**
 	 * Cree un message de notification de la VM a son repartiteur de requetes
 	 * 
-	 * @param mvID
-	 * @param status
-	 * @param time
+	 * @param mvID l'ID de la VM
+	 * @param status le status de la VM
 	 */
 	public VMMessages(String vmID, Status status) {
 		super();
@@ -57,9 +56,10 @@ public class VMMessages implements Serializable {
 	 * Cree un message de notification de la VM a son repartiteur de requetes
 	 * pour la fin d'un traitement d'une requete
 	 * 
-	 * @param mvID
-	 * @param status
-	 * @param time
+	 * @param vmID l'ID de la VM
+	 * @param status le status de la VM
+	 * @param uri l'identifiant de la requête
+	 * @param time le temps de traitement de la requête
 	 */
 	public VMMessages(String vmID, Status status, String uri, long time) {
 		super();
@@ -72,7 +72,7 @@ public class VMMessages implements Serializable {
 	/**
 	 * Retourne le statut de la VM au moment de la notification
 	 * 
-	 * @return the status
+	 * @return status
 	 */
 	public Status getStatus() {
 		return status;
@@ -82,7 +82,7 @@ public class VMMessages implements Serializable {
 	 * Retourne le temps de traitement d'une requete au moment de
 	 * la notification de fin de traitement
 	 * 
-	 * @return the time
+	 * @return time
 	 */
 	public long getTime() {
 		return time;
@@ -91,7 +91,7 @@ public class VMMessages implements Serializable {
 	/**
 	 * Retourne l'identifiant de la requete
 	 * 
-	 * @return the uri
+	 * @return uri
 	 */
 	public String getUri() {
 		return uri;
@@ -100,21 +100,35 @@ public class VMMessages implements Serializable {
 	/**
 	 * Retourne l'identifiant de la VM
 	 * 
-	 * @return the vmID
+	 * @return vmID
 	 */
 	public String getVmID() {
 		return vmID;
 	}
 	
+	/**
+	 * Modifie l'InboundPort du <code>Repartiteur</code> lié à la VM
+	 * 
+	 * @param repartiteurInboundPort le nouveau port du Repartiteur
+	 */
 	public void setRepPort(RepartiteurToVMInboundPort repartiteurInboundPort) {
 		this.myrepport = repartiteurInboundPort;
 	}
 	
-	
+	/**
+	 * Retourne l'InboundPort du <code>Repartiteur</code> lié à la VM
+	 * 
+	 * @return myrepport
+	 */
 	public RepartiteurToVMInboundPort getRepPort() {	
 		return this.myrepport;	
 	}
 	
+	/**
+	 * Modifie le temps de traitement de la requête
+	 * 
+	 * @param time le nouveau temps de traitement
+	 */
 	public void setTime(long time) {
 		this.time = time;
 	}

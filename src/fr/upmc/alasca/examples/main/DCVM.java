@@ -26,10 +26,15 @@ import fr.upmc.components.ports.PortI;
  *         <a href="mailto:Henri.Ng@etu.upmc.fr">Henri Ng/a>
  * @version $Name$ -- $Revision$ -- $Date$
  */
-public class DCVM extends AbstractDistributedCVM{
+public class DCVM extends AbstractDistributedCVM {
 
 	/************************ Paramètres de contrôles *************************/
 
+	/** Général **/
+	
+	// Temps d'exécution DCVM (ms)
+	protected static final long processingTime = 60000L;
+	
 	/** Machine **/
 	
 	// Nombre de machines du centre de calcul
@@ -262,7 +267,7 @@ public class DCVM extends AbstractDistributedCVM{
 					}
 				});
 			}
-			Thread.sleep(60000L);
+			Thread.sleep(processingTime);
 			a.shutdown();
 			System.out.println("ending...");
 			System.exit(0);

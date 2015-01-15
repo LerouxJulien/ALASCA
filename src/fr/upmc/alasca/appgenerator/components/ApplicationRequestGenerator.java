@@ -36,24 +36,35 @@ import fr.upmc.components.cvm.pre.dcc.DynamicallyConnectableComponentI;
  */
 public class ApplicationRequestGenerator extends AbstractComponent {
 
+	// Liste des applications à lancer
 	List<Integer> appsToLaunch;
 
-	// parametres utilises pour tous les RequestGenerator
+	// Paramètres utilisés pour tous les générateurs de requêtes
 	protected double meanInterArrivalTime;
 	protected RandomDataGenerator rng;
 	protected Future<?> nextRequestTaskFuture;
 	protected int standardDeviation;
 	protected int meanNumberInstructions;
 	protected String thresholds;
-	// FIN parametres utilises pour tous les RequestGenerator
-
 	protected String baseURIRequestGenerator;
 
-	// pour differencier leurs URIS
+	// Suffixe pour différencier l'URI des générateurs de requêtes
 	protected Integer compteurDeRG;
 
+	// Port de sortie des générateurs de requêtes
 	protected AppGeneratorOutboundPort arg_outboundPort;
 
+	/**
+	 * Constructeur du générateur d'applications
+	 * 
+	 * @param appsToLaunch
+	 * @param meanInterArrivalTime
+	 * @param meanNumberInstructions
+	 * @param standardDeviation
+	 * @param thresholds
+	 * @param outboundPortURI
+	 * @throws Exception
+	 */
 	public ApplicationRequestGenerator(List<Integer> appsToLaunch,
 			double meanInterArrivalTime, int meanNumberInstructions,
 			int standardDeviation, String thresholds,
@@ -61,7 +72,6 @@ public class ApplicationRequestGenerator extends AbstractComponent {
 		super(true);
 
 		this.appsToLaunch = appsToLaunch;
-
 		this.meanInterArrivalTime = meanInterArrivalTime;
 		this.meanNumberInstructions = meanNumberInstructions;
 		this.standardDeviation = standardDeviation;
@@ -70,7 +80,7 @@ public class ApplicationRequestGenerator extends AbstractComponent {
 		this.rng.reSeed();
 		this.nextRequestTaskFuture = null;
 		this.baseURIRequestGenerator = outboundPortURI;
-		compteurDeRG = 0;
+		this.compteurDeRG = 0;
 
 		// Component management
 		this.addRequiredInterface(AppRequestI.class);
@@ -80,9 +90,13 @@ public class ApplicationRequestGenerator extends AbstractComponent {
 
 		this.addRequiredInterface(DynamicComponentCreationI.class);
 		this.addRequiredInterface(DynamicallyConnectableComponentI.class);
-
 	}
 
+	/**
+	 * Récupère la prochaine demande d'application à lancer
+	 * 
+	 * @throws Exception
+	 */
 	public void generateNextRequest() throws Exception {
 		//while (!appsToLaunch.isEmpty()) {
 		//	this.arg_outboundPort.acceptApplication(appsToLaunch.remove(0));
@@ -103,19 +117,30 @@ public class ApplicationRequestGenerator extends AbstractComponent {
 		// this.shutdown();
 	}
 
+	/**
+	 * Demande le traitement des requêtes de l'application donnée en ID
+	 * 
+	 * @param appId
+	 * @throws Exception
+	 */
 	public void askNewApplication(Integer appId)
 			throws Exception {
-		DynamicComponentCreationOutboundPort dcco = new DynamicComponentCreationOutboundPort(
-				this);
+		DynamicComponentCreationOutboundPort dcco =
+				new DynamicComponentCreationOutboundPort(this);
 		dcco.publishPort();
-
+		
 		this.addPort(dcco);
-		dcco.doConnection("request_generator_jvm_uri" //"controleur_jvm_uri" // TODO a changer
+		// TODO A changer
+//		dcco.doConnection("controleur_jvm_uri"
+//				+ AbstractCVM.DYNAMIC_COMPONENT_CREATOR_INBOUNDPORT_URI,
+//				DynamicComponentCreationConnector.class.getCanonicalName());
+		dcco.doConnection("request_generator_jvm_uri"
 				+ AbstractCVM.DYNAMIC_COMPONENT_CREATOR_INBOUNDPORT_URI,
 				DynamicComponentCreationConnector.class.getCanonicalName());
 
 		String uriNewRequestGenerator = getUriNewRequestGenerator();
 
+		// Création du nouveau générateur de requêtes
 		dcco.createComponent(RequestGenerator.class.getCanonicalName(),
 				new Object[] { this.meanInterArrivalTime,
 						this.meanNumberInstructions, this.standardDeviation,
@@ -125,10 +150,16 @@ public class ApplicationRequestGenerator extends AbstractComponent {
 				uriNewRequestGenerator);
 	}
 
+	/**
+	 * Récupère l'URI du nouveau générateur de requêtes
+	 * 
+	 * @return uriNewRequestGenerator
+	 */
 	private String getUriNewRequestGenerator() {
-		String uriNewRequestGenerator = this.baseURIRequestGenerator
-				+ compteurDeRG;
+		String uriNewRequestGenerator =
+				this.baseURIRequestGenerator + compteurDeRG;
 		this.compteurDeRG++;
 		return uriNewRequestGenerator;
 	}
+	
 }

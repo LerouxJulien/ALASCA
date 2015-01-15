@@ -48,9 +48,9 @@ public class VMThread extends AbstractComponent {
 	 * VM. Un VMThread correspond a un coeur de la VM avec sa frequence
 	 * associee.
 	 * 
-	 * @param VMThreadID
-	 * @param frequence
-	 * @param owner
+	 * @param VMThreadID l'ID du VMThread
+	 * @param frequence la frequence du coeur
+	 * @param owner la VM qui possède ce coeur
 	 */
 	public VMThread(String VMThreadID, double frequence,
 			VirtualMachine owner) {

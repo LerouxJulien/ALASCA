@@ -3,9 +3,7 @@ package fr.upmc.alasca.computer.components;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.Future;
 import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.TimeUnit;
 
 import fr.upmc.alasca.computer.enums.Status;
 import fr.upmc.alasca.computer.interfaces.VMConsumerI;
@@ -69,9 +67,13 @@ public class VirtualMachine extends AbstractComponent implements DynamicallyConn
 	// Compteur pour alterner entre les differents coeurs
 	protected int compteurCyclique = 0;
 
+	// URI de l'InboundPort de la VM
 	protected VMInboundPort VMiport;
+	
+	// URI de l'OutboundPort de la VM
 	protected VMOutboundPort VMoport;
 
+	// URI du Computer parent de la VM (le Computer fournissant les coeurs physiques)
 	private String uriComputerParent;
 	
 	/**
@@ -89,10 +91,11 @@ public class VirtualMachine extends AbstractComponent implements DynamicallyConn
 	 * L'allocation de la machine virtuelle se fait forcement avec une ID
 	 * application associee. Le nombre de coeur est donnee par la machine hote.
 	 *
-	 * @param mvID
-	 * @param appID
-	 * @param frequencies
-	 *            Liste des frequences des coeurs de la machine virtuelle
+	 * @param uriComputerParent l'URI du Computer parent de la VM
+	 * @param port l'URI de l'InboundPort de la VM
+	 * @param mvID l'ID de la VM
+	 * @param appID l'ID de l'application liée à la VM
+	 * @param frequencies la liste des frequences des coeurs de la machine virtuelle
 	 * @throws Exception
 	 */
 	public VirtualMachine(String uriComputerParent,String port, String mvID, Integer appID,
@@ -325,9 +328,21 @@ public class VirtualMachine extends AbstractComponent implements DynamicallyConn
 				+ ", status=" + status + ", queue=" + queue + "]";
 	}
 
+	/**
+	 * Modifie le status de la VM
+	 * 
+	 * @param free le nouveau status de la VM
+	 */
 	public void setStatus(Status free) {
 		this.status=free;	
 	}
+	
+	/**
+	 * Créer et envoi les notifications (<code>VMMessages</code> et <code>VMCarac</code>)
+	 *  sur l'OutboundPort de la VM
+	 *  
+	 * @throws Exception
+	 */
 	public void startNotification() throws Exception {
 		if(this.getStatus()==Status.NEW){
 			
@@ -350,7 +365,14 @@ public class VirtualMachine extends AbstractComponent implements DynamicallyConn
 	}
 
 
-
+	/**
+	 * Connecte dynamiquement le Computer avec un composant distant via leurs ports et un connecteur
+	 * 
+	 * @param serverPortURI l'URI du port côté serveur
+	 * @param clientPortURI l'URi du port côté client
+	 * @param ccname le nom de la classe connecteur utilisée
+	 * @throws Exception
+	 */
 	@Override
 	public void connectWith(String serverPortURI, String clientPortURI,
 			String ccname) throws Exception {
@@ -360,6 +382,13 @@ public class VirtualMachine extends AbstractComponent implements DynamicallyConn
 		System.out.println("connected");
 	}
 
+	/**
+	 * Deconnecte dynamiquement le Computer avec un composant distant via leurs ports et un connecteur
+	 * 
+	 * @param serverPortURI l'URI du port côté serveur
+	 * @param clientPortURI l'URi du port côté client
+	 * @throws Exception
+	 */
 	@Override
 	public void disconnectWith(String serverPortURI, String clientPortURI)
 			throws Exception {
@@ -367,6 +396,11 @@ public class VirtualMachine extends AbstractComponent implements DynamicallyConn
 		uriConsumerPort.doDisconnection();
 	}
 	
+	/**
+	 * Retourne l'URI du Computer parent de la VM
+	 * 
+	 * @return uriComputerParent
+	 */
 	public String getUriComputerParent(){
 		return this.uriComputerParent;
 	}

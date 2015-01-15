@@ -50,17 +50,21 @@ public class Computer extends AbstractComponent implements ComputerProviderI {
 	// virtuelles (ne depasse pas 1000)
 	private Integer cptVM;
 
+	// CVM de notre centre de calcul
 	protected AbstractCVM cvm;
+	
+	// URI du Computer, a utiliser lors de la création des VM
 	private String uriInboundComputer;
+	
 	/**
 	 * Demarre une machine.
 	 *
-	 * @param machineID
-	 * @param frequencies
-	 *            Liste des coeurs physiques
-	 * @param difference
-	 *            Difference maximale entre les coeurs
-	 * @param cvm
+	 * @param port l'URI de l'InboundPort du Computer
+	 * @param machineID l'ID du Computer
+	 * @param frequencies la liste des fréquences des coeurs physiques
+	 * @param difference la difference maximale entre les coeurs
+	 * @param isDistributed indique si l'on se trouve en mode distribué ou non
+	 * @param cvm la cvm du centre de calcul
 	 */
 	public Computer(String port, int machineID, ArrayList<Double> frequencies,
 			double difference, boolean isDistributed, AbstractCVM cvm)
@@ -136,7 +140,7 @@ public class Computer extends AbstractComponent implements ComputerProviderI {
 	/**
 	 * Retourne la description de la machine en l'etat
 	 * 
-	 * @return string
+	 * @return String
 	 */
 	@Override
 	public String toString() {
@@ -164,14 +168,10 @@ public class Computer extends AbstractComponent implements ComputerProviderI {
 	 * Deploie une machine virtuelle et la connecte au repartiteur de requete de
 	 * l'application
 	 * 
-	 * @param nbCores
-	 * 			  Nombre de coeurs attribues ï¿½ la machine virtuelle
-	 * @param app
-	 *			  ID de l'application
-	 * @param URIRepartiteurFixe
-	 *            URI du port dans Repartiteur
-	 * @param URIRepartiteurDCC
-	 *            URI du dcc dans Repartiteur
+	 * @param nbCores le nombre de coeurs attribues ï¿½ la machine virtuelle
+	 * @param app l'ID de l'application
+	 * @param URIRepartiteurFixe URI du port dans Repartiteur
+	 * @param URIRepartiteurDCC URI du dcc dans Repartiteur
 	 * @throws Exception 
 	 */
 	@Override

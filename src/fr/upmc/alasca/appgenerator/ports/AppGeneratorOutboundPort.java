@@ -25,8 +25,8 @@ import fr.upmc.components.ports.AbstractOutboundPort;
 public class AppGeneratorOutboundPort extends AbstractOutboundPort
 implements AppRequestI{
 
-	public AppGeneratorOutboundPort(String uri,
-			ComponentI owner) throws Exception {
+	public AppGeneratorOutboundPort(String uri, ComponentI owner)
+			throws Exception {
 		super(uri, AppRequestI.class, owner);
 	}
 

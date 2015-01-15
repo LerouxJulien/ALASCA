@@ -2,16 +2,26 @@ package fr.upmc.alasca.controleur.ports;
 
 import java.rmi.RemoteException;
 
-import fr.upmc.alasca.computer.exceptions.BadDestroyException;
 import fr.upmc.alasca.computer.exceptions.BadReinitialisationException;
 import fr.upmc.alasca.computer.interfaces.ComputerProviderI;
 import fr.upmc.components.ComponentI;
 import fr.upmc.components.ports.AbstractOutboundPort;
 
 /**
- * Port par lequel le Controleur demande a un Computer de deployer une
- * nouvelle machine virtuelle
+ * Classe <code>ControleurOutboundPort</code>
  *
+ * <p>
+ * <strong>Description</strong>
+ * </p>
+ * 
+ * <p>La classe <code>ControleurOutboundPort</code> implémente le port par
+ * lequel le contrôleur demande à une machine le déploiement ou la destruction
+ * de VM.
+ * 
+ * <p>Created on : 23 dec. 2014</p>
+ * 
+ * @author <a href="mailto:Henri.Ng@etu.upmc.fr">Henri Ng/a>
+ * @version $Name$ -- $Revision$ -- $Date$
  */
 public class ControleurOutboundPort extends AbstractOutboundPort implements
 		ComputerProviderI {
@@ -28,15 +38,14 @@ public class ControleurOutboundPort extends AbstractOutboundPort implements
 				URIRepartiteurFixe, URIRepartiteurDCC);
 	}
 
-	
 	@Override
 	public void destroyVM(String mv) throws Exception {
 		((ComputerProviderI) this.connector).destroyVM(mv);
 	}
 
-	
 	@Override
-	public void reInit(String vm) throws BadReinitialisationException, RemoteException {
+	public void reInit(String vm) throws BadReinitialisationException, 
+	RemoteException {
 		((ComputerProviderI) this.connector).reInit(vm);
 	}
 
