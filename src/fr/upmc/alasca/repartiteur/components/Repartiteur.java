@@ -41,9 +41,7 @@ import fr.upmc.components.ports.PortI;
 /**
  * Le repartiteur de requete est charge de transmettre les requetes d'une unique
  * application aux VM auxquelles il est connecte. Il doit être vu comme un
- * sous-composant du Controleur, d'ou les appels directs permis du Controleur
- * aux methodes du repartiteur sans passer par des ports (processRequest et
- * addNewPort par exemple).
+ * sous-composant du Controleur.
  *
  */
 public class Repartiteur extends AbstractComponent implements
@@ -97,10 +95,14 @@ public class Repartiteur extends AbstractComponent implements
 	protected double thVMMax;
 
 	/**
+	 * 
 	 * Constructeur du repartiteur
-	 *
-	 * @param outboundPortURI port de sortie du repartiteur
-	 * @param appId id de l'application liée au repartiteur
+	 * 
+	 * 
+	 * @param portURI Uri de base du repartiteur
+	 * @param appId Id de l'application liée au repartiteur
+	 * @param threshokds Seuils pour la gestion de deploiement/modification des VM
+	 * @throws Exception
 	 */
     public Repartiteur(String portURI, Integer appId, String thresholds)
     		throws Exception {
@@ -210,7 +212,14 @@ public class Repartiteur extends AbstractComponent implements
 
 	}
 
-
+    /**
+     * 
+     * Methode de connection a une VM deployée
+     * 
+     * 
+     * @param URIRep
+     * @throws Exception
+     */
     public void SetVMConnection(String URIRep) throws Exception{
 
 
@@ -285,6 +294,8 @@ public class Repartiteur extends AbstractComponent implements
 	}
 
 	/**
+	 * Methode de notification et update du status des vm
+	 * 
 	 * @param m Notification de la VM au repartiteur de requetes
      * @throws Exception
      */
@@ -344,7 +355,16 @@ public class Repartiteur extends AbstractComponent implements
 			}
 		}
 	}
-
+    
+    
+    
+    /**
+     * Methode d'envoi de la premiere requete de la liste de requetes stoquées 
+     * 
+     * 
+     * @param po port correspondant a la vm
+     * @throws Exception
+     */
     private void sendNextRequest(RepartiteurToVMOutboundPort po) throws Exception {
     	if(!this.listR.isEmpty()){
     		System.out.println("Envoi de la requête " + listR.get(0).toString()
@@ -352,6 +372,14 @@ public class Repartiteur extends AbstractComponent implements
     		po.processRequest(this.listR.remove(0));}
     }
 
+    
+    /**
+     * Methode de reception d'une requete provenant du generateur de requete
+     * 
+     * 
+     * @param r
+     * @throws Exception
+     */
 	public void acceptRequest(Request r) throws Exception {
 
 		try {
@@ -377,14 +405,15 @@ public class Repartiteur extends AbstractComponent implements
 	}
 
 	/**
-	 * Transmet la requete r a une machine virtuelle
+	 * Methode de stockage des requetes
+	 * 
+	 * Si le repatiteur ne possède pas de VM => création d'une vm apres stockage
+	 * Sinon stockage de la requete et demande de notification des VM  
+	 * 
 	 *
-	 * Les machines virtuelles recoivent tour a tour les requetes transmises par
-	 * le repartiteur de requetes (pour le moment).
-	 *
-	 * @param r requete a transmettre
-	 * @return false si aucune machine virtuelle ne peut traiter la requete
-	      * @throws Exception
+	 * @param r requete a stoquer
+	 * 
+	 * @throws Exception
      */
     public void processRequest(Request r) throws Exception {
     	// Traitement de la première requête sans aucune VM déployée
@@ -409,6 +438,14 @@ public class Repartiteur extends AbstractComponent implements
     	System.out.println("-------------------------------------------------------------------------------------");
     }
 
+    
+    /**
+     * Methode de reception d'un VMCarac
+     * 
+     * 
+     * @param id
+     * @param c
+     */
     public void notifyCarac(String id, VMCarac c) {
     	System.out.println("Repartitor " + this.getAppId() + 
     			" Received features change from " + c.getVMid());
@@ -416,6 +453,15 @@ public class Repartiteur extends AbstractComponent implements
 			this.listCarac.put(id, c);
     }
     
+    
+    
+    /**
+     * Methode de destruction d'une VM
+     * 
+     * 
+     * @param vm
+     * @throws Exception
+     */
     private void destroyVM(String vm) throws Exception {
     	RepartiteurToVMOutboundPort p = 
     			(RepartiteurToVMOutboundPort) this.findPortFromURI(vm);
