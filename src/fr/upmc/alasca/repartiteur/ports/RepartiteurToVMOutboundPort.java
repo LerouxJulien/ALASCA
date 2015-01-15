@@ -8,6 +8,12 @@ import fr.upmc.alasca.requestgen.objects.Request;
 import fr.upmc.components.ComponentI;
 import fr.upmc.components.ports.AbstractOutboundPort;
 
+/**
+ * Port de sortie du repartiteur vers une VM
+ * 
+ * @author Julien Leroux
+ *
+ */
 public class RepartiteurToVMOutboundPort extends AbstractOutboundPort
 implements RepartiteurConsumerI {
 

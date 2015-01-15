@@ -6,6 +6,12 @@ import fr.upmc.alasca.requestgen.objects.Request;
 import fr.upmc.components.ComponentI;
 import fr.upmc.components.ports.AbstractInboundPort;
 
+/**
+ * Port d'entree du repartiteur venant du generateur de requete
+ * 
+ * @author Julien Leroux
+ *
+ */
 public class RepartiteurInboundPort extends AbstractInboundPort implements
 		RequestArrivalI {
 

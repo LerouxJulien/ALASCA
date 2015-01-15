@@ -8,12 +8,7 @@ import fr.upmc.components.interfaces.RequiredI;
 
 public interface RepartiteurConsumerI extends RequiredI {
 
-	/**
-	 * Transmet la requete a la VM
-	 * 
-	 * @param r Requete transmise a la VM
-	 * @throws Exception
-	 */
+	
 	public void processRequest(Request r) throws Exception;
 	
 	public String getVMURI() throws Exception;

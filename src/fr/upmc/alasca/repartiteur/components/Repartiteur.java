@@ -65,7 +65,7 @@ public class Repartiteur extends AbstractComponent implements
 
 	protected String repartiteurURIBase_outbound;
 
-	// Liste des ports des machines virtuelles
+	// Listes des ports des machines virtuelles
     protected Map<RepartiteurToVMInboundPort,RepartiteurToVMOutboundPort> rbps;
     protected Map<RepartiteurToVMInboundPort, VMMessages> robps;
 

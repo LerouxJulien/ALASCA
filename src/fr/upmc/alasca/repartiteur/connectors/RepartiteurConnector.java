@@ -11,6 +11,12 @@ import fr.upmc.alasca.repartiteur.interfaces.RepartiteurProviderI;
 import fr.upmc.alasca.requestgen.objects.Request;
 import fr.upmc.components.connectors.AbstractConnector;
 
+/**
+ * 
+ * Connecteur du repartiteur
+ * @author Julien Leroux
+ *
+ */
 public class RepartiteurConnector extends AbstractConnector implements RepartiteurProviderI,
 RepartiteurConsumerI, Serializable {
 

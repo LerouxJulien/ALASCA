@@ -9,6 +9,14 @@ import fr.upmc.alasca.repartiteur.interfaces.RepartiteurProviderI;
 import fr.upmc.components.ComponentI;
 import fr.upmc.components.ports.AbstractInboundPort;
 
+
+
+/**
+ * Port d'entrée du repartiteur venant d'une VM
+ * 
+ * @author Julien Leroux
+ *
+ */
 public class RepartiteurToVMInboundPort extends AbstractInboundPort
 implements RepartiteurProviderI {
 

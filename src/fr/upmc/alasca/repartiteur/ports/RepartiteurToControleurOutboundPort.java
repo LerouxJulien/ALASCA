@@ -9,6 +9,14 @@ import fr.upmc.alasca.repartiteur.interfaces.RepartiteurToControleurConsumerI;
 import fr.upmc.components.ComponentI;
 import fr.upmc.components.ports.AbstractOutboundPort;
 
+
+/**
+ * 
+ * Port de sortie du repartiteur vers le controleur
+ * 
+ * @author Julien Leroux
+ *
+ */
 public class RepartiteurToControleurOutboundPort extends AbstractOutboundPort
 implements RepartiteurToControleurConsumerI {
 
