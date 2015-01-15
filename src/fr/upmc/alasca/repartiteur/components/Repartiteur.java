@@ -94,6 +94,7 @@ public class Repartiteur extends AbstractComponent implements
 	protected double thVMMin;
 	protected double thVMMax;
 
+	
 	/**
 	 * 
 	 * Constructeur du repartiteur
@@ -119,7 +120,8 @@ public class Repartiteur extends AbstractComponent implements
         this.rbps = new HashMap<RepartiteurToVMInboundPort, RepartiteurToVMOutboundPort>();
         this.robps = new HashMap<RepartiteurToVMInboundPort, VMMessages>();
         this.listCarac = new HashMap<String,VMCarac>();
-		PortI p = this.rgToRepartiteurInboundPort;
+		
+        PortI p = this.rgToRepartiteurInboundPort;
 		
 		// Récupération des valeurs des seuils à partir de la chaîne de caractères
 		String[] values = thresholds.split(";");		
@@ -419,22 +421,32 @@ public class Repartiteur extends AbstractComponent implements
     	// Traitement de la première requête sans aucune VM déployée
     	if (this.rbps.isEmpty()) {
 			this.listR.add(r);
-			System.out.println("Stockage de la requête " + r.getAppId() + " - " 
-					+ listR.size() + " mais pas de VM dispo");
+			System.out.println("Stockage de la requête " + r.getAppId() + " num " 
+					+ r.getUri() + " taille de la pile de requete "+ listR.size() + " mais pas de VM dispo");
 			throw new NotEnoughCapacityVMException("No available mv for the " +
 					"application number : " + r.getAppId());
 		}
     	// Stockage de la requête dans la file de requêtes
     	this.listR.add(r);
-    	System.out.println("Stockage de requête "+ r.getAppId()+ " - " 
-    			+ listR.size());
+    	System.out.println("Stockage de requête "+ r.getAppId() + " num " 
+				+ r.getUri() + " taille de la pile de requete "+listR.size());
     	System.out.println("-------------------------------------------------------------------------------------");
     	System.out.println("Demande de notification du répartiteur " + 
     	this.getAppId() + " à ses VM");
+    	if(r.getUri()%20==0 && r.getUri()<=60){
+    		
+    		System.out.println(" Trop de requettes en stock, deploiement d'une nouvelle VM ");
+    		String[] uri = addNewPorts("repartiteur"+this.getAppId());
+			control.deployVM(this.getAppId(), uri,this.repartiteurURIDCC);
+			SetVMConnection(uri[1] + "-RepartiteurInboundPort");
+    		
+    		
+    	}else{
     	for (Entry<RepartiteurToVMInboundPort, RepartiteurToVMOutboundPort> 
     		entry : rbps.entrySet()) {
 			entry.getValue().startNotification();
 		}
+    	}
     	System.out.println("-------------------------------------------------------------------------------------");
     }
 
