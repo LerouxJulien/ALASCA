@@ -25,7 +25,7 @@ import fr.upmc.components.interfaces.RequiredI;
  */
 public interface AppRequestI extends OfferedI, RequiredI{
 	
-	public void acceptApplication(Integer application,
+	public void acceptApplication(Integer application, String thresholds,
 			String uri_new_requestGenerator) throws Exception;
 	
 }

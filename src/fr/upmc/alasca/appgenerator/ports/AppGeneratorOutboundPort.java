@@ -31,10 +31,10 @@ implements AppRequestI{
 	}
 
 	@Override
-	public void acceptApplication(Integer application,
+	public void acceptApplication(Integer application, String thresholds,
 			String uri_new_requestGenerator) throws Exception {
 		((AppRequestI) this.connector).acceptApplication(application,
-				uri_new_requestGenerator);
+				thresholds, uri_new_requestGenerator);
 	}
 
 }

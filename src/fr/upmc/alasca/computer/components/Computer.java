@@ -178,60 +178,60 @@ public class Computer extends AbstractComponent implements ComputerProviderI {
 	public void deployVM(int nbCores, int app, String[] URIRepartiteurFixe,
 			String URIRepartiteurDCC) throws Exception {
 		// On verifie que le Computer a assez de coeurs pour allouer la machine
-				// virtuelle.
-				int nbCoresTotal = nbCores + nbCoresUsed;
-				if (nbCoresTotal > getFrequencies().size()) {
-					throw new NotEnoughCapacityVMException("No more capacity for " +
-				"deploying a new virtual machine");
-				}
-				String mvID = (machineID * 1000 + ((cptVM++) % 1000)) + "";
-				List<Double> coresFreq = new ArrayList<Double>(frequencies.subList(
-						nbCoresUsed, nbCoresTotal));
-				try{
-				// Instanciation machine virtuelle
-				DynamicComponentCreationOutboundPort newvm = new DynamicComponentCreationOutboundPort(
-						this);
-				newvm.localPublishPort();
+		// virtuelle.
+		int nbCoresTotal = nbCores + nbCoresUsed;
+		if (nbCoresTotal > getFrequencies().size()) {
+			throw new NotEnoughCapacityVMException("No more capacity for " +
+		"deploying a new virtual machine");
+		}
+		String mvID = (machineID * 1000 + ((cptVM++) % 1000)) + "";
+		List<Double> coresFreq = new ArrayList<Double>(frequencies.subList(
+				nbCoresUsed, nbCoresTotal));
+		try{
+		// Instanciation machine virtuelle
+		DynamicComponentCreationOutboundPort newvm = new DynamicComponentCreationOutboundPort(
+				this);
+		newvm.localPublishPort();
 
-				this.addPort(newvm);
-				newvm.doConnection("request_generator_jvm_uri" //TODO a changer
-						+ AbstractCVM.DYNAMIC_COMPONENT_CREATOR_INBOUNDPORT_URI,
-						DynamicComponentCreationConnector.class.getCanonicalName());
+		this.addPort(newvm);
+		newvm.doConnection("request_generator_jvm_uri" //TODO a changer
+				+ AbstractCVM.DYNAMIC_COMPONENT_CREATOR_INBOUNDPORT_URI,
+				DynamicComponentCreationConnector.class.getCanonicalName());
 
-				String randomString = this.getMachineID()
-						+ java.util.UUID.randomUUID().toString();
-				Integer appi = app;
-				Integer num = 5;
-				String uriCPU = this.uriInboundComputer;
-				newvm.createComponent(VirtualMachine.class.getCanonicalName(),
-						new Object[] {uriCPU, randomString, mvID,  appi,num, coresFreq });
-				
-				
-				
-				
-				
-				
-				// Connexion machine virtuelle
-				DynamicallyConnectableComponentOutboundPort p = new DynamicallyConnectableComponentOutboundPort(
-						this);
-				this.addPort(p);
-				p.localPublishPort();
-				
-				p.doConnection(URIRepartiteurDCC,
-						DynamicallyConnectableComponentConnector.class
-								.getCanonicalName());
-				p.connectWith(randomString, URIRepartiteurFixe[0]
-						+ "-RepartiteurOutboundPort",
-						VMConnector.class.getCanonicalName());
-				p.doDisconnection();
+		String randomString = this.getMachineID()
+				+ java.util.UUID.randomUUID().toString();
+		Integer appi = app;
+		Integer num = 5;
+		String uriCPU = this.uriInboundComputer;
+		newvm.createComponent(VirtualMachine.class.getCanonicalName(),
+				new Object[] {uriCPU, randomString, mvID,  appi,num, coresFreq });
+		
+		
+		
+		
+		
+		
+		// Connexion machine virtuelle
+		DynamicallyConnectableComponentOutboundPort p = new DynamicallyConnectableComponentOutboundPort(
+				this);
+		this.addPort(p);
+		p.localPublishPort();
+		
+		p.doConnection(URIRepartiteurDCC,
+				DynamicallyConnectableComponentConnector.class
+						.getCanonicalName());
+		p.connectWith(randomString, URIRepartiteurFixe[0]
+				+ "-RepartiteurOutboundPort",
+				VMConnector.class.getCanonicalName());
+		p.doDisconnection();
+	
+		}catch(Exception e){
 			
-				}catch(Exception e){
-					
-					e.printStackTrace();
-					
-				}
-				nbCoresUsed += nbCores;
-				System.out.println("Virtual Machine deployed");
+			e.printStackTrace();
+			
+		}
+		nbCoresUsed += nbCores;
+		System.out.println("Virtual Machine deployed");
 	}
 
 	/**

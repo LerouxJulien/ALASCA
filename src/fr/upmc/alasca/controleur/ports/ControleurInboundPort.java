@@ -24,9 +24,10 @@ AppRequestI  {
 	}
 
 	@Override
-	public void acceptApplication(Integer application,
-			String uri_new_requestGenerator) throws Exception {
+	public void acceptApplication(Integer application, String thresholds,
+			String uri_new_requestGenerator)
+					throws Exception {
 		Controleur c = (Controleur) this.owner;
-		c.acceptApplication(application, uri_new_requestGenerator);
+		c.acceptApplication(application, thresholds, uri_new_requestGenerator);
 	}
 }

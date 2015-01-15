@@ -44,6 +44,7 @@ public class ApplicationRequestGenerator extends AbstractComponent {
 	protected Future<?> nextRequestTaskFuture;
 	protected int standardDeviation;
 	protected int meanNumberInstructions;
+	protected String thresholds;
 	// FIN parametres utilises pour tous les RequestGenerator
 
 	protected String baseURIRequestGenerator;
@@ -55,7 +56,8 @@ public class ApplicationRequestGenerator extends AbstractComponent {
 
 	public ApplicationRequestGenerator(List<Integer> appsToLaunch,
 			double meanInterArrivalTime, int meanNumberInstructions,
-			int standardDeviation, String outboundPortURI) throws Exception {
+			int standardDeviation, String thresholds,
+			String outboundPortURI) throws Exception {
 		super(true);
 
 		this.appsToLaunch = appsToLaunch;
@@ -63,6 +65,7 @@ public class ApplicationRequestGenerator extends AbstractComponent {
 		this.meanInterArrivalTime = meanInterArrivalTime;
 		this.meanNumberInstructions = meanNumberInstructions;
 		this.standardDeviation = standardDeviation;
+		this.thresholds = thresholds;
 		this.rng = new RandomDataGenerator();
 		this.rng.reSeed();
 		this.nextRequestTaskFuture = null;
@@ -118,7 +121,8 @@ public class ApplicationRequestGenerator extends AbstractComponent {
 						this.meanNumberInstructions, this.standardDeviation,
 						appId, uriNewRequestGenerator });
 
-		this.arg_outboundPort.acceptApplication(appId, uriNewRequestGenerator);
+		this.arg_outboundPort.acceptApplication(appId, thresholds,
+				uriNewRequestGenerator);
 	}
 
 	private String getUriNewRequestGenerator() {

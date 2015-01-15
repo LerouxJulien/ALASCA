@@ -61,7 +61,7 @@ public class Controleur extends AbstractComponent {
 		super(true, false);
 		this.addRequiredInterface(VMProviderI.class);
 
-		for (int i = 0; i < nb_computers; ++i) {
+		for (int i = 1; i <= nb_computers; ++i) {
 			ControleurOutboundPort p = new ControleurOutboundPort(
 					controleur_uri_outboundport + i, this);
 			this.addPort(p);
@@ -91,23 +91,18 @@ public class Controleur extends AbstractComponent {
 	public void deployVM(int appid, String[] uri,String RepartiteurURIDCC)
 			throws Exception {
 		// TODO Modifier politique de deploiement
-				
-				for (ControleurOutboundPort cbop : portsToMachine) {
-					if (cbop.availableCores() >= 2) {
-						
-						System.out.println("deployvm passed parameters : appid = " + appid
-								+ " urifixe = " + uri[0] + " and " + uri[1] + " uridcc = "
-								+ RepartiteurURIDCC);
-						if (cbop.availableCores() >= 4)
-							cbop.deployVM(4, appid, uri,
-									RepartiteurURIDCC);
-						else
-							cbop.deployVM(2, appid, uri,
-									RepartiteurURIDCC);
-						break;
-					}
-				}
-				
+		for (ControleurOutboundPort cbop : portsToMachine) {
+			if (cbop.availableCores() >= 2) {
+				System.out.println("deployvm passed parameters : appid = " + appid
+						+ " urifixe = " + uri[0] + " and " + uri[1] + " uridcc = "
+						+ RepartiteurURIDCC);
+				if (cbop.availableCores() >= 4)
+					cbop.deployVM(4, appid, uri, RepartiteurURIDCC);
+				else
+					cbop.deployVM(2, appid, uri, RepartiteurURIDCC);
+				break;
+			}
+		}
 	}
 	
 	public void destroyVM(String uriComputerParent, String mv) throws Exception{
@@ -158,7 +153,8 @@ public class Controleur extends AbstractComponent {
 	 *            Id de l'application
 	 * @throws Exception
 	 */
-	public void acceptApplication(Integer appId, String uri_new_rg) throws Exception {
+	public void acceptApplication(Integer appId, String thresholds,
+			String uri_new_rg) throws Exception {
 		DynamicComponentCreationOutboundPort dcco = new DynamicComponentCreationOutboundPort(
 				this);
 		dcco.publishPort();
@@ -170,11 +166,8 @@ public class Controleur extends AbstractComponent {
 
 		//création du répartiteur
 		String newNameURI = repartiteurURIgenericName + appId;
-		String seuil1 = "0.25";
-		String seuil2 = "0.5";
 		dcco.createComponent(Repartiteur.class.getCanonicalName(),
-				new Object[] { newNameURI,
-			appId,seuil1,seuil2});
+				new Object[] { newNameURI, appId, thresholds });
 		
 		
 		//connexion entre le répartiteur et le controleur
