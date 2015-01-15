@@ -93,7 +93,7 @@ public class Repartiteur extends AbstractComponent implements
 	 * @param outboundPortURI port de sortie du repartiteur
 	 * @param appId id de l'application liée au repartiteur
 	 */
-    public Repartiteur(String portURI, Integer appId/*,double seuil1,double seuil2*/) throws Exception {
+    public Repartiteur(String portURI, Integer appId,String seuil1,String seuil2) throws Exception {
         this.addRequiredInterface(RequestArrivalI.class);
 
         this.addOfferedInterface(RepartiteurProviderI.class);
@@ -108,8 +108,8 @@ public class Repartiteur extends AbstractComponent implements
         this.listCarac = new HashMap<String,VMCarac>();
 		PortI p = this.rgToRepartiteurInboundPort;
 
-		s1 = 0.025;
-		s2 = 0.05;
+		s1 = Double.parseDouble(seuil1);
+		s2 = Double.parseDouble(seuil2);
 		
 		this.addOfferedInterface(RequestArrivalI.class);
 		p = new RepartiteurInboundPort(portURI, this);
@@ -322,7 +322,7 @@ public class Repartiteur extends AbstractComponent implements
 
     private void sendNextRequest(RepartiteurToVMOutboundPort po) throws Exception {
     	if(!this.listR.isEmpty()){
-    		System.out.println("Envoi de la requette "+ listR.get(0).toString() + "par le répartiteur "+ this.getAppId());
+    		System.out.println("Envoi de la requête "+ listR.get(0).toString() + "par le répartiteur "+ this.getAppId());
     		po.processRequest(this.listR.remove(0));}
     }
 
@@ -374,13 +374,13 @@ public class Repartiteur extends AbstractComponent implements
 
     	if(this.rbps.isEmpty()){
 			this.listR.add(r);
-			System.out.println("Stockage de requette "+ r.getAppId()+ " - " + listR.size() + " mais pas de VM dispo");
+			System.out.println("Stockage de requête "+ r.getAppId()+ " - " + listR.size() + " mais pas de VM dispo");
 			throw new NotEnoughCapacityVMException("No available mv for the " +
 					"application number: " + r.getAppId());
 
 		}
     	this.listR.add(r);
-    	System.out.println("Stockage de requette "+ r.getAppId()+ " - " + listR.size());
+    	System.out.println("Stockage de requête "+ r.getAppId()+ " - " + listR.size());
     	System.out.println("-------------------------------------------------------------------------------------");
     	System.out.println("Demande de notification du repartiteur "+ this.getAppId() + " a ses VM");
     	for(Entry<RepartiteurToVMInboundPort,RepartiteurToVMOutboundPort> entry :rbps.entrySet()){
