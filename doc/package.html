@@ -66,37 +66,37 @@
 	<p>Ce package contient l'ensemble du code produit pour le projet du
 		centre de calcul de l'UE ALASCA.</p>
 
-	<p>Le projet à proprement parlé est divisé en deux parties :
+	<p>Le centre de calcul dans la version du 16 janvier 2015 tourne sur deux CVM en mode distribué :
 	<ul>
 		<li>le client qui est composé de deux composants, le <b>générateur de demande 
-				d'applications</b> qui gère la demande d'application et le <b>generateur de requête</b> créé dynamiquement lié a une application. Ce client
+				d'applications</b> qui gère la demande d'application et le <b>générateur de requêtes</b> créé dynamiquement lié à une application. Ce client
 			servira de test pour la demande d'application et l'envoi de requêtes
 			vers le centre de calcul.
 		<li>le centre de calcul qui est composé des entités suivantes :
 			<ul>
 				<li>le <b>contrôleur d'admission</b> qui gère essentiellement
-					la demande de deploiement et/ou de destruction de machines
-					virtuelles par le dispatcher;
+					la demande de déploiement et/ou de destruction de machines
+					virtuelles par le répartiteur de requêtes;
 				<li>un <b>répartiteur
-						de requêtes</b> créé pour chaque applications;
-				<li>la <b>machine</b> qui s'occupe de la création et
+						de requêtes</b> créé pour chaque application;
+				<li>la <b>machine</b> qui s'occupe de la création et la
 					destruction des <b>machines virtuelles</b>;
 				<li>la <b>machine virtuelle</b> qui traite les requêtes.
 			</ul>
 	</ul>
 	Le
 	<b>contrôleur d'admission</b> est le composant principal du centre de
-	calcul. Le
-	<b>dispatcher</b> est un sous-composant du
-	<b>contrôleur</b> mais ce n'est pas un composant en terme
-	d'implémentation. Les
+	calcul. Les
 	<b>répartiteurs de requêtes</b> sont des composants générés à chaque
-	demande d'application. À chaque
-	<b>répartiteur de requêtes</b> sont rattachés la liste des
-	<b>machines virtuelles</b> qui traitent les requêtes reçus. Les
+	demande d'application. À chacun d'eux sont rattachés la liste des
+	<b>machines virtuelles</b> qui traitent les requêtes reçues. Les
 	<b>machines</b> permettent quand à elles de créer la liaison entre un
 	<b>répartiteur de requêtes</b> et la
-	<b>machine virtuelle</b> déployée.
+	<b>machine virtuelle</b> déployée. Chaque <b>machine virtuelle</b> 
+	virtuelle possède un certain nombre de coeurs cadencés à différentes
+	fréquences. Un coeur est fait tourner un <b>thread virtuel</b> qui
+	traite une requête donnée. Le temps d'exécution de la requête
+	dépend de la fréquence du coeur.
 	</p>
 
 	<p>
