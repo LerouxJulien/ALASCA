@@ -74,16 +74,7 @@ public class VirtualMachine extends AbstractComponent implements DynamicallyConn
 	protected VMOutboundPort VMoport;
 
 	// URI du Computer parent de la VM (le Computer fournissant les coeurs physiques)
-	private String uriComputerParent;
-	
-	/**
-	 * @return the vMoport
-	 */
-	public VMOutboundPort getVMoport() {
-		return VMoport;
-	}
-
-	
+	private String uriComputerParent;	
 
 	/**
 	 * Alloue une machine virtuelle.
@@ -411,6 +402,21 @@ public class VirtualMachine extends AbstractComponent implements DynamicallyConn
 			t.refresh(freq);
 		}
 	}
+	
+	/**
+	 * @return the vMoport
+	 */
+	public VMOutboundPort getVMoport() {
+		return VMoport;
+	}
+	
+	/**
+	 * @return the vMiport
+	 */
+	public VMInboundPort getVMiport() {
+		return VMiport;
+	}
+	
 }
 
 	

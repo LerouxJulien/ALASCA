@@ -1,9 +1,7 @@
 package fr.upmc.alasca.repartiteur.ports;
 
-import fr.upmc.alasca.computer.interfaces.VMConsumerI;
 import fr.upmc.alasca.computer.interfaces.VMProviderI;
 import fr.upmc.alasca.repartiteur.interfaces.RepartiteurConsumerI;
-import fr.upmc.alasca.repartiteur.interfaces.RepartiteurProviderI;
 import fr.upmc.alasca.requestgen.objects.Request;
 import fr.upmc.components.ComponentI;
 import fr.upmc.components.ports.AbstractOutboundPort;
@@ -21,6 +19,25 @@ implements RepartiteurConsumerI {
 			throws Exception {
 		super(uri, RepartiteurConsumerI.class, owner);
 	}
+	
+	public int getNbCore() throws Exception {
+		return ((VMProviderI) this.connector).getNbCores();
+	}
+	
+	@Override
+	public String getUriComputerParent() throws Exception {
+		return ((VMProviderI) this.connector).getUriComputerParent();
+	}
+	
+	@Override
+	public String getVMInboundPortURI() throws Exception {
+		return ((VMProviderI) this.connector).getVMInboundPortURI();
+	}
+
+	@Override
+	public String getVMURI() throws Exception {
+		return ((VMProviderI) this.connector).getVMURI();
+	}
 
 	@Override
 	public void processRequest(Request r) throws Exception {
@@ -28,25 +45,8 @@ implements RepartiteurConsumerI {
 	}
 
 	@Override
-	public String getVMURI() throws Exception {
-		return ((VMProviderI) this.connector).getVMURI();
-		
-		
-	}
-
 	public void startNotification() throws Exception {
-		
 		((VMProviderI) this.connector).startNotification();
-		
-	}
-
-	public int getNbCore() throws Exception {
-		
-		return ((VMProviderI) this.connector).getNbCores();
-		
 	}
 	
-	public String getUriComputerParent() throws Exception{
-		return ((VMProviderI) this.connector).getUriComputerParent();
-	}
 }

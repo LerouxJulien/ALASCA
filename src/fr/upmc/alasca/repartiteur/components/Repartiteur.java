@@ -1,24 +1,19 @@
 package fr.upmc.alasca.repartiteur.components;
 
-import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
 import fr.upmc.alasca.computer.objects.VMCarac;
 import fr.upmc.alasca.computer.objects.VMMessages;
 import fr.upmc.alasca.computer.enums.Status;
-import fr.upmc.alasca.computer.exceptions.BadDestroyException;
 import fr.upmc.alasca.computer.exceptions.NotEnoughCapacityVMException;
 import fr.upmc.alasca.repartiteur.connectors.RepartiteurConnector;
 import fr.upmc.alasca.repartiteur.interfaces.RepartiteurConsumerI;
 import fr.upmc.alasca.repartiteur.interfaces.RepartiteurProviderI;
 import fr.upmc.alasca.computer.interfaces.VMProviderI;
-import fr.upmc.alasca.computer.objects.VMMessages;
-import fr.upmc.alasca.controleur.components.Controleur;
 import fr.upmc.alasca.controleur.exceptions.BadDeploymentException;
 import fr.upmc.alasca.repartiteur.ports.RepartiteurInboundPort;
 import fr.upmc.alasca.repartiteur.ports.RepartiteurToControleurOutboundPort;
@@ -26,7 +21,6 @@ import fr.upmc.alasca.repartiteur.ports.RepartiteurToVMInboundPort;
 import fr.upmc.alasca.repartiteur.ports.RepartiteurToVMOutboundPort;
 import fr.upmc.alasca.requestgen.interfaces.RequestArrivalI;
 import fr.upmc.alasca.requestgen.objects.Request;
-import fr.upmc.alasca.requestgen.ports.RequestGeneratorOutboundPort;
 import fr.upmc.components.AbstractComponent;
 import fr.upmc.components.cvm.AbstractCVM;
 import fr.upmc.components.cvm.pre.dcc.DynamicComponentCreationI;
@@ -36,7 +30,6 @@ import fr.upmc.components.cvm.pre.dcc.DynamicallyConnectableComponentInboundPort
 import fr.upmc.components.cvm.pre.dcc.DynamicallyConnectableComponentOutboundPort;
 import fr.upmc.components.cvm.pre.dcc.DynamicallyConnectableI;
 import fr.upmc.components.ports.PortI;
-
 
 /**
  * Le repartiteur de requete est charge de transmettre les requetes d'une unique
@@ -302,38 +295,33 @@ public class Repartiteur extends AbstractComponent implements
      * @throws Exception
      */
     public void notifyStatus(VMMessages m) throws Exception {
-    	System.out.println("Repartitor "+ this.getAppId() +" Received status "+m.getStatus() +" from "+ m.getVmID() + " in time " + m.getTime());
+    	System.out.println("Repartitor " + this.getAppId() + " Received status "
+    						+ m.getStatus() + " from VM " + m.getVmID()
+    						+ " in time " + m.getTime());
 		robps.put(m.getRepPort(), m);
 
-
-
-		if (m.getStatus()== Status.NEW) {
-
+		if (m.getStatus() == Status.NEW) {
 			RepartiteurToVMOutboundPort po = rbps.get(m.getRepPort());
 			int nb = po.getNbCore();
-			while(nb!=0){
-			sendNextRequest(po);
-			nb--;
-			
+			while(nb!=0) {
+				sendNextRequest(po);
+				nb--;
 			}
-
 		}
+		
 		if (m.getStatus() == Status.FREE) {
-			
 			RepartiteurToVMOutboundPort po = rbps.get(m.getRepPort());
 			sendNextRequest(po);
-			
 		}
 
 		if (m.getTime() != 0) {
-
 			VMCarac car = this.listCarac.get(m.getVmID());
 			car.addTime(m.getTime());
-			System.out.println("Temps moyen de traitement pour la VM " +
-					m.getVmID() + " : " + this.listCarac.get(m.getVmID()).getMediumtime());
-
+			System.out.println("Temps moyen de traitement pour la VM " 
+					+ m.getVmID() + " : " 
+					+ this.listCarac.get(m.getVmID()).getMediumtime());
+			
 			// Création d'une nouvelle VM si dépassement du seuil thVMMax
-			//if ((car.getMediumtime()*this.thCoreMax + car.getMediumtime())<m.getTime()) {
 			if (car.getMediumtime() > this.meanTimeProcess * (1 + this.thVMMax)) {
 				System.out.println("******************************************************************************************************************");
 				System.out.println("CREATION D'UNE NOUVELLE VM");
@@ -341,20 +329,53 @@ public class Repartiteur extends AbstractComponent implements
 				control.deployVM(this.getAppId(), uri,this.repartiteurURIDCC);
 				SetVMConnection(uri[1] + "-RepartiteurInboundPort");
 				System.out.println("******************************************************************************************************************");
-			
+			}
+			/*
 			// Augmentation du nombre de coeurs de la VM si dépassement du seuil thCoreMax
-			//} else if (car.getMediumtime() > this.meanTimeProcess * (1 + this.thFreqMax)) {
-			//	// TODO
-			//	System.out.println("MODIFIER LE NOMBRE DE COEURS DE LA VM");
+			else if (car.getMediumtime() > this.meanTimeProcess * (1 + this.thCoreMax)) {
+				System.out.println("******************************************************************************************************************");
+				System.out.println("AUGMENTER LE NOMBRE DE COEURS DE LA VM");
+				// TODO
+				System.out.println("******************************************************************************************************************");
+			}
 			
 			// Augmentation de la fréquence des coeurs si dépassement du seuil thFreqMax
-			//} else if ((car.getMediumtime()*this.thFreqMax + car.getMediumtime())<m.getTime()) {
-			} else if (car.getMediumtime() > this.meanTimeProcess * (1 + this.thFreqMax)) {
+			else if (car.getMediumtime() > this.meanTimeProcess * (1 + this.thFreqMax)) {
+				System.out.println("******************************************************************************************************************");
+				System.out.println("AUGMENTER LA FREQUENCE DE LA VM");
+				// TODO
 				//control.incFrequency(this.getAppId());
-				System.out.println("MODIFIER LA FREQUENCE DE LA VM");
-			} else {
-				System.out.println("POUETTE !");
+				System.out.println("******************************************************************************************************************");
 			}
+			
+			// Suppression d'une VM si dépassement du seuil thVMMin
+			else if ((this.rbps.size() > 1) &&
+					(car.getMediumtime() < this.meanTimeProcess * (1 + this.thVMMin))) {
+				System.out.println("******************************************************************************************************************");
+				System.out.println("SUPPRESSION D'UNE VM");
+				// TODO
+				RepartiteurToVMOutboundPort po = rbps.get(m.getRepPort());
+				control.destroyVM(po.getUriComputerParent(), po.getVMInboundPortURI());
+				System.out.println("******************************************************************************************************************");
+			}
+			
+			// Diminution du nombre de coeurs de la VM si dépassement du seuil thCoreMin
+			else if (car.getMediumtime() < this.meanTimeProcess * (1 + this.thCoreMin)) {
+				System.out.println("******************************************************************************************************************");
+				System.out.println("DIMINUER LE NOMBRE DE COEURS DE LA VM");
+				// TODO
+				System.out.println("******************************************************************************************************************");
+			}
+			
+			// Diminution de la fréquence des coeurs si dépassement du seuil thFreqMin
+			else if (car.getMediumtime() < this.meanTimeProcess * (1 + this.thFreqMin)) {
+				System.out.println("******************************************************************************************************************");
+				System.out.println("DIMINUER LA FREQUENCE DE LA VM");
+				// TODO
+				//control.incFrequency(this.getAppId());
+				System.out.println("******************************************************************************************************************");
+			}
+			*/
 		}
 	}
     
@@ -393,7 +414,7 @@ public class Repartiteur extends AbstractComponent implements
 				control.deployVM(this.getAppId(), uri, this.repartiteurURIDCC);
 				SetVMConnection(uri[1] + "-RepartiteurInboundPort");
 			} catch (BadDeploymentException e2) {
-				System.out.println("Rejected request: all queues full and "
+				System.out.println("Rejected request : all queues full and "
 						+ "maximal number of mv reached");
 			} catch (Exception e2) {
 				/*System.out.println("Echec de processRequest ! requête : "
@@ -421,18 +442,20 @@ public class Repartiteur extends AbstractComponent implements
     	// Traitement de la première requête sans aucune VM déployée
     	if (this.rbps.isEmpty()) {
 			this.listR.add(r);
-			System.out.println("Stockage de la requête " + r.getAppId() + " num " 
-					+ r.getUri() + " taille de la pile de requete "+ listR.size() + " mais pas de VM dispo");
-			throw new NotEnoughCapacityVMException("No available mv for the " +
+			System.out.println("Stockage de la requête n°" + r.getUri() 
+	    			+ " dans le répartiteur " + r.getAppId());
+	    	System.out.println("Taille de la file de requêtes " + listR.size());
+	    	throw new NotEnoughCapacityVMException("No available mv for the " +
 					"application number : " + r.getAppId());
 		}
     	// Stockage de la requête dans la file de requêtes
     	this.listR.add(r);
-    	System.out.println("Stockage de requête "+ r.getAppId() + " num " 
-				+ r.getUri() + " taille de la pile de requete "+listR.size());
+    	System.out.println("Stockage de la requête n°" + r.getUri() 
+    			+ " dans le répartiteur " + r.getAppId());
+    	System.out.println("Taille de la file de requêtes " + listR.size());
     	System.out.println("-------------------------------------------------------------------------------------");
-    	System.out.println("Demande de notification du répartiteur " + 
-    	this.getAppId() + " à ses VM");
+    	System.out.println("Demande de notification du répartiteur " 
+    				+ this.getAppId() + " à ses VM");
     	/*if(r.getUri()%20==0 && r.getUri()<=60){
     		
     		System.out.println(" Trop de requettes en stock, deploiement d'une nouvelle VM ");
@@ -465,8 +488,6 @@ public class Repartiteur extends AbstractComponent implements
 			this.listCarac.put(id, c);
     }
     
-    
-    
     /**
      * Methode de destruction d'une VM
      * 
@@ -474,11 +495,11 @@ public class Repartiteur extends AbstractComponent implements
      * @param vm
      * @throws Exception
      */
-    private void destroyVM(String vm) throws Exception {
+    /*private void destroyVM(String vm) throws Exception {
     	RepartiteurToVMOutboundPort p = 
     			(RepartiteurToVMOutboundPort) this.findPortFromURI(vm);
     	String uriComputerParent = p.getUriComputerParent();
     	this.control.destroyVM(uriComputerParent, vm);
-    }
+    }*/
 
 }

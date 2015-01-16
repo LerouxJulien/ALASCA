@@ -33,7 +33,7 @@ public class CVM extends AbstractCVM {
 	/** Général **/
 	
 	// Temps d'exécution des CVM (ms)
-	protected static final long processingTime = 45000L;
+	protected static final long processingTime = 30000L;
 	
 	/** Machine **/
 	
@@ -185,6 +185,8 @@ public class CVM extends AbstractCVM {
 	@Override
 	public void shutdown() throws Exception {
 		
+		super.shutdown();
+		/*
 		// Déconnexion du générateur d'applications
 		PortI agport = this.rg.findPortFromURI(ARG_OUTBOUNDPORT_URI);
 		agport.doDisconnection();
@@ -201,8 +203,7 @@ public class CVM extends AbstractCVM {
 		PortI cport;
 		cport = this.cont.findPortFromURI(CONTROLER_INBOUNDPORT_URI);
 		cport.doDisconnection();
-		
-		super.shutdown();
+		*/
 	}
 
 	public static void main(String[] args) {

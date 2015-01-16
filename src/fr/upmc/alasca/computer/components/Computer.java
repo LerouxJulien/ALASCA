@@ -3,7 +3,6 @@ package fr.upmc.alasca.computer.components;
 import java.util.ArrayList;
 import java.util.List;
 
-import fr.upmc.alasca.computer.connectors.CompVMConnector;
 import fr.upmc.alasca.computer.connectors.VMConnector;
 import fr.upmc.alasca.computer.exceptions.BadDestroyException;
 import fr.upmc.alasca.computer.exceptions.BadReinitialisationException;
@@ -213,14 +212,20 @@ public class Computer extends AbstractComponent implements DynamicallyConnectabl
 				nbCoresUsed, nbCoresTotal));
 		try{
 		// Instanciation machine virtuelle
-		DynamicComponentCreationOutboundPort newvm = new DynamicComponentCreationOutboundPort(
-				this);
+		DynamicComponentCreationOutboundPort newvm = 
+				new DynamicComponentCreationOutboundPort(this);
 		newvm.localPublishPort();
 
 		this.addPort(newvm);
-		newvm.doConnection("request_generator_jvm_uri" //TODO a changer
-				+ AbstractCVM.DYNAMIC_COMPONENT_CREATOR_INBOUNDPORT_URI,
-				DynamicComponentCreationConnector.class.getCanonicalName());
+		if (AbstractCVM.isDistributed) {
+			newvm.doConnection("request_generator_jvm_uri" 
+					+ AbstractCVM.DYNAMIC_COMPONENT_CREATOR_INBOUNDPORT_URI,
+					DynamicComponentCreationConnector.class.getCanonicalName());
+		} else {
+			newvm.doConnection(""
+					+ AbstractCVM.DYNAMIC_COMPONENT_CREATOR_INBOUNDPORT_URI,
+					DynamicComponentCreationConnector.class.getCanonicalName());
+		}
 
 		String randomString = this.getMachineID()
 				+ java.util.UUID.randomUUID().toString();
@@ -260,14 +265,14 @@ public class Computer extends AbstractComponent implements DynamicallyConnectabl
 		}
 		listeVM.add(port_to_vm);
 		
-		p.doConnection(URIBaseComputer + "-dcc",
-				DynamicallyConnectableComponentConnector.class
-						.getCanonicalName());
-		p.connectWith(randomString + "-ComputerToVMInboundPort", URIBaseComputer
-				+ "-" + app
-				+ "-ComputerToVMOutboundPort",
-				CompVMConnector.class.getCanonicalName());
-		p.doDisconnection();
+//		p.doConnection(URIBaseComputer + "-dcc",
+//				DynamicallyConnectableComponentConnector.class
+//						.getCanonicalName());
+//		p.connectWith(randomString + "-ComputerToVMInboundPort", URIBaseComputer
+//				+ "-" + app
+//				+ "-ComputerToVMOutboundPort",
+//				CompVMConnector.class.getCanonicalName());
+//		p.doDisconnection();
 	
 		}catch(Exception e){
 			

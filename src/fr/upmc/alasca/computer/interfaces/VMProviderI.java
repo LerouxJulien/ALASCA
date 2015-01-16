@@ -9,29 +9,13 @@ import fr.upmc.components.interfaces.OfferedI;
 public interface VMProviderI extends OfferedI {
 
 	/**
-	 * Transmet la requete a la VM
+	 * Retourne le nombre de coeurs de la VM
 	 * 
-	 * @param r Requete transmise a la VM
+	 * @return le nombre de coeurs de la VM
 	 * @throws Exception
 	 */
-	public void processRequest(Request r) throws Exception;
+	public int getNbCores() throws Exception;
 
-	/**
-	 * Retourne l'URI de la VM
-	 * 
-	 * @return l'URI de la VM
-	 * @throws Exception
-	 */
-	public String getVMURI() throws Exception;
-
-	/**
-	 * Créer et envoi les notifications (<code>VMMessages</code> et <code>VMCarac</code>)
-	 *  sur l'OutboundPort de la VM
-	 *  
-	 * @throws Exception
-	 */
-	public void startNotification() throws Exception;
-	
 	/**
 	 * Retourne l'URI du Computer parent de la VM
 	 * 
@@ -41,12 +25,35 @@ public interface VMProviderI extends OfferedI {
 	public String getUriComputerParent() throws Exception;
 	
 	/**
-	 * Retourne le nombre de coeurs de la VM
+	 * Retourne l'URI du InboundPort de la VM
 	 * 
-	 * @return le nombre de coeurs de la VM
+	 * @return l'URI du InboundPort de la VM
+	 */
+	public String getVMInboundPortURI() throws Exception;
+	
+	/**
+	 * Retourne l'URI de la VM
+	 * 
+	 * @return l'URI de la VM
 	 * @throws Exception
 	 */
-	public int getNbCores() throws Exception;
+	public String getVMURI() throws Exception;
+
+	/**
+	 * Transmet la requete a la VM
+	 * 
+	 * @param r Requete transmise a la VM
+	 * @throws Exception
+	 */
+	public void processRequest(Request r) throws Exception;
+	
+	/**
+	 * Créer et envoi les notifications (<code>VMMessages</code> et <code>VMCarac</code>)
+	 *  sur l'OutboundPort de la VM
+	 *  
+	 * @throws Exception
+	 */
+	public void startNotification() throws Exception;
 	
 	/**
 	 * Appelle la fonction shutdown de <code>AbstractComponent</code>, arrête la VM

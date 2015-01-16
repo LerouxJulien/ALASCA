@@ -20,60 +20,14 @@ VMConsumerI, Serializable {
 	private static final long serialVersionUID = 1L;
 
 	/**
-	 * Appelle la fonction processRequest de <code>VirtualMachine</code>
+	 * Appelle la fonction getNbCores de <code>VirtualMachine</code>
 	 * 
-	 * @param r la requête à traiter
+	 * @return le nombre de coeurs de la VM
 	 * @throws Exception
 	 */
 	@Override
-	public void processRequest(Request r) throws Exception {
-		((VMProviderI) this.offering).processRequest(r);
-	}
-	
-	/**
-	 * Appelle la fonction getVMURI de <code>VirtualMachine</code>
-	 * 
-	 * @return l'URI de la VM
-	 * @throws Exception
-	 */
-	@Override
-	public String getVMURI() throws Exception {
-		return ((VMProviderI) this.offering).getVMURI();
-	}
-	
-	/**
-	 * Appelle la fonction startNotification de <code>VirtualMachine</code>
-	 * 
-	 * @throws Exception
-	 */
-	@Override
-	public void startNotification() throws Exception {
-		((VMProviderI) this.offering).startNotification();
-		
-	}
-	
-	/**
-	 * Appelle la fonction notifyStatus de <code>Repartiteur</code>
-	 * 
-	 * @param m le message de notification de la VM
-	 * @throws Exception
-	 */
-	@Override
-	public void notifyStatus(VMMessages m) throws Exception { 
-		((RepartiteurProviderI) this.requiring).notifyStatus(m);
-	}
-
-	/**
-	 * Appelle la fonction notifyCarac de <code>Repartiteur</code>
-	 * 
-	 * @param id l'ID de la VM
-	 * @param c le message de caracteristiques de la VM
-	 * @throws Exception
-	 */
-	@Override
-	public void notifyCarac(String id, VMCarac c) throws Exception{
-		((RepartiteurProviderI) this.requiring).notifyCarac(id, c);
-		
+	public int getNbCores() throws Exception{
+		return ((VMProviderI) this.offering).getNbCores();
 	}
 	
 	/**
@@ -86,18 +40,73 @@ VMConsumerI, Serializable {
 	public String getUriComputerParent() throws Exception{
 		return ((VMProviderI) this.offering).getUriComputerParent();
 	}
-
+	
 	/**
-	 * Appelle la fonction getNbCores de <code>VirtualMachine</code>
+	 * Appelle la fonction getVMInboundPortURI de <code>VirtualMachine</code>
 	 * 
-	 * @return le nombre de coeurs de la VM
+	 * @return l'URI du Computer parent de la VM
 	 * @throws Exception
 	 */
 	@Override
-	public int getNbCores() throws Exception{
-		return ((VMProviderI) this.offering).getNbCores();
+	public String getVMInboundPortURI() throws Exception{
+		return ((VMProviderI) this.offering).getVMInboundPortURI();
+	}
+	
+	/**
+	 * Appelle la fonction getVMURI de <code>VirtualMachine</code>
+	 * 
+	 * @return l'URI de la VM
+	 * @throws Exception
+	 */
+	@Override
+	public String getVMURI() throws Exception {
+		return ((VMProviderI) this.offering).getVMURI();
 	}
 
+	/**
+	 * Appelle la fonction notifyCarac de <code>Repartiteur</code>
+	 * 
+	 * @param id l'ID de la VM
+	 * @param c le message de caracteristiques de la VM
+	 * @throws Exception
+	 */
+	@Override
+	public void notifyCarac(String id, VMCarac c) throws Exception{
+		((RepartiteurProviderI) this.requiring).notifyCarac(id, c);
+	}
+	
+	/**
+	 * Appelle la fonction notifyStatus de <code>Repartiteur</code>
+	 * 
+	 * @param m le message de notification de la VM
+	 * @throws Exception
+	 */
+	@Override
+	public void notifyStatus(VMMessages m) throws Exception { 
+		((RepartiteurProviderI) this.requiring).notifyStatus(m);
+	}
+	
+	/**
+	 * Appelle la fonction processRequest de <code>VirtualMachine</code>
+	 * 
+	 * @param r la requête à traiter
+	 * @throws Exception
+	 */
+	@Override
+	public void processRequest(Request r) throws Exception {
+		((VMProviderI) this.offering).processRequest(r);
+	}
+	
+	/**
+	 * Appelle la fonction startNotification de <code>VirtualMachine</code>
+	 * 
+	 * @throws Exception
+	 */
+	@Override
+	public void startNotification() throws Exception {
+		((VMProviderI) this.offering).startNotification();
+	}
+	
 	/**
 	 * Appelle la fonction shutdown de <code>VirtualMachine</code>
 	 * 
@@ -107,7 +116,5 @@ VMConsumerI, Serializable {
 	public void shutdown() throws Exception {
 		((VMProviderI) this.offering).shutdown();
 	}
-
-
 	
 }
