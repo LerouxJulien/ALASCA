@@ -33,12 +33,12 @@ public class DCVM extends AbstractDistributedCVM {
 	/** Général **/
 	
 	// Temps d'exécution DCVM (ms)
-	protected static final long processingTime = 45000L;
+	protected static final long processingTime = 70000L;
 	
 	/** Machine **/
 	
 	// Nombre de machines du centre de calcul
-	protected static final Integer NB_COMPUTERS = 8;
+	protected static final Integer NB_COMPUTERS = 20;
 	
 	// Fréquence maximum des coeurs des machines
 		protected static final double FREQ_MAX = 4.0;

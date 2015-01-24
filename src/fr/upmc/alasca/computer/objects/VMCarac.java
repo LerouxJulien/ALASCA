@@ -125,7 +125,7 @@ public class VMCarac implements Serializable{
 		this.timetable.add((int) l);
 		
 		int total=0; 
-		
+		if(timetable.size()<11){
 		for(Integer i : timetable){
 			
 			total += i;
@@ -133,6 +133,21 @@ public class VMCarac implements Serializable{
 		}
 		
 		this.mediumtime = total/timetable.size();
-	}
+	
+		}else{
+			int i =1;
+			while(i<=10){
+				
+				total += timetable.get(timetable.size()-i);
+				i++;
+				
+			}
+			
+			this.mediumtime = total/10;
+			
+			
+		}
+		
+	}	
 	
 }
