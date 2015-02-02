@@ -1,8 +1,9 @@
-package fr.upmc.alasca.repartiteur.ports;
+package fr.upmc.alasca.controleurAuto.ports;
 
 import fr.upmc.alasca.computer.objects.VMCarac;
 import fr.upmc.alasca.computer.objects.VMMessages;
-import fr.upmc.alasca.repartiteur.components.Repartiteur;
+import fr.upmc.alasca.controleurAuto.components.ControleurAutonomique;
+import fr.upmc.alasca.controleurAuto.interfaces.ControleurAutoProviderI;
 import fr.upmc.alasca.repartiteur.interfaces.RepartiteurProviderI;
 import fr.upmc.components.ComponentI;
 import fr.upmc.components.ports.AbstractInboundPort;
@@ -13,39 +14,38 @@ import fr.upmc.components.ports.AbstractInboundPort;
  * @author Julien Leroux
  *
  */
-public class RepartiteurToVMInboundPort extends AbstractInboundPort
-implements RepartiteurProviderI {
+public class RepartiteurToCAInboundPort extends AbstractInboundPort
+implements  RepartiteurProviderI{
 
 	private static final long serialVersionUID = 8210006640377358437L;
 
-	public RepartiteurToVMInboundPort(String uri, ComponentI owner)
+	public RepartiteurToCAInboundPort(String uri, ComponentI owner)
 			throws Exception {
-		super(uri, RepartiteurProviderI.class, owner);
+		super(uri, ControleurAutoProviderI.class, owner);
 	}
 
 	@Override
 	public void notifyStatus(VMMessages m) throws Exception {
-		m.setRepPort(this);
-		Repartiteur rep = (Repartiteur) this.owner;
-		rep.notifyStatus(m);
+		//m.setRepPort(this);
+		ControleurAutonomique con = (ControleurAutonomique) this.owner;
+		con.notifyStatus(m);
 	}
 
 	@Override
 	public void notifyCarac(String id,VMCarac c) throws Exception {
-		Repartiteur rep = (Repartiteur) this.owner;
-		rep.notifyCarac(id, c);
+		ControleurAutonomique con = (ControleurAutonomique) this.owner;
+		con.notifyCarac(id, c);
 	}
 
 	@Override
 	public String[] addNewPorts(String portURI) throws Exception {
-		Repartiteur rep = (Repartiteur) this.owner;
-		return rep.addNewPorts(portURI);
+		// leave empty
+		return null;
 	}
 
 	@Override
 	public void setVMConnection(String URIRep) throws Exception {
-		Repartiteur rep = (Repartiteur) this.owner;
-		rep.setVMConnection(URIRep);
+		// leave empty
 	}
 	
 }

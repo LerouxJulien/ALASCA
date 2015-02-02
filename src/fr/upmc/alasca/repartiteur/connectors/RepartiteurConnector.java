@@ -27,4 +27,15 @@ RepartiteurProviderI, Serializable {
 		((RepartiteurProviderI) this.offering).notifyCarac(id, c);
 	}
 
+	@Override
+	public String[] addNewPorts(String portURI) throws Exception {
+		// TODO Auto-generated method stub
+		return ((RepartiteurProviderI) this.offering).addNewPorts(portURI);
+	}
+
+	@Override
+	public void setVMConnection(String URIRep) throws Exception {
+		((RepartiteurProviderI) this.offering).setVMConnection(URIRep);
+	}
+
 }

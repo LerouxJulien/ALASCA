@@ -289,7 +289,7 @@ implements	InboundPortI
 	 * @see fr.upmc.components.ports.PortI#publishPort()
 	 */
 	@Override
-	public void			publishPort() throws Exception
+	public void	publishPort() throws Exception
 	{
 		assert	!this.isPublished() && !this.isDistributedlyPublished() ;
 

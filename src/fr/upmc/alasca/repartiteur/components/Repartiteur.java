@@ -15,7 +15,9 @@ import fr.upmc.alasca.repartiteur.interfaces.RepartiteurConsumerI;
 import fr.upmc.alasca.repartiteur.interfaces.RepartiteurProviderI;
 import fr.upmc.alasca.computer.interfaces.VMProviderI;
 import fr.upmc.alasca.controleur.exceptions.BadDeploymentException;
+import fr.upmc.alasca.repartiteur.ports.CAToRepartiteurInboundPort;
 import fr.upmc.alasca.repartiteur.ports.RepartiteurInboundPort;
+import fr.upmc.alasca.repartiteur.ports.RepartiteurToCAOutboundPort;
 import fr.upmc.alasca.repartiteur.ports.RepartiteurToControleurOutboundPort;
 import fr.upmc.alasca.repartiteur.ports.RepartiteurToVMInboundPort;
 import fr.upmc.alasca.repartiteur.ports.RepartiteurToVMOutboundPort;
@@ -70,6 +72,10 @@ public class Repartiteur extends AbstractComponent implements
     protected ArrayList<Request> listR;
 	protected RepartiteurInboundPort rgToRepartiteurInboundPort;
 
+	
+	protected RepartiteurToCAOutboundPort repartiteurToCAOutboundPort;
+	protected CAToRepartiteurInboundPort cAToRepartiteurInboundPort;
+
     // Liste des caractéristiques des VM
     protected HashMap<String,VMCarac> listCarac;
 
@@ -103,6 +109,7 @@ public class Repartiteur extends AbstractComponent implements
         this.addRequiredInterface(RequestArrivalI.class);
 
         this.addOfferedInterface(RepartiteurProviderI.class);
+        this.addRequiredInterface(RepartiteurProviderI.class); // TODO attention
         this.addRequiredInterface(RepartiteurConsumerI.class);
 
 		this.appId = appId;
@@ -155,6 +162,24 @@ public class Repartiteur extends AbstractComponent implements
         } else {
             control.localPublishPort();
         }
+        
+		repartiteurToCAOutboundPort = new RepartiteurToCAOutboundPort("repartiteurToCAOutboundPort-"+this.getAppId(),
+				this);
+		this.addPort(repartiteurToCAOutboundPort);
+		if (AbstractCVM.isDistributed) {
+        	repartiteurToCAOutboundPort.publishPort();
+        } else {
+        	repartiteurToCAOutboundPort.localPublishPort();
+        }
+		
+		cAToRepartiteurInboundPort = new CAToRepartiteurInboundPort("cAToRepartiteurInboundPort-"+this.getAppId(),
+				this);
+		this.addPort(cAToRepartiteurInboundPort);
+		if (AbstractCVM.isDistributed) {
+			cAToRepartiteurInboundPort.publishPort();
+        } else {
+        	cAToRepartiteurInboundPort.localPublishPort();
+        }
 	}
 
 	/**
@@ -167,7 +192,7 @@ public class Repartiteur extends AbstractComponent implements
 	 */
     public String[] addNewPorts(String portURI) throws Exception {
 
-        String[] uritab = new String[2];
+        String[] uritab = new String[3];
 
         RepartiteurToVMOutboundPort rbp;
 		String URIused = repartiteurURIBase_outbound + (compteurPort++);
@@ -191,6 +216,8 @@ public class Repartiteur extends AbstractComponent implements
         }catch(Exception e){
             System.out.println("Probleme new " );e.printStackTrace();
         }
+        
+        uritab[2] = this.getRepartiteurURIDCC(); //nécessaire pour le controleur auto
 
         this.addPort(rip);
 		if (AbstractCVM.isDistributed) {
@@ -215,7 +242,7 @@ public class Repartiteur extends AbstractComponent implements
      * @param URIRep
      * @throws Exception
      */
-    public void SetVMConnection(String URIRep) throws Exception{
+    public void setVMConnection(String URIRep) throws Exception{
 
 
 		//System.out.println("Setting up connection from "+ URIRep);
@@ -315,67 +342,7 @@ public class Repartiteur extends AbstractComponent implements
 		}
 
 		if (m.getTime() != 0) {
-			VMCarac car = this.listCarac.get(m.getVmID());
-			car.addTime(m.getTime());
-			System.out.println("Temps moyen de traitement pour la VM " 
-					+ m.getVmID() + " : " 
-					+ this.listCarac.get(m.getVmID()).getMediumtime());
-			
-			// Création d'une nouvelle VM si dépassement du seuil thVMMax
-			if (car.getMediumtime() > this.meanTimeProcess * (1 + this.thVMMax)) {
-				System.out.println("******************************************************************************************************************");
-				System.out.println("CREATION D'UNE NOUVELLE VM");
-				String[] uri = addNewPorts("repartiteur"+this.getAppId());
-				control.deployVM(this.getAppId(), uri,this.repartiteurURIDCC);
-				SetVMConnection(uri[1] + "-RepartiteurInboundPort");
-				System.out.println("******************************************************************************************************************");
-			}
-			/*
-			// Augmentation du nombre de coeurs de la VM si dépassement du seuil thCoreMax
-			else if (car.getMediumtime() > this.meanTimeProcess * (1 + this.thCoreMax)) {
-				System.out.println("******************************************************************************************************************");
-				System.out.println("AUGMENTER LE NOMBRE DE COEURS DE LA VM");
-				// TODO
-				System.out.println("******************************************************************************************************************");
-			}
-			
-			// Augmentation de la fréquence des coeurs si dépassement du seuil thFreqMax
-			else if (car.getMediumtime() > this.meanTimeProcess * (1 + this.thFreqMax)) {
-				System.out.println("******************************************************************************************************************");
-				System.out.println("AUGMENTER LA FREQUENCE DE LA VM");
-				// TODO
-				//control.incFrequency(this.getAppId());
-				System.out.println("******************************************************************************************************************");
-			}
-			
-			// Suppression d'une VM si dépassement du seuil thVMMin
-			else if ((this.rbps.size() > 1) &&
-					(car.getMediumtime() < this.meanTimeProcess * (1 + this.thVMMin))) {
-				System.out.println("******************************************************************************************************************");
-				System.out.println("SUPPRESSION D'UNE VM");
-				// TODO
-				RepartiteurToVMOutboundPort po = rbps.get(m.getRepPort());
-				control.destroyVM(po.getUriComputerParent(), po.getVMInboundPortURI());
-				System.out.println("******************************************************************************************************************");
-			}
-			
-			// Diminution du nombre de coeurs de la VM si dépassement du seuil thCoreMin
-			else if (car.getMediumtime() < this.meanTimeProcess * (1 + this.thCoreMin)) {
-				System.out.println("******************************************************************************************************************");
-				System.out.println("DIMINUER LE NOMBRE DE COEURS DE LA VM");
-				// TODO
-				System.out.println("******************************************************************************************************************");
-			}
-			
-			// Diminution de la fréquence des coeurs si dépassement du seuil thFreqMin
-			else if (car.getMediumtime() < this.meanTimeProcess * (1 + this.thFreqMin)) {
-				System.out.println("******************************************************************************************************************");
-				System.out.println("DIMINUER LA FREQUENCE DE LA VM");
-				// TODO
-				//control.incFrequency(this.getAppId());
-				System.out.println("******************************************************************************************************************");
-			}
-			*/
+			this.repartiteurToCAOutboundPort.notifyStatus(m);
 		}
 	}
     
@@ -412,7 +379,7 @@ public class Repartiteur extends AbstractComponent implements
             try {
             	String[] uri = addNewPorts(URInewPortRepartiteur);
 				control.deployVM(this.getAppId(), uri, this.repartiteurURIDCC);
-				SetVMConnection(uri[1] + "-RepartiteurInboundPort");
+				setVMConnection(uri[1] + "-RepartiteurInboundPort");
 			} catch (BadDeploymentException e2) {
 				System.out.println("Rejected request : all queues full and "
 						+ "maximal number of mv reached");
@@ -480,12 +447,14 @@ public class Repartiteur extends AbstractComponent implements
      * 
      * @param id
      * @param c
+     * @throws Exception 
      */
-    public void notifyCarac(String id, VMCarac c) {
-    	System.out.println("Repartitor " + this.getAppId() + 
+    public void notifyCarac(String id, VMCarac c) throws Exception {
+    	this.repartiteurToCAOutboundPort.notifyCarac(id, c);
+    	/*System.out.println("Repartitor " + this.getAppId() + 
     			" Received features change from " + c.getVMid());
 		if (!listCarac.containsKey(id))
-			this.listCarac.put(id, c);
+			this.listCarac.put(id, c);*/
     }
     
     /**

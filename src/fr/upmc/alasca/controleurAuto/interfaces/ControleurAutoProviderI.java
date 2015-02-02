@@ -1,11 +1,10 @@
-package fr.upmc.alasca.repartiteur.interfaces;
+package fr.upmc.alasca.controleurAuto.interfaces;
 
 import fr.upmc.alasca.computer.objects.VMCarac;
 import fr.upmc.alasca.computer.objects.VMMessages;
 import fr.upmc.components.interfaces.OfferedI;
-import fr.upmc.components.interfaces.RequiredI;
 
-public interface RepartiteurProviderI extends OfferedI, RequiredI{
+public interface ControleurAutoProviderI extends OfferedI{
 
 	/**
 	 * Notifie le repartiteur de requetes de l'etat d'une VM et/ou de la fin de
@@ -17,9 +16,5 @@ public interface RepartiteurProviderI extends OfferedI, RequiredI{
 	public void notifyStatus(VMMessages m) throws Exception;
 
 	public void notifyCarac(String id, VMCarac c)throws Exception;
-	
-	public String[]  addNewPorts(String portURI) throws Exception;
-	
-	public void setVMConnection(String URIRep) throws Exception;
-	
+
 }

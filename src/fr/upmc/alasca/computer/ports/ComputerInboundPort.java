@@ -89,5 +89,4 @@ public class ComputerInboundPort extends AbstractInboundPort implements
 		final Computer comp = (Computer) this.owner;
 		comp.incFrequency(appid);
 	}
-
 }
