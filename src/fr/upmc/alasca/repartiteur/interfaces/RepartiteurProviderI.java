@@ -20,6 +20,6 @@ public interface RepartiteurProviderI extends OfferedI, RequiredI{
 	
 	public String[]  addNewPorts(String portURI) throws Exception;
 	
-	public void setVMConnection(String URIRep) throws Exception;
+	//public void setVMConnection(String URIRep) throws Exception;
 	
 }

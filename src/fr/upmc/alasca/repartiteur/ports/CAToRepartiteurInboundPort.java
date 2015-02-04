@@ -36,9 +36,9 @@ public class CAToRepartiteurInboundPort extends AbstractInboundPort implements R
 		return rep.addNewPorts(portURI);
 	}
 
-	@Override
+	/*@Override
 	public void setVMConnection(String URIRep) throws Exception {
 		Repartiteur rep = (Repartiteur) this.owner;
 		rep.setVMConnection(URIRep);
-	}
+	}*/
 }

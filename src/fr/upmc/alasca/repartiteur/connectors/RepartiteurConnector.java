@@ -33,9 +33,4 @@ RepartiteurProviderI, Serializable {
 		return ((RepartiteurProviderI) this.offering).addNewPorts(portURI);
 	}
 
-	@Override
-	public void setVMConnection(String URIRep) throws Exception {
-		((RepartiteurProviderI) this.offering).setVMConnection(URIRep);
-	}
-
 }

@@ -2,14 +2,17 @@ package fr.upmc.alasca.controleurAuto.components;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 import fr.upmc.alasca.computer.objects.VMCarac;
 import fr.upmc.alasca.computer.objects.VMMessages;
 import fr.upmc.alasca.controleur.interfaces.ControleurFromRepartiteurProviderI;
-import fr.upmc.alasca.controleurAuto.interfaces.ControleurAutoProviderI;
+import fr.upmc.alasca.controleurAuto.interfaces.CANotificationProviderI;
+import fr.upmc.alasca.controleurAuto.interfaces.CAProviderI;
 import fr.upmc.alasca.controleurAuto.ports.CAToControleurOutboundPort;
 import fr.upmc.alasca.controleurAuto.ports.CAToRepartiteurOutboundPort;
 import fr.upmc.alasca.controleurAuto.ports.RepartiteurToCAInboundPort;
+import fr.upmc.alasca.controleurAuto.ports.VMToCAInboundPort;
 import fr.upmc.alasca.repartiteur.interfaces.RepartiteurProviderI;
 import fr.upmc.alasca.requestgen.objects.Request;
 import fr.upmc.components.AbstractComponent;
@@ -57,6 +60,8 @@ public class ControleurAutonomique extends AbstractComponent implements
 
 	//creation des ports entre repartiteur et nouvelles vm
 	protected CAToRepartiteurOutboundPort cAToRepartiteurOutboundPort;
+	
+	protected List<VMToCAInboundPort> listVMToCAInboundPort = new ArrayList<VMToCAInboundPort>();
 
     // Liste des requetes
     protected ArrayList<Request> listR;
@@ -88,11 +93,8 @@ public class ControleurAutonomique extends AbstractComponent implements
     public ControleurAutonomique(String portURI, Integer appId, String thresholds)
     		throws Exception {
 
-        this.addOfferedInterface(ControleurAutoProviderI.class);
+        this.addOfferedInterface(CANotificationProviderI.class);
         
-        //
-        //this.addRequiredInterface(ControleurAutoConsumerI.class);
-
 		this.appId = appId;
 		this.thresholds = thresholds;
 		this.controleurAutoURIDCC = portURI + "-dcc";
@@ -112,6 +114,8 @@ public class ControleurAutonomique extends AbstractComponent implements
 		thVMMax = Double.parseDouble(values[6]);
 
 
+		this.addRequiredInterface(DynamicComponentCreationI.class);
+		this.addRequiredInterface(DynamicallyConnectableComponentI.class);
 		this.addOfferedInterface(DynamicallyConnectableComponentI.class);
 		this.dccInboundPort = new DynamicallyConnectableComponentInboundPort(
 				controleurAutoURIDCC, this);
@@ -121,9 +125,6 @@ public class ControleurAutonomique extends AbstractComponent implements
 			this.dccInboundPort.localPublishPort();
 		}
 		this.addPort(dccInboundPort);
-
-		this.addRequiredInterface(DynamicComponentCreationI.class);
-		this.addRequiredInterface(DynamicallyConnectableComponentI.class);
 
 		this.addRequiredInterface(ControleurFromRepartiteurProviderI.class);
 		this.cAToControleurOutboundPort = new CAToControleurOutboundPort("cAToControleurOutboundPort-"+this.getAppId(),
@@ -135,7 +136,7 @@ public class ControleurAutonomique extends AbstractComponent implements
         	cAToControleurOutboundPort.localPublishPort();
         }
         
-		this.addRequiredInterface(ControleurAutoProviderI.class);
+		this.addOfferedInterface(CAProviderI.class);
         this.repartiteurToCAInboundPort = new RepartiteurToCAInboundPort("repartiteurToCAInboundPort-"+this.getAppId(),
 				this);
 		this.addPort(repartiteurToCAInboundPort);
@@ -155,56 +156,6 @@ public class ControleurAutonomique extends AbstractComponent implements
         	cAToRepartiteurOutboundPort.localPublishPort();
         }
 	}
-
-	/**
-	 * Ajoute un nouveau port vers une machine virtuelle
-	 *
-	 * @param portURI
-	 *            base l'uri du port cree : repartiteur<numeroAppId>
-	 * @return uri actuellement utilisee pour le port cree
-	 * @throws Exception
-	 */
-    /*public String[] addNewPorts(String portURI) throws Exception {
-
-        String[] uritab = new String[2];
-
-        RepartiteurToVMOutboundPort rbp;
-		String URIused = controleurAutoURIBase_outbound + (compteurPort++);
-        uritab[0] = URIused;
-
-		rbp = new RepartiteurToVMOutboundPort(URIused + "-RepartiteurOutboundPort",
-				this);
-		this.addPort(rbp);
-
-        if (AbstractCVM.isDistributed) {
-            rbp.publishPort();
-        } else {
-            rbp.localPublishPort();
-        }
-
-        RepartiteurToVMInboundPort rip = null;
-        String URIusedi = portURI + (compteurPort++);
-        uritab[1] = URIusedi;
-        try{
-        	rip = new RepartiteurToVMInboundPort(URIusedi + "-RepartiteurInboundPort", this);
-        }catch(Exception e){
-            System.out.println("Probleme new " );e.printStackTrace();
-        }
-
-        this.addPort(rip);
-		if (AbstractCVM.isDistributed) {
-			rip.publishPort() ;
-		} else {
-			rip.localPublishPort() ;
-		}
-
-        rbps.put(rip,rbp);
-        robps.put(rip, null);
-
-
-            return uritab;
-
-	}*/
     
 	@Override
 	public void connectWith(String serverPortURI, String clientPortURI,
@@ -238,20 +189,6 @@ public class ControleurAutonomique extends AbstractComponent implements
     						+ m.getStatus() + " from VM " + m.getVmID()
     						+ " in time " + m.getTime());
 
-		/*if (m.getStatus() == Status.NEW) {
-			RepartiteurToVMOutboundPort po = rbps.get(m.getRepPort());
-			int nb = po.getNbCore();
-			while(nb!=0) {
-				sendNextRequest(po);
-				nb--;
-			}
-		}
-		
-		if (m.getStatus() == Status.FREE) {
-			RepartiteurToVMOutboundPort po = rbps.get(m.getRepPort());
-			sendNextRequest(po);
-		}*/
-
 		if (m.getTime() != 0) {
 			VMCarac car = this.listCarac.get(m.getVmID());
 			car.addTime(m.getTime());
@@ -263,9 +200,8 @@ public class ControleurAutonomique extends AbstractComponent implements
 			if (car.getMediumtime() > this.meanTimeProcess * (1 + this.thVMMax)) {
 				System.out.println("******************************************************************************************************************");
 				System.out.println("CREATION D'UNE NOUVELLE VM");
-				String[] uri = cAToRepartiteurOutboundPort.addNewPorts("repartiteur"+this.getAppId());
-				cAToControleurOutboundPort.deployVM(this.getAppId(), uri,uri[2]);
-				cAToRepartiteurOutboundPort.setVMConnection(uri[1] + "-RepartiteurInboundPort");
+				String[] uri = this.addNewPorts("repartiteur"+this.getAppId());
+				cAToControleurOutboundPort.deployVM(this.getAppId(), uri,uri[1]);
 				System.out.println("******************************************************************************************************************");
 			}
 			/*
@@ -317,7 +253,21 @@ public class ControleurAutonomique extends AbstractComponent implements
 		}
 	}
     
-    /**
+    private String[] addNewPorts(String portURI) throws Exception {
+    	String uriVMToCAInboundPort = "VMToCAInboundPort-" + this.appId + "-" + (compteurPort++);
+    	VMToCAInboundPort tmp = new VMToCAInboundPort(uriVMToCAInboundPort, this);
+    	this.addPort(tmp);
+    	if (AbstractCVM.isDistributed) {
+    		tmp.publishPort();
+        } else {
+        	tmp.localPublishPort();
+        }
+		String[] uris = this.cAToRepartiteurOutboundPort.addNewPorts(portURI);
+		uris[2] = uriVMToCAInboundPort;
+		return uris;
+	}
+
+	/**
      * Methode de reception d'un VMCarac
      * 
      * 
@@ -330,4 +280,12 @@ public class ControleurAutonomique extends AbstractComponent implements
 		if (!listCarac.containsKey(id))
 			this.listCarac.put(id, c);
     }
+
+	public void deployFirstVM() throws Exception {
+		System.out.println("******************************************************************************************************************");
+		System.out.println("CREATION D'UNE NOUVELLE VM");
+		String[] uri = this.addNewPorts("repartiteur"+this.getAppId());
+		cAToControleurOutboundPort.deployVM(this.getAppId(), uri,uri[1]);
+		System.out.println("******************************************************************************************************************");
+	}
 }

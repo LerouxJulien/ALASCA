@@ -6,17 +6,18 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
 import fr.upmc.alasca.computer.enums.Status;
-import fr.upmc.alasca.computer.interfaces.VMConsumerI;
 import fr.upmc.alasca.computer.interfaces.VMProviderI;
 import fr.upmc.alasca.computer.objects.VMCarac;
 import fr.upmc.alasca.computer.objects.VMMessages;
 import fr.upmc.alasca.computer.objects.VMThread;
 import fr.upmc.alasca.computer.ports.VMInboundPort;
-import fr.upmc.alasca.computer.ports.VMOutboundPort;
+import fr.upmc.alasca.computer.ports.VMToCAOutboundPort;
+import fr.upmc.alasca.controleurAuto.interfaces.CANotificationProviderI;
 import fr.upmc.alasca.requestgen.objects.Request;
 import fr.upmc.alasca.requestgen.utils.TimeProcessing;
 import fr.upmc.components.AbstractComponent;
 import fr.upmc.components.cvm.AbstractCVM;
+import fr.upmc.components.cvm.pre.dcc.DynamicallyConnectableComponentI;
 import fr.upmc.components.cvm.pre.dcc.DynamicallyConnectableComponentInboundPort;
 import fr.upmc.components.cvm.pre.dcc.DynamicallyConnectableI;
 import fr.upmc.components.ports.PortI;
@@ -34,7 +35,8 @@ import fr.upmc.components.ports.PortI;
  * @author <a href="mailto:henri.ng@etu.upmc.fr">Henri NG</a>
  * @version $Name$ -- $Revision$ -- $Date$
  */
-public class VirtualMachine extends AbstractComponent implements DynamicallyConnectableI{
+public class VirtualMachine extends AbstractComponent implements
+DynamicallyConnectableComponentI,DynamicallyConnectableI {
 
 	// ID de la VM
 	private final String mvID;
@@ -47,6 +49,11 @@ public class VirtualMachine extends AbstractComponent implements DynamicallyConn
 
 	// Frequence des coeurs de la VM
 	private final List<Double> frequencies;
+	
+	// utilise pour la connexion dynamique aux CA
+	protected DynamicallyConnectableComponentInboundPort dccInboundPort;
+	
+	protected VMToCAOutboundPort vMToCAOutboundPort;
 
 	// Statut de la VM
 	// NEW  : VM venant d'etre deployee (Aucune requete n'est traitee.)
@@ -71,7 +78,7 @@ public class VirtualMachine extends AbstractComponent implements DynamicallyConn
 	protected VMInboundPort VMiport;
 	
 	// URI de l'OutboundPort de la VM
-	protected VMOutboundPort VMoport;
+	//protected VMOutboundPort VMoport;
 
 	// URI du Computer parent de la VM (le Computer fournissant les coeurs physiques)
 	private String uriComputerParent;	
@@ -108,9 +115,16 @@ public class VirtualMachine extends AbstractComponent implements DynamicallyConn
 			threads.add(new VMThread(VMThreadID, frequencies.get(i), this));
 		}
 
-		this.addOfferedInterface(VMProviderI.class);
-		this.addRequiredInterface(VMConsumerI.class);
 		
+		this.dccInboundPort = new DynamicallyConnectableComponentInboundPort(
+				port + AbstractCVM.DYNAMIC_COMPONENT_CREATOR_INBOUNDPORT_URI, this);
+		if (AbstractCVM.isDistributed) {
+			this.dccInboundPort.publishPort();
+		} else {
+			this.dccInboundPort.localPublishPort();
+		}
+
+		this.addOfferedInterface(VMProviderI.class);
 		VMiport = new VMInboundPort(port, this);
 		this.addPort(VMiport);
 		if (AbstractCVM.isDistributed) {
@@ -118,25 +132,15 @@ public class VirtualMachine extends AbstractComponent implements DynamicallyConn
 		} else {
 			VMiport.localPublishPort() ;
 		}
-		
-		VMoport = new VMOutboundPort(port+"outbound", this);
-		this.addPort(VMoport);
+
+		this.addRequiredInterface(CANotificationProviderI.class);
+		this.vMToCAOutboundPort = new VMToCAOutboundPort(port + "-VMToCAOutboundPort", this);
+		this.addPort(vMToCAOutboundPort);
 		if (AbstractCVM.isDistributed) {
-			VMoport.publishPort() ;
+			vMToCAOutboundPort.publishPort() ;
 		} else {
-			VMoport.localPublishPort() ;
+			vMToCAOutboundPort.localPublishPort() ;
 		}
-		
-		// Creation de l'inbound DCC port pour le répartiteur.
-		System.out.println("Setting vm inbound DCC");
-		DynamicallyConnectableComponentInboundPort dccInboundPort = new DynamicallyConnectableComponentInboundPort(
-				port+"inbound"+"-dcc", this);
-		if (AbstractCVM.isDistributed) {
-			dccInboundPort.publishPort();
-		} else {
-			dccInboundPort.localPublishPort();
-		}
-		this.addPort(dccInboundPort);
 	}
 
 	/**
@@ -339,8 +343,8 @@ public class VirtualMachine extends AbstractComponent implements DynamicallyConn
 			
 		VMMessages m = new VMMessages(getMvID(), status);
 		VMCarac c = new VMCarac(this.getMvID(), this.getFrequencies());
-		VMoport.notifyCarac(this.getMvID(),c);
-		VMoport.notifyStatus(m);
+		vMToCAOutboundPort.notifyCarac(this.getMvID(),c);
+		vMToCAOutboundPort.notifyStatus(m);
 		
 		}
 		
@@ -351,7 +355,7 @@ public class VirtualMachine extends AbstractComponent implements DynamicallyConn
 		}
 		
 		VMMessages m = new VMMessages(getMvID(), status);
-		VMoport.notifyStatus(m);
+		vMToCAOutboundPort.notifyStatus(m);
 			
 	}
 
@@ -406,8 +410,8 @@ public class VirtualMachine extends AbstractComponent implements DynamicallyConn
 	/**
 	 * @return the vMoport
 	 */
-	public VMOutboundPort getVMoport() {
-		return VMoport;
+	public VMToCAOutboundPort getVMoport() {
+		return vMToCAOutboundPort;
 	}
 	
 	/**

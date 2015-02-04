@@ -29,9 +29,4 @@ public class CAToRepartiteurOutboundPort extends AbstractOutboundPort implements
 		return ((RepartiteurProviderI)this.connector).addNewPorts(portURI);
 	}
 
-	@Override
-	public void setVMConnection(String URIRep) throws Exception {
-		((RepartiteurProviderI)this.connector).setVMConnection(URIRep);
-	}
-
 }

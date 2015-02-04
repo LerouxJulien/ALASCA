@@ -1,10 +1,7 @@
 package fr.upmc.alasca.controleurAuto.ports;
 
-import fr.upmc.alasca.computer.objects.VMCarac;
-import fr.upmc.alasca.computer.objects.VMMessages;
 import fr.upmc.alasca.controleurAuto.components.ControleurAutonomique;
-import fr.upmc.alasca.controleurAuto.interfaces.ControleurAutoProviderI;
-import fr.upmc.alasca.repartiteur.interfaces.RepartiteurProviderI;
+import fr.upmc.alasca.controleurAuto.interfaces.CAProviderI;
 import fr.upmc.components.ComponentI;
 import fr.upmc.components.ports.AbstractInboundPort;
 
@@ -15,37 +12,19 @@ import fr.upmc.components.ports.AbstractInboundPort;
  *
  */
 public class RepartiteurToCAInboundPort extends AbstractInboundPort
-implements  RepartiteurProviderI{
+implements  CAProviderI{
 
-	private static final long serialVersionUID = 8210006640377358437L;
+	private static final long serialVersionUID = 82L;
 
 	public RepartiteurToCAInboundPort(String uri, ComponentI owner)
 			throws Exception {
-		super(uri, ControleurAutoProviderI.class, owner);
+		super(uri, CAProviderI.class, owner);
 	}
 
 	@Override
-	public void notifyStatus(VMMessages m) throws Exception {
-		//m.setRepPort(this);
+	public void deployFirstVM() throws Exception {
 		ControleurAutonomique con = (ControleurAutonomique) this.owner;
-		con.notifyStatus(m);
-	}
-
-	@Override
-	public void notifyCarac(String id,VMCarac c) throws Exception {
-		ControleurAutonomique con = (ControleurAutonomique) this.owner;
-		con.notifyCarac(id, c);
-	}
-
-	@Override
-	public String[] addNewPorts(String portURI) throws Exception {
-		// leave empty
-		return null;
-	}
-
-	@Override
-	public void setVMConnection(String URIRep) throws Exception {
-		// leave empty
+		con.deployFirstVM();
 	}
 	
 }

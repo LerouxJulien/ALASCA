@@ -10,10 +10,10 @@ import fr.upmc.alasca.computer.interfaces.VMProviderI;
 import fr.upmc.alasca.controleur.connectors.RepartiteurControleurConnector;
 import fr.upmc.alasca.controleur.interfaces.AppRequestI;
 import fr.upmc.alasca.controleur.ports.CAToControleurInboundPort;
-import fr.upmc.alasca.controleur.ports.ControleurFromRepartiteurInboundPort;
 import fr.upmc.alasca.controleur.ports.ControleurInboundPort;
 import fr.upmc.alasca.controleur.ports.ControleurOutboundPort;
 import fr.upmc.alasca.controleurAuto.components.ControleurAutonomique;
+import fr.upmc.alasca.controleurAuto.connectors.CAConnector;
 import fr.upmc.alasca.repartiteur.components.Repartiteur;
 import fr.upmc.alasca.repartiteur.connectors.RepartiteurConnector;
 import fr.upmc.alasca.requestgen.main.ClientArrivalConnector;
@@ -141,7 +141,7 @@ public class Controleur extends AbstractComponent {
 		/* Connexion entre le répartiteur et le contrôleur (necessaire pour le moment car
 		 * 1er deployVM)
 		 */
-		ControleurFromRepartiteurInboundPort pcz = 
+		/*ControleurFromRepartiteurInboundPort pcz = 
 				new ControleurFromRepartiteurInboundPort(
 						"controlTOrep" + appId, this);
 		//rbs.put(appId, pcr);
@@ -150,9 +150,9 @@ public class Controleur extends AbstractComponent {
 			pcz.publishPort() ;
 		} else {
 			pcz.localPublishPort() ;
-		}
+		}*/
 				
-		DynamicallyConnectableComponentOutboundPort pd = 
+		/*DynamicallyConnectableComponentOutboundPort pd = 
 				new DynamicallyConnectableComponentOutboundPort(this);
 		this.addPort(pd);
 		pd.localPublishPort();
@@ -162,7 +162,7 @@ public class Controleur extends AbstractComponent {
 						.getCanonicalName());
 		pd.connectWith(pcz.getPortURI(), "repartiteurTOcontroleur" + appId, 
 				RepartiteurControleurConnector.class.getCanonicalName());
-		pd.doDisconnection();
+		pd.doDisconnection();*/
 		
 		
 		
@@ -204,7 +204,7 @@ public class Controleur extends AbstractComponent {
 				ClientArrivalConnector.class.getCanonicalName());
 		p.doDisconnection();
 		
-		// port : ca -> repartiteur (addNewports, setVMConnection necessaires)
+		// port : ca -> repartiteur (addNewports necessaire)
 		DynamicallyConnectableComponentOutboundPort p1 =
 				new DynamicallyConnectableComponentOutboundPort(this);
 		this.addPort(p1);
@@ -218,7 +218,7 @@ public class Controleur extends AbstractComponent {
 				RepartiteurConnector.class.getCanonicalName());
 		p1.doDisconnection();
 		
-		// port : repartiteur -> ca (delegation notifystatus, gestion vm)
+		// port : repartiteur -> ca (deployFirstVM)
 		DynamicallyConnectableComponentOutboundPort p2 =
 						new DynamicallyConnectableComponentOutboundPort(this);
 		this.addPort(p2);
@@ -229,7 +229,7 @@ public class Controleur extends AbstractComponent {
 								.getCanonicalName());
 				
 		p2.connectWith("repartiteurToCAInboundPort-" + appId, "repartiteurToCAOutboundPort-" + appId,
-						RepartiteurConnector.class.getCanonicalName());
+						CAConnector.class.getCanonicalName());
 		p2.doDisconnection();
 	}
 

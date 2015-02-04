@@ -11,6 +11,7 @@ import fr.upmc.alasca.computer.interfaces.ComputerProviderI;
 import fr.upmc.alasca.computer.ports.ComputerInboundPort;
 import fr.upmc.alasca.computer.ports.ComputerToVMOutboundPort;
 import fr.upmc.alasca.computer.ports.VMInboundPort;
+import fr.upmc.alasca.controleurAuto.connectors.CAConnector;
 import fr.upmc.components.AbstractComponent;
 import fr.upmc.components.cvm.AbstractCVM;
 import fr.upmc.components.cvm.pre.dcc.DynamicComponentCreationConnector;
@@ -194,11 +195,14 @@ public class Computer extends AbstractComponent implements DynamicallyConnectabl
 	 *			  ID de l'application
 	 * @param URIRepartiteurFixe
 	 *            URI du port dans Repartiteur
+	 *            0 : 
+	 *            1 : URI Repariteur dcc
+	 *            2 : URI CA
 	 * @param URIRepartiteurDCC
 	 *            URI du dcc dans Repartiteur
 	 * @throws Exception 
 	 */
-	public void deployVM(int nbCores, int app, String[] URIRepartiteurFixe,
+	public void deployVM(int nbCores, int app, String[] URIToConnect,
 			String URIRepartiteurDCC) throws Exception {
 		// On verifie que le Computer a assez de coeurs pour allouer la machine
 		// virtuelle.
@@ -240,7 +244,7 @@ public class Computer extends AbstractComponent implements DynamicallyConnectabl
 		
 		
 		
-		// Connexion machine virtuelle
+		// Connexion Repartiteur -> VM
 		DynamicallyConnectableComponentOutboundPort p = new DynamicallyConnectableComponentOutboundPort(
 				this);
 		this.addPort(p);
@@ -249,10 +253,24 @@ public class Computer extends AbstractComponent implements DynamicallyConnectabl
 		p.doConnection(URIRepartiteurDCC,
 				DynamicallyConnectableComponentConnector.class
 						.getCanonicalName());
-		p.connectWith(randomString, URIRepartiteurFixe[0]
-				+ "-RepartiteurOutboundPort",
+		p.connectWith(randomString, URIToConnect[0],
 				VMConnector.class.getCanonicalName());
 		p.doDisconnection();
+		// FIN Connexion Repartiteur -> VM
+		
+		// TODO Connexion VM -> CA
+		DynamicallyConnectableComponentOutboundPort p1 = new DynamicallyConnectableComponentOutboundPort(
+				this);
+		this.addPort(p);
+		p1.localPublishPort();
+		
+		p1.doConnection(randomString + AbstractCVM.DYNAMIC_COMPONENT_CREATOR_INBOUNDPORT_URI,
+				DynamicallyConnectableComponentConnector.class
+						.getCanonicalName());
+		p1.connectWith(URIToConnect[2], randomString + "-VMToCAOutboundPort",
+				CAConnector.class.getCanonicalName());
+		p1.doDisconnection();
+		// FIN Connexion VM -> CA
 		
 		ComputerToVMOutboundPort port_to_vm = new ComputerToVMOutboundPort(URIBaseComputer
 				+ "-" + app
