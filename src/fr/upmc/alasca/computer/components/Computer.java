@@ -328,13 +328,16 @@ public class Computer extends AbstractComponent implements DynamicallyConnectabl
 	 * @throws BadReinitialisationException 
 	 */
 	public void reInit(String vm) throws BadReinitialisationException {
-		// TODO : Reinitialisation a implementer
-		/*boolean m = true; 
-		if (m) {
-			System.out.println("On dÃ©truit la machine.");
-		} else {
-			throw new BadReinitialisationException("Impossible de rï¿½initialiser la VM : " + vm);
-		}*/
+		// TODO : Réinitialisation à implémenter
+		VMInboundPort portVM = (VMInboundPort) this.findPortFromURI(vm);
+		try {
+			portVM.reInit();
+			portVM.doDisconnection();
+			portVM.unpublishPort();
+		} catch(Exception e) {
+			throw new BadReinitialisationException("Impossible de " + 
+					"réinitialiser la VM : " + vm);
+		}
 	}
 	
 	public boolean isMaxed(int appid){

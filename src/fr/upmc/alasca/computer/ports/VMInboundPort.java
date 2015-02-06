@@ -82,6 +82,17 @@ public class VMInboundPort extends AbstractInboundPort implements VMProviderI {
 		final VirtualMachine vm = (VirtualMachine) this.owner;
 		vm.requestArrivalEvent(r);
 	}
+	
+	/**
+	 * Réinitialise la VM
+	 * 
+	 * @throws Exception
+	 */
+	@Override
+	public void reInit() throws Exception {
+		final VirtualMachine vm = (VirtualMachine) this.owner;
+		vm.reInit();
+	}
 
 	/**
 	 * Créer et envoi les notifications (<code>VMMessages</code> et <code>VMCarac</code>)

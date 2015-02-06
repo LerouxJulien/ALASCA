@@ -4,7 +4,8 @@ import fr.upmc.alasca.requestgen.objects.Request;
 import fr.upmc.components.interfaces.OfferedI;
 
 /**
- * L'interface <code>VMConsumerI</code>, offre des fonctions du composant <code>VirtualMachine</code>
+ * L'interface <code>VMConsumerI</code> offre des fonctions du composant 
+ * <code>VirtualMachine</code>.
  */
 public interface VMProviderI extends OfferedI {
 
@@ -46,6 +47,13 @@ public interface VMProviderI extends OfferedI {
 	 * @throws Exception
 	 */
 	public void processRequest(Request r) throws Exception;
+	
+	/**
+	 * Réinitialise la VM
+	 * 
+	 * @throws Exception
+	 */
+	public void reInit() throws Exception;
 	
 	/**
 	 * Créer et envoi les notifications (<code>VMMessages</code> et <code>VMCarac</code>)

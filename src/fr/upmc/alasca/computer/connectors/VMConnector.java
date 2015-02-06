@@ -98,6 +98,16 @@ VMConsumerI, Serializable {
 	}
 	
 	/**
+	 * Réinitialise la VM
+	 * 
+	 * @throws Exception
+	 */
+	@Override
+	public void reInit() throws Exception {
+		((VMProviderI) this.offering).reInit();
+	}
+	
+	/**
 	 * Appelle la fonction startNotification de <code>VirtualMachine</code>
 	 * 
 	 * @throws Exception

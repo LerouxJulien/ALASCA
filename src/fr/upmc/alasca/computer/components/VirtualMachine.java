@@ -6,6 +6,7 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
 import fr.upmc.alasca.computer.enums.Status;
+import fr.upmc.alasca.computer.exceptions.BadReinitialisationException;
 import fr.upmc.alasca.computer.interfaces.VMProviderI;
 import fr.upmc.alasca.computer.objects.VMCarac;
 import fr.upmc.alasca.computer.objects.VMMessages;
@@ -39,18 +40,18 @@ public class VirtualMachine extends AbstractComponent implements
 DynamicallyConnectableComponentI,DynamicallyConnectableI {
 
 	// ID de la VM
-	private final String mvID;
+	private String mvID;
 
 	// ID de l'application
-	private final int appID;
+	private int appID;
 
 	// Nombre de coeurs attribues a la VM par la machine (de 1 a 16)
-	private final int nbCores;
+	private int nbCores;
 
 	// Frequence des coeurs de la VM
-	private final List<Double> frequencies;
+	private List<Double> frequencies;
 	
-	// utilise pour la connexion dynamique aux CA
+	// Utilise pour la connexion dynamique au CA
 	protected DynamicallyConnectableComponentInboundPort dccInboundPort;
 	
 	protected VMToCAOutboundPort vMToCAOutboundPort;
@@ -81,7 +82,7 @@ DynamicallyConnectableComponentI,DynamicallyConnectableI {
 	//protected VMOutboundPort VMoport;
 
 	// URI du Computer parent de la VM (le Computer fournissant les coeurs physiques)
-	private String uriComputerParent;	
+	private String uriComputerParent;
 
 	/**
 	 * Alloue une machine virtuelle.
@@ -276,7 +277,6 @@ DynamicallyConnectableComponentI,DynamicallyConnectableI {
 		if(this.status==Status.NEW)
 			this.status = Status.FREE;
 		assert r != null;
-		long time = 0;
 		long t = System.currentTimeMillis();
 		// La requete est directement placee dans la file d'attente.
 		this.queue.add(r);
@@ -302,8 +302,7 @@ DynamicallyConnectableComponentI,DynamicallyConnectableI {
 					
 				}
 				if (threads.get(compteurCyclique).isWaiting()) {
-					time = threads.get(compteurCyclique).process();
-					
+					threads.get(compteurCyclique).process();
 					break;
 				}
 			}
@@ -419,6 +418,33 @@ DynamicallyConnectableComponentI,DynamicallyConnectableI {
 	 */
 	public VMInboundPort getVMiport() {
 		return VMiport;
+	}
+	
+	/**
+	 * Teste si la VM est en train de traiter une requête
+	 * 
+	 * @return booléen
+	 */
+	public boolean isProcessing() {
+		boolean free = true;
+		for (int i = 0; (i < nbCores) && free; i++)
+			free &= threads.get(i).isWaiting();
+		return free;
+	}
+	
+	/**
+	 * Réinitialise la VM
+	 * 
+	 * @throws Exception
+	 */
+	public void reInit() throws Exception {
+		if (this.isProcessing() && (this.getQueueSize() == 0)) {
+			this.mvID = "";
+			this.appID = -1;
+			this.status = Status.NEW;
+		} else {
+			throw new BadReinitialisationException();
+		}
 	}
 	
 }

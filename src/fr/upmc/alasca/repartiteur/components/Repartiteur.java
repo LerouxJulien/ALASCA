@@ -260,15 +260,18 @@ public class Repartiteur extends AbstractComponent implements
 	 * @throws Exception
      */
     public void processRequest(Request r) throws Exception {
-    	if(!this.listPortToVm.isEmpty()){
+    	if (!this.listPortToVm.isEmpty()) {
     		for (RepartiteurToVMOutboundPort e: listPortToVm) {
     			e.startNotification();
     		}
     	}
-    	this.listPortToVm.get((cptModulo++) % this.listPortToVm.size()).processRequest(r);
-
+    	int VMNumber = (cptModulo++) % this.listPortToVm.size();
+    	this.listPortToVm.get(VMNumber).processRequest(r);
+    	String vm = this.listPortToVm.get(VMNumber).toString();
+    	
     	System.out.println("-------------------------------------------------------");
-    	System.out.println("Envoi requete de repartiteur " + this.getAppId() + " a sa vm numero " + ((cptModulo - 1) % this.listPortToVm.size()));
+    	System.out.println("Sending Request " + r + " from Repartitor " + 
+    			this.getAppId() + " to VM " + VMNumber + " (" + vm + ")");
     	System.out.println("-------------------------------------------------------");
     }
     

@@ -9,9 +9,11 @@ import java.util.concurrent.BlockingQueue;
 import fr.upmc.alasca.computer.interfaces.VMProviderI;
 import fr.upmc.alasca.controleur.connectors.RepartiteurControleurConnector;
 import fr.upmc.alasca.controleur.interfaces.AppRequestI;
+import fr.upmc.alasca.controleur.interfaces.RingComponent;
 import fr.upmc.alasca.controleur.ports.CAToControleurInboundPort;
 import fr.upmc.alasca.controleur.ports.ControleurInboundPort;
 import fr.upmc.alasca.controleur.ports.ControleurOutboundPort;
+import fr.upmc.alasca.controleur.ports.RingComponentOutboundPort;
 import fr.upmc.alasca.controleurAuto.components.ControleurAutonomique;
 import fr.upmc.alasca.controleurAuto.connectors.CAConnector;
 import fr.upmc.alasca.repartiteur.components.Repartiteur;
@@ -47,7 +49,7 @@ import fr.upmc.components.cvm.pre.dcc.DynamicallyConnectableComponentOutboundPor
  *         <a href="mailto:Henri.Ng@etu.upmc.fr">Henri Ng/a>
  * @version $Name$ -- $Revision$ -- $Date$
  */
-public class Controleur extends AbstractComponent {
+public class Controleur extends AbstractComponent implements RingComponent {
 
 	// Ports par lesquels sont faites les demandes de deploiement de VM aux
 	// Computers
@@ -72,6 +74,13 @@ public class Controleur extends AbstractComponent {
 	protected HashMap<Integer,CAToControleurInboundPort> rbs = 
 			new HashMap<Integer,CAToControleurInboundPort>();
 
+	protected String controleur_uri_outboundport = null;
+	protected RingComponentOutboundPort outboundPortNextControleurRing = null;
+	protected String outboundURINextControleurRing = null;
+	protected String lastSavedURIRing = null;
+	protected int ringSize = 1;
+	protected int ringTurn = 0;
+	
 	/**
 	 * Constructeur du contrôleur
 	 * 
@@ -85,6 +94,7 @@ public class Controleur extends AbstractComponent {
 			throws Exception {
 		super(true, false);
 		
+		this.controleur_uri_outboundport = controleur_uri_outboundport;
 		this.addRequiredInterface(VMProviderI.class);
 
 		// Connexion du contrôleur à toutes les machines
@@ -133,11 +143,28 @@ public class Controleur extends AbstractComponent {
 		dcco.createComponent(Repartiteur.class.getCanonicalName(),
 				new Object[] { newNameRepartiteurURI, appId, thresholds });
 		
-		//Cr�ation du CA
+		//Création du CA
 		String newNameCAURI = CAURIgenericName + appId;
-		dcco.createComponent(ControleurAutonomique.class.getCanonicalName(),
-				new Object[] { newNameCAURI, appId, thresholds });
-		
+		String CAToControleurURI = "CAToControleurURI" + appId;
+		RingComponentOutboundPort pRing = new RingComponentOutboundPort(CAToControleurURI, this);
+		this.addPort(pRing);
+		pRing.publishPort();
+		this.ringSize++;
+		this.outboundURINextControleurRing = newNameCAURI + "ring";
+		if(this.outboundPortNextControleurRing == null){
+			// L'anneau n'existe pas encore
+			dcco.createComponent(ControleurAutonomique.class.getCanonicalName(),
+					new Object[] { newNameCAURI, appId, thresholds, CAToControleurURI});
+		} else {
+			// L'anneau existe déja, l'ancien port doit être supprimé
+			dcco.createComponent(ControleurAutonomique.class.getCanonicalName(),
+					new Object[] { newNameCAURI, appId, thresholds, this.lastSavedURIRing});
+			this.outboundPortNextControleurRing.doDisconnection();
+			this.outboundPortNextControleurRing.destroyPort();
+		}
+		this.lastSavedURIRing = this.outboundURINextControleurRing;
+		this.outboundPortNextControleurRing = new RingComponentOutboundPort(this.outboundURINextControleurRing, this);
+			
 		/* Connexion entre le répartiteur et le contrôleur (necessaire pour le moment car
 		 * 1er deployVM)
 		 */
@@ -274,7 +301,7 @@ public class Controleur extends AbstractComponent {
 	}
 
 	/**
-	 * Retourne les orts par lesquels sont faites les communications entre le
+	 * Retourne les ports par lesquels sont faites les communications entre le
 	 * contrôleur et les computers (déploiement d'une machine virtuelle par
 	 * exemple)
 	 * 
@@ -292,4 +319,13 @@ public class Controleur extends AbstractComponent {
 				l.get(i).incFrequency(appid);
 		}
 	}
+
+	@Override
+	public void sendTokenToNextComponent(ArrayList<String> freeVM) {
+		System.out.println("[sendTokenToNextComponent] Controeur principal");
+		this.ringTurn++;
+		//on appelle le suivant de l'anneau dans un thread pour éviter l'empilement infini
+		new Thread(new RingTask(this.outboundPortNextControleurRing, freeVM)).start();
+	}
+	
 }

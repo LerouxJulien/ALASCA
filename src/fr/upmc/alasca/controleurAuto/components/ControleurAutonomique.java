@@ -6,9 +6,11 @@ import java.util.List;
 
 import fr.upmc.alasca.computer.objects.VMCarac;
 import fr.upmc.alasca.computer.objects.VMMessages;
+import fr.upmc.alasca.controleur.components.RingTask;
 import fr.upmc.alasca.controleur.interfaces.ControleurFromRepartiteurProviderI;
-import fr.upmc.alasca.controleurAuto.interfaces.CANotificationProviderI;
-import fr.upmc.alasca.controleurAuto.interfaces.CAProviderI;
+import fr.upmc.alasca.controleur.interfaces.RingComponent;
+import fr.upmc.alasca.controleur.ports.RingComponentOutboundPort;
+import fr.upmc.alasca.controleurAuto.interfaces.ControleurAutoProviderI;
 import fr.upmc.alasca.controleurAuto.ports.CAToControleurOutboundPort;
 import fr.upmc.alasca.controleurAuto.ports.CAToRepartiteurOutboundPort;
 import fr.upmc.alasca.controleurAuto.ports.RepartiteurToCAInboundPort;
@@ -30,7 +32,7 @@ import fr.upmc.components.ports.PortI;
  *
  */
 public class ControleurAutonomique extends AbstractComponent implements
-	DynamicallyConnectableComponentI,DynamicallyConnectableI {
+	DynamicallyConnectableComponentI,DynamicallyConnectableI, RingComponent {
 
 	// utilise pour la connexion dynamique aux VM
 	protected DynamicallyConnectableComponentInboundPort dccInboundPort;
@@ -68,7 +70,6 @@ public class ControleurAutonomique extends AbstractComponent implements
 
     // Liste des caractéristiques des VM
     protected HashMap<String,VMCarac> listCarac;
-
 	
 	// Paramètres de contrôles pour les modifications de performances
 	protected double meanTimeProcess;
@@ -79,22 +80,41 @@ public class ControleurAutonomique extends AbstractComponent implements
 	protected double thVMMin;
 	protected double thVMMax;
 
+	protected RingComponentOutboundPort outboundPortNextControleurRing = null;
+	protected String uriCARing = null;
+	protected String outboundURINextControleurRing = null;
 	
 	/**
-	 * 
 	 * Constructeur du repartiteur
 	 * 
 	 * 
 	 * @param portURI Uri de base du repartiteur
 	 * @param appId Id de l'application liée au repartiteur
+	 * @param outboundURINextControleurRing 
 	 * @param threshokds Seuils pour la gestion de deploiement/modification des VM
 	 * @throws Exception
 	 */
-    public ControleurAutonomique(String portURI, Integer appId, String thresholds)
-    		throws Exception {
+    public ControleurAutonomique(String portURI, Integer appId, String thresholds, 
+    		String outboundURINextControleurRing) throws Exception {
 
-        this.addOfferedInterface(CANotificationProviderI.class);
-        
+		super(true, true);
+		this.addOfferedInterface(ControleurAutoProviderI.class);
+
+		//this.addRequiredInterface(ControleurAutoConsumerI.class);
+
+		this.uriCARing = portURI + "ring";
+		RingComponentOutboundPort p = new RingComponentOutboundPort(this.uriCARing, this);
+		this.addPort(p);
+		p.publishPort();
+		this.outboundURINextControleurRing = outboundURINextControleurRing;
+		this.outboundPortNextControleurRing = new RingComponentOutboundPort(this.outboundURINextControleurRing, this);
+		this.addPort(this.outboundPortNextControleurRing);
+		if (AbstractCVM.isDistributed) {
+			this.outboundPortNextControleurRing.publishPort();
+		} else {
+			this.outboundPortNextControleurRing.localPublishPort();
+		}
+		
 		this.appId = appId;
 		this.thresholds = thresholds;
 		this.controleurAutoURIDCC = portURI + "-dcc";
@@ -136,7 +156,7 @@ public class ControleurAutonomique extends AbstractComponent implements
         	cAToControleurOutboundPort.localPublishPort();
         }
         
-		this.addOfferedInterface(CAProviderI.class);
+        this.addRequiredInterface(ControleurAutoProviderI.class);
         this.repartiteurToCAInboundPort = new RepartiteurToCAInboundPort("repartiteurToCAInboundPort-"+this.getAppId(),
 				this);
 		this.addPort(repartiteurToCAInboundPort);
@@ -252,7 +272,15 @@ public class ControleurAutonomique extends AbstractComponent implements
 			*/
 		}
 	}
-    
+
+	/**
+	 * Ajoute un nouveau port vers une machine virtuelle
+	 *
+	 * @param portURI
+	 *            base l'uri du port cree : repartiteur<numeroAppId>
+	 * @return uri actuellement utilisee pour le port cree
+	 * @throws Exception
+	 */
     private String[] addNewPorts(String portURI) throws Exception {
     	String uriVMToCAInboundPort = "VMToCAInboundPort-" + this.appId + "-" + (compteurPort++);
     	VMToCAInboundPort tmp = new VMToCAInboundPort(uriVMToCAInboundPort, this);
@@ -288,4 +316,11 @@ public class ControleurAutonomique extends AbstractComponent implements
 		cAToControleurOutboundPort.deployVM(this.getAppId(), uri,uri[1]);
 		System.out.println("******************************************************************************************************************");
 	}
+	
+	@Override
+	public void sendTokenToNextComponent(ArrayList<String> freeVM) {
+		System.out.println("[sendTokenToNextComponent] Controleur autonomique");
+		new Thread(new RingTask(this.outboundPortNextControleurRing, freeVM)).start();
+	}
+	
 }
