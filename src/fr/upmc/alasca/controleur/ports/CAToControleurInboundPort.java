@@ -35,5 +35,18 @@ implements ControleurFromRepartiteurProviderI{
 		final Controleur c = (Controleur) this.owner;
 		c.incFrequency(app);
 	}
+
+	@Override
+	public void initVM(int appID, String uriComputerParent, String vm) 
+			throws Exception {
+		final Controleur c = (Controleur) this.owner;
+		c.initVM(appID, uriComputerParent, vm);
+	}
+
+	@Override
+	public void reInitVM(String uriComputerParent, String vm) throws Exception {
+		final Controleur c = (Controleur) this.owner;
+		c.reInitVM(uriComputerParent, vm);
+	}
 	
 }

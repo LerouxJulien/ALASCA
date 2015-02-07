@@ -14,6 +14,17 @@ public class ComputerConnector extends AbstractConnector implements
 		ComputerProviderI {
 
 	/**
+	 * Appelle la fonction availableCores de <code>Computer</code>
+	 * 
+	 * @return le nombre de coeurs physiques disponibles du Computer
+	 * @throws Exception
+	 */
+	@Override
+	public Integer availableCores() throws Exception {
+		return ((ComputerProviderI) this.offering).availableCores();
+	}
+
+	/**
 	 * Appelle la fonction destroyVM de <code>Computer</code>
 	 * 
 	 * @param mv l'URI de la VM a detruire
@@ -40,37 +51,42 @@ public class ComputerConnector extends AbstractConnector implements
 				RepartiteurURI, RepartiteurURIDCC);
 	}
 
-	/**
-	 * Appelle la fonction reInit de <code>Computer</code>
-	 * 
-	 * @param vm l'URI de la VM a reinitialiser
-	 * @throws BadReinitialisationException
-	 * @throws RemoteException
-	 */
 	@Override
-	public void reInit(String vm) throws BadReinitialisationException, RemoteException  {
-		((ComputerProviderI) this.offering).reInit(vm);
+	public void incFrequency(int appid) throws Exception {
+		((ComputerProviderI) this.offering).incFrequency(appid);
 	}
 
-	/**
-	 * Appelle la fonction availableCores de <code>Computer</code>
-	 * 
-	 * @return le nombre de coeurs physiques disponibles du Computer
-	 * @throws Exception
-	 */
-	@Override
-	public Integer availableCores() throws Exception {
-		return ((ComputerProviderI) this.offering).availableCores();
-	}
-
-	
 	@Override
 	public boolean isMaxed(int appid) throws Exception {
 		return ((ComputerProviderI) this.offering).isMaxed(appid);
 	}
 
+	/**
+	 * Initialise une VM via son URI en lui associant le répartiteur de
+	 * l'application donnée
+	 * 
+	 * @param appID
+	 * @param vm
+	 * @throws Exception
+	 */
 	@Override
-	public void incFrequency(int appid) throws Exception {
-		((ComputerProviderI) this.offering).incFrequency(appid);
+	public void initVM(int appID, String vm) throws RemoteException, Exception {
+		((ComputerProviderI) this.offering).initVM(appID, vm);
 	}
+
+	/**
+	 * Réinitialise une VM via son URI en lui désassociant le répartiteur de
+	 * l'application donnée
+	 * 
+	 * @param vm
+	 * @throws BadReinitialisationException
+	 * @throws RemoteException
+	 * @throws Exception
+	 */
+	@Override
+	public void reInitVM(String vm) throws BadReinitialisationException,
+			RemoteException, Exception {
+		((ComputerProviderI) this.offering).reInitVM(vm);
+	}
+	
 }

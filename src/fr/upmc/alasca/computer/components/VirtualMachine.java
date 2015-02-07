@@ -433,14 +433,23 @@ DynamicallyConnectableComponentI,DynamicallyConnectableI {
 	}
 	
 	/**
+	 * Initialise la VM avec une application
+	 * 
+	 * @throws Exception
+	 */
+	public void reInit(int appID) throws Exception {
+		this.appID  = appID;
+		this.status = Status.NEW;
+	}
+	
+	/**
 	 * Réinitialise la VM
 	 * 
 	 * @throws Exception
 	 */
 	public void reInit() throws Exception {
 		if (this.isProcessing() && (this.getQueueSize() == 0)) {
-			this.mvID = "";
-			this.appID = -1;
+			this.appID  = -1;
 			this.status = Status.NEW;
 		} else {
 			throw new BadReinitialisationException();

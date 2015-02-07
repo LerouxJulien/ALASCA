@@ -1,5 +1,6 @@
 package fr.upmc.alasca.computer.components;
 
+import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -185,6 +186,13 @@ public class Computer extends AbstractComponent implements DynamicallyConnectabl
 		return getNbCores() - getNbCoresUsed();
 	}
 	
+	@Override
+	public void connectWith(String serverPortURI, String clientPortURI,
+			String ccname) throws Exception {
+		PortI uriConsumerPort = this.findPortFromURI(clientPortURI);
+		uriConsumerPort.doConnection(serverPortURI, ccname);
+	}
+
 	/**
 	 * Deploie une machine virtuelle et la connecte au repartiteur de requete de
 	 * l'application
@@ -321,25 +329,13 @@ public class Computer extends AbstractComponent implements DynamicallyConnectabl
 		}
 	}
 
-	/**
-	 * Reinitialise une machine virtuelle via son URI
-	 * 
-	 * @param vm
-	 * @throws BadReinitialisationException 
-	 */
-	public void reInit(String vm) throws BadReinitialisationException {
-		// TODO : Réinitialisation à implémenter
-		VMInboundPort portVM = (VMInboundPort) this.findPortFromURI(vm);
-		try {
-			portVM.reInit();
-			portVM.doDisconnection();
-			portVM.unpublishPort();
-		} catch(Exception e) {
-			throw new BadReinitialisationException("Impossible de " + 
-					"réinitialiser la VM : " + vm);
-		}
+	@Override
+	public void disconnectWith(String serverPortURI, String clientPortURI)
+			throws Exception {
+		PortI uriConsumerPort = this.findPortFromURI(clientPortURI);
+		uriConsumerPort.doDisconnection();
 	}
-	
+
 	public boolean isMaxed(int appid){
 		/*if(this.mapVM.isEmpty()){
 			return false;
@@ -353,7 +349,7 @@ public class Computer extends AbstractComponent implements DynamicallyConnectabl
 		}
 		return true;
 	}
-	
+
 	public void incFrequency(int appid) throws Exception{
 		System.out.println("Modification coeurs physiques");
 		for(int i = 0 ; i < frequencies.size(); ++i){
@@ -367,18 +363,40 @@ public class Computer extends AbstractComponent implements DynamicallyConnectabl
 		}
 	}
 
-	@Override
-	public void connectWith(String serverPortURI, String clientPortURI,
-			String ccname) throws Exception {
-		PortI uriConsumerPort = this.findPortFromURI(clientPortURI);
-		uriConsumerPort.doConnection(serverPortURI, ccname);
+	/**
+	 * Initialise une VM via son URI en lui associant le répartiteur de
+	 * l'application donnée
+	 * 
+	 * @param appID
+	 * @param vm
+	 * @throws Exception
+	 */
+	public void initVM(int appID, String vm) throws RemoteException, Exception {
+		// TODO : Initialisation à tester
+		
 	}
 
-	@Override
-	public void disconnectWith(String serverPortURI, String clientPortURI)
-			throws Exception {
-		PortI uriConsumerPort = this.findPortFromURI(clientPortURI);
-		uriConsumerPort.doDisconnection();
+	/**
+	 * Réinitialise une VM via son URI en lui désassociant le répartiteur de
+	 * l'application donnée
+	 * 
+	 * @param vm
+	 * @throws BadReinitialisationException
+	 * @throws RemoteException
+	 * @throws Exception
+	 */
+	public void reInitVM(String vm) throws BadReinitialisationException,
+		RemoteException, Exception {
+		// TODO : Réinitialisation à tester
+		VMInboundPort portVM = (VMInboundPort) this.findPortFromURI(vm);
+		try {
+			portVM.reInit();
+			portVM.doDisconnection();
+			portVM.unpublishPort();
+		} catch(Exception e) {
+			throw new BadReinitialisationException("Impossible de " + 
+					"réinitialiser la VM : " + vm);
+		}
 	}
 	
 

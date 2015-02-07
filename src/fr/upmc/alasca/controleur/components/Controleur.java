@@ -62,7 +62,8 @@ public class Controleur extends AbstractComponent implements RingComponent {
 	// Préfixe de l'URI pour tous les CA
 	protected String CAURIgenericName = "controleurauto";
 	
-	protected Map<Integer, ArrayList<ControleurOutboundPort>> mapVM = new HashMap<Integer, ArrayList<ControleurOutboundPort>>();
+	protected Map<Integer, ArrayList<ControleurOutboundPort>> mapVM = 
+			new HashMap<Integer, ArrayList<ControleurOutboundPort>>();
 
 	// Port par lequel sont reçues les requêtes du générateur de requêtes
 	protected ControleurInboundPort port_i;
@@ -124,8 +125,8 @@ public class Controleur extends AbstractComponent implements RingComponent {
 	 */
 	public void acceptApplication(Integer appId, String thresholds,
 			String uri_new_rg) throws Exception {
-		DynamicComponentCreationOutboundPort dcco = new DynamicComponentCreationOutboundPort(
-				this);
+		DynamicComponentCreationOutboundPort dcco = 
+				new DynamicComponentCreationOutboundPort(this);
 		dcco.publishPort();
 
 		this.addPort(dcco);
@@ -146,7 +147,8 @@ public class Controleur extends AbstractComponent implements RingComponent {
 		//Création du CA
 		String newNameCAURI = CAURIgenericName + appId;
 		String CAToControleurURI = "CAToControleurURI" + appId;
-		RingComponentOutboundPort pRing = new RingComponentOutboundPort(CAToControleurURI, this);
+		RingComponentOutboundPort pRing = 
+				new RingComponentOutboundPort(CAToControleurURI, this);
 		this.addPort(pRing);
 		pRing.publishPort();
 		this.ringSize++;
@@ -163,7 +165,8 @@ public class Controleur extends AbstractComponent implements RingComponent {
 			this.outboundPortNextControleurRing.destroyPort();
 		}
 		this.lastSavedURIRing = this.outboundURINextControleurRing;
-		this.outboundPortNextControleurRing = new RingComponentOutboundPort(this.outboundURINextControleurRing, this);
+		this.outboundPortNextControleurRing = 
+				new RingComponentOutboundPort(this.outboundURINextControleurRing, this);
 			
 		/* Connexion entre le répartiteur et le contrôleur (necessaire pour le moment car
 		 * 1er deployVM)
@@ -255,8 +258,9 @@ public class Controleur extends AbstractComponent implements RingComponent {
 						DynamicallyConnectableComponentConnector.class
 								.getCanonicalName());
 				
-		p2.connectWith("repartiteurToCAInboundPort-" + appId, "repartiteurToCAOutboundPort-" + appId,
-						CAConnector.class.getCanonicalName());
+		p2.connectWith("repartiteurToCAInboundPort-" + appId, 
+				"repartiteurToCAOutboundPort-" + appId, 
+				CAConnector.class.getCanonicalName());
 		p2.doDisconnection();
 	}
 
@@ -318,6 +322,35 @@ public class Controleur extends AbstractComponent implements RingComponent {
 			if(!l.get(i).isMaxed(appid))
 				l.get(i).incFrequency(appid);
 		}
+	}
+	
+	/**
+	 * Initialise une VM via son URI en lui associant le répartiteur de
+	 * l'application donnée
+	 * 
+	 * @param appID
+	 * @param vm
+	 * @throws Exception
+	 */
+	public void initVM(int appID, String uriComputerParent, String vm) 
+			throws Exception {
+		ControleurOutboundPort p = (ControleurOutboundPort) 
+				this.findPortFromURI(uriComputerParent);
+		p.initVM(appID, vm);
+	}
+
+	/**
+	 * Réinitialise une VM via son URI en lui désassociant le répartiteur de
+	 * l'application donnée
+	 * 
+	 * @param appID
+	 * @param vm
+	 * @throws Exception
+	 */
+	public void reInitVM(String uriComputerParent, String vm) throws Exception {
+		ControleurOutboundPort p = (ControleurOutboundPort) 
+				this.findPortFromURI(uriComputerParent);
+		p.reInitVM(vm);
 	}
 
 	@Override

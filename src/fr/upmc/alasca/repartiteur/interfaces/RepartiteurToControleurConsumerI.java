@@ -1,9 +1,5 @@
 package fr.upmc.alasca.repartiteur.interfaces;
 
-import java.rmi.RemoteException;
-
-import fr.upmc.alasca.computer.exceptions.BadDestroyException;
-import fr.upmc.alasca.repartiteur.components.Repartiteur;
 import fr.upmc.components.interfaces.RequiredI;
 
 public interface RepartiteurToControleurConsumerI extends RequiredI{

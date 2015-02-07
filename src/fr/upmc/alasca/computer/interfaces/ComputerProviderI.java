@@ -49,17 +49,30 @@ public interface ComputerProviderI extends OfferedI {
 	 */
 	public void destroyVM(String mv) throws BadDestroyException, RemoteException, Exception;
 
-	/**
-	 * Reinitialise une machine virtuelle via son URI
-	 * 
-	 * @param vm
-	 * @throws BadReinitialisationException
-	 * @throws RemoteException 
-	 */
-	public void reInit(String vm) throws BadReinitialisationException, RemoteException;
-
 	public boolean isMaxed(int appid) throws Exception;	
 	
 	public void incFrequency(int appid) throws Exception;
+	
+	/**
+	 * Initialise une VM via son URI en lui associant le répartiteur de
+	 * l'application donnée
+	 * 
+	 * @param appID
+	 * @param vm
+	 * @throws Exception
+	 */
+	public void initVM(int appID, String vm) throws RemoteException, Exception;
+
+	/**
+	 * Réinitialise une VM via son URI en lui désassociant le répartiteur de
+	 * l'application donnée
+	 * 
+	 * @param vm
+	 * @throws BadReinitialisationException
+	 * @throws RemoteException
+	 * @throws Exception
+	 */
+	public void reInitVM(String vm) throws BadReinitialisationException,
+		RemoteException, Exception;
 	
 }

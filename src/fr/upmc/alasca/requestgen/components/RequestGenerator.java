@@ -1,6 +1,5 @@
 package fr.upmc.alasca.requestgen.components;
 
-import java.util.List;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 

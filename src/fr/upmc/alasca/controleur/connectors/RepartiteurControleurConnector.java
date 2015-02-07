@@ -1,6 +1,7 @@
 package fr.upmc.alasca.controleur.connectors;
 
 import java.io.Serializable;
+
 import fr.upmc.alasca.controleur.interfaces.ControleurFromRepartiteurProviderI;
 import fr.upmc.components.connectors.AbstractConnector;
 
@@ -41,9 +42,22 @@ ControleurFromRepartiteurProviderI, Serializable {
 		destroyVM(uriComputerParent, vm);
 	}
 	
-	
 	@Override
 	public void incFrequency(int app) throws Exception {
 		((ControleurFromRepartiteurProviderI)this.offering).incFrequency(app);
 	}
+
+	@Override
+	public void initVM(int appID, String uriComputerParent, String vm) 
+			throws Exception {
+		((ControleurFromRepartiteurProviderI)this.offering).
+			initVM(appID, uriComputerParent, vm);
+	}
+
+	@Override
+	public void reInitVM(String uriComputerParent, String vm) throws Exception {
+		((ControleurFromRepartiteurProviderI)this.offering).
+			reInitVM(uriComputerParent, vm);
+	}
+	
 }

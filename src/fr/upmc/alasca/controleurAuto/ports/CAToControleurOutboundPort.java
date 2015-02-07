@@ -15,16 +15,32 @@ implements ControleurFromRepartiteurProviderI{
 	@Override
 	public void deployVM(int r, String[] uri, String RepartiteurURIDCC)
 			throws Exception {
-		((ControleurFromRepartiteurProviderI)this.connector).deployVM(r, uri, RepartiteurURIDCC);
+		((ControleurFromRepartiteurProviderI)this.connector).
+			deployVM(r, uri, RepartiteurURIDCC);
 	}
 
 	@Override
-	public void destroyVM(String uriComputerParent, String vm) throws Exception {
-		((ControleurFromRepartiteurProviderI)this.connector).destroyVM(uriComputerParent, vm);
+	public void destroyVM(String uriComputerParent, String vm)
+			throws Exception {
+		((ControleurFromRepartiteurProviderI)this.connector).
+			destroyVM(uriComputerParent, vm);
 	}
 
 	@Override
 	public void incFrequency(int app) throws Exception {
 		((ControleurFromRepartiteurProviderI)this.connector).incFrequency(app);
 	}
+
+	@Override
+	public void initVM(int appID, String uriComputerParent, String vm) throws Exception {
+		((ControleurFromRepartiteurProviderI)this.connector).
+			initVM(appID, uriComputerParent, vm);
+	}
+
+	@Override
+	public void reInitVM(String uriComputerParent, String vm) throws Exception {
+		((ControleurFromRepartiteurProviderI)this.connector).
+			reInitVM(uriComputerParent, vm);		
+	}
+	
 }

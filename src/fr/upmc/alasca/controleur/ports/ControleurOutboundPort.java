@@ -44,12 +44,6 @@ public class ControleurOutboundPort extends AbstractOutboundPort implements
 	}
 
 	@Override
-	public void reInit(String vm) throws BadReinitialisationException, 
-	RemoteException {
-		((ComputerProviderI) this.connector).reInit(vm);
-	}
-
-	@Override
 	public Integer availableCores() throws Exception {
 		return ((ComputerProviderI) this.connector).availableCores();
 	}
@@ -64,4 +58,16 @@ public class ControleurOutboundPort extends AbstractOutboundPort implements
 	public void incFrequency(int appid) throws Exception {
 		((ComputerProviderI) this.connector).incFrequency(appid);
 	}
+
+	@Override
+	public void initVM(int appID, String vm) throws RemoteException, Exception {
+		((ComputerProviderI) this.connector).initVM(appID, vm);
+	}
+
+	@Override
+	public void reInitVM(String vm) throws BadReinitialisationException,
+			RemoteException, Exception {
+		((ComputerProviderI) this.connector).reInitVM(vm);
+	}
+	
 }

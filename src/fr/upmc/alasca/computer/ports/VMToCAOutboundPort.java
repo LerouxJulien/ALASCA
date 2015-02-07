@@ -4,7 +4,6 @@ import fr.upmc.alasca.computer.interfaces.VMConsumerI;
 import fr.upmc.alasca.computer.objects.VMCarac;
 import fr.upmc.alasca.computer.objects.VMMessages;
 import fr.upmc.alasca.controleurAuto.interfaces.CANotificationProviderI;
-import fr.upmc.alasca.controleurAuto.interfaces.CAProviderI;
 import fr.upmc.components.ComponentI;
 import fr.upmc.components.ports.AbstractOutboundPort;
 

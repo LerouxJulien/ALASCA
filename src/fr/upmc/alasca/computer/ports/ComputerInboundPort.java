@@ -1,5 +1,7 @@
 package fr.upmc.alasca.computer.ports;
 
+import java.rmi.RemoteException;
+
 import fr.upmc.alasca.computer.components.Computer;
 import fr.upmc.alasca.computer.exceptions.BadReinitialisationException;
 import fr.upmc.alasca.computer.interfaces.ComputerProviderI;
@@ -54,18 +56,6 @@ public class ComputerInboundPort extends AbstractInboundPort implements
 	}
 
 	/**
-	 * Reinitialise une machine virtuelle via son URI
-	 * 
-	 * @param vm l'URI de la VM
-	 * @throws BadReinitialisationException 
-	 */
-	@Override
-	public void reInit(String vm) throws BadReinitialisationException {
-		final Computer comp = (Computer) this.owner;
-		comp.reInit(vm);
-	}
-
-	/**
 	 * Retourne le nombre de coeurs de Computer qui ne sont pas utilises par
 	 * une machine virtuelle
 	 * 
@@ -89,4 +79,33 @@ public class ComputerInboundPort extends AbstractInboundPort implements
 		final Computer comp = (Computer) this.owner;
 		comp.incFrequency(appid);
 	}
+
+	/**
+	 * Initialise une VM via son URI en lui associant le répartiteur de
+	 * l'application donnée
+	 * 
+	 * @param appID
+	 * @param vm
+	 * @throws Exception
+	 */
+	public void initVM(int appID, String vm) throws RemoteException, Exception {
+		final Computer comp = (Computer) this.owner;
+		comp.initVM(appID, vm);
+	}
+
+	/**
+	 * Réinitialise une VM via son URI en lui désassociant le répartiteur de
+	 * l'application donnée
+	 * 
+	 * @param vm
+	 * @throws BadReinitialisationException
+	 * @throws RemoteException
+	 * @throws Exception
+	 */
+	public void reInitVM(String vm) throws BadReinitialisationException,
+		RemoteException, Exception {
+		final Computer comp = (Computer) this.owner;
+		comp.reInitVM(vm);
+	}
+	
 }
